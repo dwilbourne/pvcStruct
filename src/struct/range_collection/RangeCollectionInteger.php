@@ -12,7 +12,7 @@ use pvc\struct\range_collection\range_element\RangeElementInteger;
  * Class RangeCollectionInteger
  * @package pvc\struct\range_collection
  */
-class RangeCollectionInteger
+class RangeCollectionInteger implements RangeCollectionInterface
 {
     use RangeCollectionTrait;
 

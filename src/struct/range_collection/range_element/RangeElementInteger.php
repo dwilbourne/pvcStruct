@@ -14,7 +14,7 @@ use pvc\formatter\numeric\FrmtrInteger;
  * Class RangeElementInteger
  * @package pvc\validator\base\min_max\elements
  */
-class RangeElementInteger
+class RangeElementInteger implements RangeElementInterface
 {
     use RangeElementTrait;
 

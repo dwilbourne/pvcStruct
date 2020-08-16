@@ -13,7 +13,7 @@ use pvc\formatter\numeric\FrmtrFloat;
  * Class RangeElementFloat
  * @package pvc\validator\base\min_max\elements
  */
-class RangeElementFloat
+class RangeElementFloat implements RangeElementInterface
 {
     use RangeElementTrait;
 

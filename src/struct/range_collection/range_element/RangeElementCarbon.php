@@ -9,7 +9,7 @@ use pvc\formatter\date_time\FrmtrDateTimeAbstract;
 /**
  * Class RangeElementCarbon
  */
-class RangeElementCarbon
+class RangeElementCarbon implements RangeElementInterface
 {
     use RangeElementTrait;
 

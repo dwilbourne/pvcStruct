@@ -12,7 +12,7 @@ use pvc\struct\range_collection\range_element\RangeElementFloat;
  * Class RangeCollectionFloat
  * @package pvc\struct\range_collection
  */
-class RangeCollectionFloat
+class RangeCollectionFloat implements RangeCollectionInterface
 {
     use RangeCollectionTrait;
 

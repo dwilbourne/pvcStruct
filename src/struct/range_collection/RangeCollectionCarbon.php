@@ -12,7 +12,7 @@ use pvc\struct\range_collection\range_element\RangeElementCarbon;
  * Class RangeCollectionCarbon
  * @package pvc\struct\range_collection\range_element
  */
-class RangeCollectionCarbon
+class RangeCollectionCarbon implements RangeCollectionInterface
 {
     use RangeCollectionTrait;
 
