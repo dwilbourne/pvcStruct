@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ruleset>
+
+    <rule ref="PSR2"/>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- these fixtures do not have namespaces or proper class names.... -->
+    <exclude-pattern>tests/parser/file/php/fixtures*</exclude-pattern>
+
+</ruleset>
