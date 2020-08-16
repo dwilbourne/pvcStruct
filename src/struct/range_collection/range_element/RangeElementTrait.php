@@ -50,4 +50,9 @@ trait RangeElementTrait
     {
         return (($value >= $this->getMin()) && ($value <= $this->getMax()));
     }
+
+    public function __toString() : string
+    {
+        return ($this->frmtr->format($this->getMin()) . '-' . $this->frmtr->format($this->getMax()));
+    }
 }
