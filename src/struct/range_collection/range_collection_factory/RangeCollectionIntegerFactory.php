@@ -6,7 +6,6 @@
 
 namespace pvc\struct\range_collection\range_collection_factory;
 
-
 use pvc\struct\range_collection\RangeCollectionInteger;
 
 /**
