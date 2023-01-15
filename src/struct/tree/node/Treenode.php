@@ -1,37 +1,32 @@
-<?php declare(strict_types = 1);
+<?php
+
+declare(strict_types=1);
 
 namespace pvc\struct\tree\node;
 
-use pvc\struct\tree\iface\node\TreenodeInterface;
-use pvc\validator\base\ValidatorInterface;
-use pvc\validator\numeric\ValidatorIntegerNonNegative;
+
+use pvc\interfaces\struct\tree\node\TreenodeInterface;
 
 /**
  * Treenode is a base class supporting node operations in a tree
+ * 
+ * @template NodeValueType
+ * @implements TreenodeInterface<NodeValueType>
  */
 class Treenode implements TreenodeInterface
 {
+	/**
+	 * @phpstan-use TreenodeTrait<NodeValueType>
+	 */
     use TreenodeTrait;
 
     /**
      * Treenode constructor.
      * @param int $nodeid
-     * @throws err\InvalidNodeIdException
+     * @throws \pvc\struct\tree\err\InvalidNodeIdException
      */
     public function __construct(int $nodeid)
     {
         $this->setNodeId($nodeid);
-    }
-
-    /**
-     * @function unsetReferences
-     */
-    public function unsetReferences() : void
-    {
-        unset($this->treeid);
-        unset($this->parentid);
-        unset($this->value);
-        // do not unset nodeid - node must remain in a valid state
-        // unset($this->nodeid);
     }
 }

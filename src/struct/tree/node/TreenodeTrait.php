@@ -1,26 +1,35 @@
-<?php declare(strict_types = 1);
+<?php
+
+declare(strict_types=1);
 
 namespace pvc\struct\tree\node;
 
+use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use pvc\interfaces\validator\ValidatorInterface;
+use pvc\struct\tree\err\_ExceptionFactory;
+use pvc\struct\tree\err\InvalidNodeIdException;
+use pvc\struct\tree\err\InvalidNodeValueException;
 use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\node\err\InvalidNodeIdException;
-use pvc\struct\tree\node\err\InvalidNodeValueException;
-use pvc\validator\base\ValidatorInterface;
+use pvc\struct\tree\err\InvalidTreeidException;
+use pvc\struct\tree\err\NodeIdAndParentIdCannotBeTheSameException;
 
+/**
+ * Trait TreenodeTrait
+ * @template NodeValueType
+ */
 trait TreenodeTrait
 {
-
     /**
-     * unique id for this node, immutable
+     * unique id for this node
      * @var int
      */
-    protected $nodeid;
+    protected int $nodeid;
 
     /**
      * id of parent
      * @var int|null
      */
-    protected $parentid;
+    protected ? int $parentid = -1;
 
     /**
      * reference to containing tree
@@ -35,42 +44,62 @@ trait TreenodeTrait
     protected ?ValidatorInterface $valueValidator;
 
     /**
-     * @var mixed
+     * @var NodeValueType
      */
     protected $value;
 
-    private function validateNodeId(int $nodeid) : bool
+	/**
+	 * all nodeids are integers greater than or equal to 0
+	 *
+	 * validateNodeId
+	 * @param int $nodeid
+	 * @return bool
+	 */
+    private function validateNodeId(int $nodeid): bool
     {
         return 0 <= $nodeid;
     }
 
-    /**
-     * @function getNodeId
-     * @return int
-     */
-    public function getNodeId() : int
-    {
-        return $this->nodeid;
-    }
+	/**
+	 * set the id of the node.
+	 *
+	 * @function setNodeId
+	 * @param int $nodeid
+	 * @throws InvalidNodeIdException
+	 */
+	public function setNodeId(int $nodeid): void
+	{
+		/**
+		 * nodeid must be valid
+		 */
+		if (!$this->validateNodeId($nodeid)) {
+			throw _ExceptionFactory::createException(InvalidNodeIdException::class, [$nodeid]);
+		}
 
-    /**
-     * @function setNodeId
-     * @param int $nodeid
-     * @throws InvalidNodeIdException
+		/**
+		 * cannot be the same as parentid.  Use "===" because getParentId can return null which gets cast to zero if
+		 * doing a standard equality test
+		 */
+		if ($this->getParentId() === $nodeid) {
+			throw _ExceptionFactory::createException(NodeIdAndParentIdCannotBeTheSameException::class, [$nodeid]);
+		}
+		$this->nodeid = $nodeid;
+	}
+
+	/**
+     * @function getNodeId
+     * @return int|null
      */
-    protected function setNodeId(int $nodeid): void
+    public function getNodeId(): ? int
     {
-        if (!$this->validateNodeId($nodeid)) {
-            throw new InvalidNodeIdException($nodeid);
-        }
-        $this->nodeid = $nodeid;
+        return $this->nodeid ?? null;
     }
 
     /**
      * @function getParentId
      * @return int|null
      */
-    public function getParentId() : ? int
+    public function getParentId(): ?int
     {
         return $this->parentid ?? null;
     }
@@ -81,16 +110,44 @@ trait TreenodeTrait
      * @throws InvalidNodeIdException
      * @throws InvalidParentNodeException
      */
-    public function setParentId($parentId) : void
+    public function setParentId($parentId): void
     {
+        /**
+         * parentIds can be null, so only verify the nodeid is valid if it is not null
+         */
         if (!is_null($parentId) && !$this->validateNodeId($parentId)) {
-            throw new InvalidNodeIdException($parentId);
+            throw _ExceptionFactory::createException(InvalidNodeIdException::class, [$parentId]);
         }
-        if ($this->nodeid === $parentId) {
-            throw new InvalidParentNodeException($parentId);
+
+	    /**
+	     * nodeid and parentid cannot be the same.  Use strict "===" because getNodeId can return null which gets
+	     * cast to zero using standard equality test
+	     */
+        if ($this->getNodeId() === $parentId) {
+            throw _ExceptionFactory::createException(NodeIdAndParentIdCannotBeTheSameException::class, [$parentId]);
         }
         $this->parentid = $parentId;
     }
+
+	/**
+	 * isRoot encapsulates the logic for determining whether a node might be a root node.
+	 *
+	 * A root node has a null parentid., but we don't want to use the getter getParentId because the getter will return
+	 * null even if the parent is not initialized.  This implementation forces you to explicitly set the parentid
+	 * to null in order for the node to qualify as a root node.
+	 *
+	 * There might be a cleaner way to do it via reflection or a try / catch.  I spent a few minutes with reflection
+	 * but the ReflectionProperty constructor complained about not having an object as the first argument ($this
+	 * does not work - cuz this is a trait?).  In the end, I am punting.  PHP emits an error (level = WARNING)
+	 * and returns false.
+	 *
+	 * @function isRoot
+	 * @return bool
+	 */
+	public function isRoot() : bool
+	{
+		return is_null($this->getParentId());
+	}
 
     /**
      * @function setTreeId
@@ -98,6 +155,9 @@ trait TreenodeTrait
      */
     public function setTreeId(int $treeid): void
     {
+	    if (!$this->validateNodeId($treeid)) {
+		    throw _ExceptionFactory::createException(InvalidTreeidException::class, [$treeid]);
+	    }
         $this->treeid = $treeid;
     }
 
@@ -105,7 +165,7 @@ trait TreenodeTrait
      * @function getTreeId
      * @return int|null
      */
-    public function getTreeId() : ?int
+    public function getTreeId(): ?int
     {
         return $this->treeid ?? null;
     }
@@ -116,7 +176,7 @@ trait TreenodeTrait
      */
     public function getValueValidator(): ?ValidatorInterface
     {
-        return $this->valueValidator;
+        return $this->valueValidator ?? null;
     }
 
     /**
@@ -130,20 +190,21 @@ trait TreenodeTrait
 
     /**
      * @function getValue
-     * @return mixed
+     * @return NodeValueType|null
      */
     public function getValue()
     {
-        return $this->value;
+        return $this->value ?? null;
     }
 
     /**
      * @function setValue
-     * @param mixed $value
+     * @param NodeValueType $value
      * @throws InvalidNodeValueException
      */
     public function setValue($value): void
     {
+        // validation of the value is optional
         if (isset($this->valueValidator) && !$this->valueValidator->validate($value)) {
             throw new InvalidNodeValueException($value);
         }
@@ -152,15 +213,14 @@ trait TreenodeTrait
 
     /**
      * @function hydrate
-     * @param array $row
+     * @param mixed[] $row
      * @throws InvalidNodeIdException
      * @throws InvalidNodeValueException
      * @throws InvalidParentNodeException
      */
     public function hydrate(array $row): void
     {
-        // nodeid is set upon construction
-        // $this->setNodeId($row['nodeid']);
+        $this->setNodeId($row['nodeid']);
         $this->setParentId($row['parentid']);
         $this->setTreeId($row['treeid']);
         $this->setValue($row['value']);
@@ -168,7 +228,7 @@ trait TreenodeTrait
 
     /**
      * @function dehydrate
-     * @return array
+     * @return mixed[]
      */
     public function dehydrate(): array
     {
@@ -179,4 +239,24 @@ trait TreenodeTrait
             'value' => $this->getValue()
         ];
     }
+
+	/**
+	 * Compares two nodes for equality.  The strict parameter allows you to choose between comparing whether the two
+	 * arguments are the same instance or different instances but have the same property values.  Because
+	 * TreenodeOrdered has the hydrationIndex property, there is no chance that an unordered node and an ordered node
+	 * could come up equal, even under a loose comparison.
+	 *
+	 * Because TreenodeOrdered extends Treenode, we can type the node parameter with TreenodeInterface (e.g. we do
+	 * not need a union type).
+	 *
+	 * equals
+	 * @param TreenodeInterface<NodeValueType>|null $node
+	 * @param bool $strict
+	 * @return bool
+	 */
+	public function equals(TreenodeInterface $node = null, bool $strict = false) : bool
+	{
+		return ($strict ? ($this === $node) : ($this == $node));
+	}
+
 }

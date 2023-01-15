@@ -1,9 +1,10 @@
 <?php
+
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+declare (strict_types=1);
 
-declare(strict_types = 1);
 
 namespace pvc\struct\tree\err;
 
@@ -11,6 +12,6 @@ namespace pvc\struct\tree\err;
 use pvc\err\stock\LogicException;
 
 /**
- * Class NodeNotInTreeException
+ * Class RootCountForTreeException
  */
-class NodeNotInTreeException extends LogicException {}
+class RootCountForTreeException extends LogicException {}

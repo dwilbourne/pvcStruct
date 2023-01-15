@@ -1,115 +1,162 @@
-<?php declare(strict_types = 1);
+<?php
+
 /**
- * @package: pvc
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
- * @version: 1.0
  */
+
+declare(strict_types=1);
 
 namespace pvc\struct\tree\node;
 
-use pvc\struct\lists\ListOrderedInterface;
+use pvc\interfaces\struct\lists\ordered\ListOrderedInterface;
+use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
+use pvc\struct\tree\err\_ExceptionFactory;
+use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
-use pvc\struct\tree\iface\node\TreenodeOrderedInterface;
-use pvc\struct\tree\iface\tree\TreeOrderedInterface;
-use pvc\struct\tree\node\err\InvalidNodeIdException;
-use pvc\struct\tree\node\err\InvalidNodeIndexException;
-use pvc\validator\numeric\ValidatorIntegerNonNegative;
+use pvc\struct\tree\err\SetChildrenException;
 
 /**
  * Class TreenodeOrdered
+ *
+ * This implementation keeps references to actual objects in the tree (e.g. the parent attribute is an object, not an
+ * id which can be used to retrieve the object). An alternative approach would be to set the tree object reference
+ * and then keep ids of the other things (parents & children).  When you need those actual objects, you
+ * would use the tree to retrieve them.  My thought is that the latter approach would make the code in this class more
+ * cumbersome. Getting a parent would be "this->tree->getNode($this->>parentid) in there in order to obtain the object
+ * first before manipulating it.
+ *
+ * However, the approach of actually keeping references to objects in the attributes comes with some additional cost
+ * when initializing the tree.  First, the tree itself needs to be hydrated with all the nodes.  At that point, the
+ * nodes only contain the ids necessary to set the references to the actual objects.  Only after all the
+ * nodes are in the tree can you then set the references in each node.
+ *
+ * Lastly, the index property of each node deserves some commentary.  This property initializes the node's position
+ * relative to its siblings in the child list of its parent.  So if its parent has 5 children and this node is second
+ * in that list, then this node's index is 1 (0 based ordination).  When the tree is being hydrated from a data
+ * store, this property is populated and then the children of each parent are put into the child list in the
+ * appropriate order.  If you add a node to the tree (via the add method), you also specify the index at which you
+ * want the child to be inserted in the list of children.  It is also possible to change a child's index after it has
+ * been put into the tree.  This class has a setIndex method which calls the changeIndex method on the list object
+ * holding the children.  It is very important to understand that the property itself is only used when the tree is
+ * hydrated.  In fact, to clarify that, the property is nulled out during the process of hydrating the tree.  The
+ * reason is that it is possible to change a node's index relative to its siblings.  Doing so typically requires
+ * changing the indices of other children in the list as well, which is why ListOrdered is used as the object to
+ * handle this job.  So the getIndex method does NOT look at the value of the property.  It asks the childlist of the
+ * parent in order to get an index.  Similarly, when dehyrating a node, the index is not gotten from the property, it
+ * is gotten from the parent's list of children.
+ *
+ * @template NodeValueType
+ * @implements TreenodeOrderedInterface<NodeValueType>
+ *
  */
 class TreenodeOrdered implements TreenodeOrderedInterface
 {
+	/**
+	 * @phpstan-use TreenodeTrait<NodeValueType>
+	 */
     use TreenodeTrait;
 
     /**
      * reference to the containing tree
-     * @var TreeOrderedInterface|null
+     * @var TreeOrderedInterface<NodeValueType>|null
      */
     protected ?TreeOrderedInterface $tree;
 
     /**
      * reference to parent node
-     * @var TreenodeOrderedInterface|null
+     * @var TreenodeOrderedInterface<NodeValueType>|null
      */
     protected ?TreenodeOrderedInterface $parent;
 
     /**
      * list of the children of this node
-     * @var ListOrderedInterface
+     * @var ListOrderedInterface<NodeValueType>
      */
     protected ListOrderedInterface $children;
 
-    /**
-     * property used for hydrating and dehydrating nodes.
-     * @var int|null
-     */
-    protected ?int $hydrationIndex;
+	/**
+	 * used to establish the position of this node relative to its siblings in the list of children that the parent
+	 * keeps.  It is not used after the tree is hydrated.
+	 * @var int
+	 */
+	protected int $hydrationIndex;
 
     /**
      * TreenodeOrdered constructor.
      * @param int $nodeid
-     * @param ListOrderedInterface $list
-     * @throws InvalidNodeIdException
+     * @throws \pvc\struct\tree\err\InvalidNodeIdException
      */
-    public function __construct(int $nodeid, ListOrderedInterface $list)
+    public function __construct(int $nodeid)
     {
         $this->setNodeId($nodeid);
-        $this->children = $list;
     }
 
-    /**
-     * this setter is only called from tree dehydration (TreeOrdered->dehydrate()) and is used
-     * to temporarily store the index before it is pushed into an array when the node dehydrates
-     * (the array is typically used by a dao for persistence).
-     *
-     * @function setHydrationIndex
-     * @param int $index
-     */
-    public function setHydrationIndex(int $index): void
-    {
-        $this->hydrationIndex = $index;
-    }
+	/**
+	 * use this method to initialize the children property with an empty list.
+	 *
+	 * The list must be empty because trees and nodes set up all their own pointers as the tree is hydrated.  The
+	 * most usual way to create an ordered node is via a factory / dependency injection.
+	 *
+	 * setChildren
+	 * @param ListOrderedInterface<NodeValueType> $list
+	 */
+	public function setChildList(ListOrderedInterface $list) : void
+	{
+		if (!$list->isEmpty()) {
+			throw _ExceptionFactory::createException(SetChildrenException::class);
+		}
+		$this->children = $list;
+	}
 
-    /**
-     * this getter is only called from tree hydration (Treeordered->hydrate()) and is used to
-     * temporarily store the index before being inserted into the tree structure (used during
-     * the loading of the tree from a data store).
-     *
-     * @function getHydrationIndex
-     * @return int|null
-     */
-    public function getHydrationIndex(): ?int
-    {
-        return $this->hydrationIndex ?? null;
-    }
+	/**
+	 * sets the order in which this node is added to the parent's child list relative to its siblings.
+	 *
+	 * setHydrationIndex
+	 * @param int $index
+	 */
+	public function setHydrationIndex(int $index) : void
+	{
+		$this->hydrationIndex = $index;
+	}
+
+	/**
+	 * used only to verify that the hydration index was set and if so, what it's value is.
+	 *
+	 * getHydrationIndex
+	 * @return int|null
+	 */
+	public function getHydrationIndex() : ? int
+	{
+		return $this->hydrationIndex ?? null;
+	}
 
     /**
      * @function dehydrate
-     * @return array
+     * @return array<mixed>
      */
     public function dehydrate(): array
     {
-        return [
+        $array = [
             'nodeid' => $this->getNodeId(),
             'parentid' => $this->getParentId(),
             'treeid' => $this->getTreeId(),
-            'value' => $this->getValue(),
-            'index' => $this->getHydrationIndex()
+            'index' => $this->getIndex(),
+	        'value' => $this->getValue(),
         ];
+        return $array;
     }
 
     /**
      * @function hydrate
-     * @param array $row
+     * @param array<mixed> $row
      * @throws \pvc\struct\tree\err\InvalidParentNodeException
-     * @throws err\InvalidNodeIdException
-     * @throws err\InvalidNodeValueException
+     * @throws \pvc\struct\tree\err\InvalidNodeIdException
+     * @throws \pvc\struct\tree\err\InvalidNodeValueException
      */
     public function hydrate(array $row): void
     {
-        // nodeid set in constructor
-        // $this->setNodeId($row['nodeid']);
+        /** nodeid set in constructor */
         $this->setParentId($row['parentid']);
         $this->setTreeId($row['treeid']);
         $this->setValue($row['value']);
@@ -117,102 +164,137 @@ class TreenodeOrdered implements TreenodeOrderedInterface
     }
 
     /**
-     * this getter is only used after the tree has been hydrated
-     * @function getIndex
-     * @return int
+     * @function setReferences
+     * @param TreeOrderedInterface<NodeValueType> $tree
+     * @throws NodeNotInTreeException
      */
-    public function getIndex(): int
+    public function setReferences(TreeOrderedInterface $tree): void
     {
-        if (!isset($this->tree)) {
-            throw new NodeNotInTreeException($this->getNodeId());
+	    /**
+	     * if the node is not in the tree already, then throw an exception. See the class documentation at the top of
+	     * this file for more details on why
+	     */
+        if (is_null($tree->getNode($this->nodeid))) {
+            throw _ExceptionFactory::createException(NodeNotInTreeException::class, [$tree->getTreeId(),
+                $this->getNodeId()]);
         }
-        if (is_null($siblings = $this->getSiblings())) {
-            return 0;
-        }
-        /* phpstan does not see that $siblings cannot be null at this point */
-        /* @phpstan-ignore-next-line */
-        foreach ($siblings as $index => $node) {
-            if ($this === $node) {
-                $result = $index;
+        $this->tree = $tree;
+
+        /**
+         * the root is the only node in the tree that does not have a parentid.  Strict data type checking is
+         * making some of this painful. Phpstan cannot know that if this node is not the root then getParentId
+         * cannot return null and then $parent cannot be null......
+         */
+	    if (!$this->isRoot()) {
+			/** make sure $parentId is not null */
+		    $parentId = $this->getParentId() ?? -1;
+            $this->parent = $tree->getNode($parentId);
+			/** make sure parent is not null */
+            if ($this->parent) {
+				/** even clumsier...... */
+				/** @var NodeValueType $myself */
+				$myself = $this;
+				$this->parent->getChildren()->push($myself);
             }
         }
-        // phpstan complains that result might not be set so we need a default (bogus) value
-        return $result ?? -1;
     }
 
     /**
-     * this setter is only used after the tree has been hydrated when you want to change the index
-     * of an existing element.
+     * returns the node's position relative to its siblings, 0 if it has no siblings and null if it is not in the tree.
+     *
+     * @function getIndex
+     * @return int | null
+     */
+    public function getIndex(): ? int
+    {
+		/** if the tree object is not set, return null */
+	    if (is_null($this->getTree())) {
+			return null;
+	    }
+
+		$result = 0;
+
+		/** if the node is the root then it cannot have siblings and its index is 0 */
+		if (is_null($this->getParent())) {
+			return $result;
+		}
+
+		/** iterate through the list to find the node - the key is the index */
+	    /** @var TreenodeOrderedInterface<NodeValueType>[] $siblings */
+	    $siblings = $this->getSiblings();
+		foreach ($siblings as $index => $node) {
+			if ($this === $node) {
+				$result = $index;
+			}
+		}
+		return $result;
+    }
+
+    /**
+     * changes this node's position in the child list of the parent.
+     *
+     * This method throws an exception if the node is not part of the tree yet.
      * @function setIndex
      * @param int $n
      * @throws NodeNotInTreeException
      */
     public function setIndex(int $n): void
     {
-        if (!isset($this->tree)) {
-            throw new NodeNotInTreeException($this->getNodeId());
-        }
-        if (is_null($siblings = $this->getSiblings())) {
-            // cannot change index
-            return;
-        }
-        /* php cannot see that $siublings cannot be null at this point */
-        /** @phpstan-ignore-next-line */
-        $siblings->changeIndex($this->getIndex(), $n);
+			if (!isset($this->tree)) {
+				throw _ExceptionFactory::createException(NodeNotInTreeException::class, [$this->getTreeId(),
+					$this->getNodeId()]);
+			}
+			if (is_null($siblings = $this->getSiblings())) {
+				/** cannot change index */
+				return;
+			}
+			/**  phpstan wants getIndex to return type int, not int|null */
+			$siblings->changeIndex($this->getIndex() ?? 0, $n);
     }
 
-    /**
-     * @function setReferences
-     * @param TreeOrderedInterface $tree
-     * @throws NodeNotInTreeException
-     */
-    public function setReferences(TreeOrderedInterface $tree): void
-    {
-        if (!$tree->getNode($this->nodeid)) {
-            throw new NodeNotInTreeException($this->nodeid);
-        }
-        $this->tree = $tree;
-        if (!is_null($this->getParentId())) {
-            $parent = $tree->getNode($this->getParentId());
-            /* phpstan does not see that parent cannot be null at this point */
-            /* @phpstan-ignore-next-line */
-            $parent->getChildren()->push($this);
-            $this->parent = $parent;
-        }
-    }
 
     /**
      * @function unsetReferences
+     *
+     * This method finishes removing a node from the tree and is called from the tree::deleteNode method.  It is
+     * here as extra insurance that a node is not used after having been deleted from the tree's list of nodes.
+     *
+     * The deleteNode method accepts a parameter called deleteBranch which controls whether it is OK to delete an
+     * entire branch of the tree.  In that case, the code does a depth-first traversal so that children are removed
+     * before parents.  Because this class is designed to work only on a single node, this routine throws an
+     * exception if this node has children when you try to unset its references.
+     *
      */
     public function unsetReferences(): void
     {
-        if (isset($this->parent)) {
-            /* phpstan does not see that parent cannot be null at this point */
-            /* @phpstan-ignore-next-line */
-            $this->getParent()->getChildren()->delete($this->getIndex());
+        if (0 < count($this->getChildren())) {
+            throw _ExceptionFactory::createException(DeleteInteriorNodeException::class, [$this->nodeid]);
         }
-        unset($this->parent);
-        unset($this->parentid);
-        unset($this->tree);
-        unset($this->treeid);
-        unset($this->value);
-        unset($this->children);
-        // do not unset nodeid - remains immutable
-        // unset($this->nodeid);
-    }
 
-    /**
-     * @function hasReferencesSet
-     * @return bool
-     */
-    public function hasReferencesSet(): bool
-    {
-        return isset($this->tree);
+		/** getIndex returns null if this node is not in a tree */
+        if (!is_null($index = $this->getIndex())) {
+            /**
+             * be careful as you read the next block of code.  It is natural to want to say that the delete method
+             * should take the nodeid of the thing being deleted.  But children is an ordered list and knows nothing
+             * about nodeids. All it knows is the indices of its elements.
+             *
+             * also make sure getParent does not return null
+             */
+	        if (!is_null($parent = $this->getParent())) {
+		        $parent->getChildren()->delete($index);
+	        }
+
+        }
+
+        unset($this->parent);
+		unset($this->parentid);
+        unset($this->tree);
+		unset($this->treeid);
     }
 
     /**
      * @function getTree
-     * @return TreeOrderedInterface|null
+     * @return TreeOrderedInterface<NodeValueType>|null
      */
     public function getTree(): ?TreeOrderedInterface
     {
@@ -221,7 +303,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * @function getParent
-     * @return TreenodeOrderedInterface|null
+     * @return TreenodeOrderedInterface<NodeValueType>|null
      */
     public function getParent(): ?TreenodeOrderedInterface
     {
@@ -231,7 +313,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
     /**
      * @function getChild
      * @param int $nodeid
-     * @return TreenodeOrderedInterface|null
+     * @return TreenodeOrderedInterface<NodeValueType>|null
      */
     public function getChild(int $nodeid): ?TreenodeOrderedInterface
     {
@@ -245,21 +327,21 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * @function getChildren
-     * @return ListOrderedInterface
+     * @return ListOrderedInterface<NodeValueType>
      */
     public function getChildren(): ListOrderedInterface
     {
         return $this->children;
     }
 
-    public function getChildrenArray() : array
+    public function getChildrenArray(): array
     {
         return $this->children->getElements();
     }
 
     /**
      * @function getSiblings
-     * @return ListOrderedInterface|null
+     * @return ListOrderedInterface<TreenodeOrderedInterface<NodeValueType>>|null
      */
     public function getSiblings(): ?ListOrderedInterface
     {
@@ -299,7 +381,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * @function isDescendantOf
-     * @param TreenodeOrderedInterface $node
+     * @param TreenodeOrderedInterface<NodeValueType> $node
      * @return bool
      */
     public function isDescendantOf(TreenodeOrderedInterface $node): bool
@@ -316,7 +398,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * @function isAncestorOf
-     * @param TreenodeOrderedInterface $node
+     * @param TreenodeOrderedInterface<NodeValueType> $node
      * @return bool
      */
     public function isAncestorOf(TreenodeOrderedInterface $node): bool

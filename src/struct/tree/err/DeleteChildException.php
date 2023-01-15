@@ -7,10 +7,9 @@ declare(strict_types = 1);
 
 namespace pvc\struct\tree\err;
 
-
 use pvc\err\stock\LogicException;
 
 /**
- * Class NodeNotInTreeException
+ * Class DeleteChildException
  */
-class NodeNotInTreeException extends LogicException {}
+class DeleteChildException extends LogicException {}

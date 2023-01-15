@@ -10,7 +10,7 @@
 	],
 	"license": "MIT",
 	"config": {
-		"php": "7.4.3"
+		"php": "8.1"
 	},
 	"autoload": {
 		"psr-4": {
@@ -18,19 +18,16 @@
 			"tests\\": "tests/"
 		}
 	},
+	"minimum-stability": "dev",
 	"require": {
-		"pvc/msg": "@dev",
-		"pvc/err": "@dev",
-		"pvc/interfaces": "@dev",
-		"pvc/intl": "@dev",
-		"pvc/frmtr": "@dev"
+		"pvc/err": "*",
+		"pvc/interfaces": "*",
+		"nesbot/carbon": "*"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^8",
-		"mockery/mockery": "dev-master",
-		"pvc/testing-traits": "@dev",
-		"squizlabs/php_codesniffer": "^3.5",
-		"friendsofphp/php-cs-fixer": "3.0.x-dev",
-		"phpstan/phpstan": "^0.12.25"
+		"phpunit/phpunit": "^9",
+		"squizlabs/php_codesniffer": "*",
+		"friendsofphp/php-cs-fixer": "*",
+		"phpstan/phpstan": "*"
 	}
 }
