@@ -9,17 +9,13 @@ declare(strict_types=1);
 namespace tests\struct\lists\err;
 
 use pvc\struct\lists\err\_ExceptionFactory;
-use pvc\struct\lists\err\DuplicateKeyException;
 use pvc\struct\lists\err\InvalidKeyException;
-use pvc\struct\lists\err\NonExistentKeyException;
 use PHPUnit\Framework\TestCase;
 
 class _ExceptionFactoryTest extends TestCase
 {
     protected array $params = [
-	    DuplicateKeyException::class => [3],
 	    InvalidKeyException::class => ['foo'],
-	    NonExistentKeyException::class => [5],
     ];
 
     /**
