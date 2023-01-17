@@ -7,71 +7,40 @@ declare(strict_types=1);
 
 namespace tests\struct\tree\tree;
 
+
 use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\tree\Tree;
 
 /**
- * unit tests for unordered trees using mock nodes.
- *
- * The methods tested here do not include those that are already tested in TreeTraitTest (e.g. the public methods
- * common to both ordered and unordered trees).
- *
  * Class TreeTest
  */
-class TreeTest extends AbstractTreeTest
+class TreeTest extends TreeAbstractTest
 {
+
     public function setUp(): void
     {
 		parent::setUp();
-        $this->tree = new Tree($this->fixture->getTreeId());
+        $this->tree = new Tree($this->treeId);
     }
 
 	/**
-	 * set the integer ids in the node structure.  Ordered nodes require the additional step of stubbing out the
-	 * methods to access the object references (handled in TreeOrderedTest).
-	 *
-	 * @function makeNode
-	 * @param array<string, integer> $row
-	 * @return mixed
+	 * makeNodeStub
+	 * @return mixed|\PHPUnit\Framework\MockObject\Stub|Treenode|Treenode&\PHPUnit\Framework\MockObject\Stub
 	 */
-	public function makeNode(array $row, bool $isRoot = false, bool $equalsMethod = false)
+	public function makeNodeStub()
 	{
-		$node = $this->makeNodeSkeleton($row);
-		$node->method('isRoot')->willReturn($isRoot);
-		$node->method('equals')->willReturn($equalsMethod);
-
-		return $node;
-	}
-
-	public function makeNodeSkeleton(array $row)
-	{
-		$node = $this->createStub(Treenode::class);
-		$node->method('getNodeId')->willReturn($row['nodeid']);
-		$node->method('getParentId')->willReturn($row['parentid']);
-		$node->method('getTreeId')->willReturn($row['treeid']);
-		return $node;
-	}
-
-	/**
-	 * testConstruct
-	 * @covers \pvc\struct\tree\tree\Tree::__construct
-	 */
-	public function testConstruct() : void
-	{
-		$treeid = 3;
-		$tree = new Tree($treeid);
-		self::assertEquals($treeid, $tree->getTreeId());
+		return $this->createStub(Treenode::class);
 	}
 
 	/**
 	 * testDeleteNodeRecurse
-	 * @covers \pvc\struct\tree\tree\Tree::deleteNodeRecurse
-	 * @covers \pvc\struct\tree\tree\Tree::deleteNode
+	 * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNodeRecurse
+	 * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNode
 	 */
 	public function testDeleteNodeRecurse() : void
 	{
-		$node_1 = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData(), true, true);
-		$node_2 = $this->makeNode($this->fixture->makeSingleNodeRowWithRootAsParent(), false, true);
+		$node_1 = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData());
+		$node_2 = $this->makeNode($this->fixture->makeSingleNodeRowWithRootAsParent());
 
 		$this->tree->addNode($node_1);
 		$this->tree->addNode($node_2);
@@ -87,14 +56,11 @@ class TreeTest extends AbstractTreeTest
 	/**
 	 * testGetChildrenOf
 	 * @covers \pvc\struct\tree\tree\Tree::getChildrenOf
+	 * @covers \pvc\struct\tree\tree\TreeOrdered::getChildrenOf
 	 */
 	public function testGetChildrenOf() : void
 	{
-		/**
-		 * need to change the equals expectations on each node so that when the tree calls getChildren with leaf as
-		 * its argument, the tree knows that leaf is in the tree.
-		 */
-		$nodeArray = $this->makeFullTreeNodeArray(true);
+		$nodeArray = $this->makeNodeArray($this->fixture->makeArrayOfNodeIdsForTree());
 		$this->tree->setNodes($nodeArray);
 
 		$parentNodeId = 1;
@@ -110,15 +76,13 @@ class TreeTest extends AbstractTreeTest
 	/**
 	 * testGetParentOf
 	 * @covers \pvc\struct\tree\tree\Tree::getParentOf
+	 * @covers \pvc\struct\tree\tree\TreeOrdered::getParentOf
 	 */
 	public function testGetParentOf() : void
 	{
-		/**
-		 * need to change the equals expectations on each node so that when the tree calls getParentOf with child as
-		 * its argument, the tree knows that child is in the tree.
-		 */
-		$nodeArray = $this->makeFullTreeNodeArray(true);
+		$nodeArray = $this->makeNodeArray($this->fixture->makeArrayOfNodeIdsForTree());
 		$this->tree->setNodes($nodeArray);
+
 		/** node with id = 4 is a child of node with id = 1. */
 		$parentId = 1;
 		$parentNode = $this->tree->getNode($parentId);

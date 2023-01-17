@@ -21,7 +21,6 @@
 	"minimum-stability": "dev",
 	"require": {
 		"pvc/err": "*",
-		"pvc/interfaces": "*",
 		"nesbot/carbon": "*"
 	},
 	"require-dev": {

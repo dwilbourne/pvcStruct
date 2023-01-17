@@ -9,12 +9,12 @@ declare(strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\lists\ordered\ListOrderedInterface;
-use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
-use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\struct\tree\err\_ExceptionFactory;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\SetChildrenException;
+use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 
 /**
  * Class TreenodeOrdered
@@ -47,16 +47,11 @@ use pvc\struct\tree\err\SetChildrenException;
  * is gotten from the parent's list of children.
  *
  * @template NodeValueType
+ * @extends TreenodeAbstract<TreenodeOrderedInterface, NodeValueType>
  * @implements TreenodeOrderedInterface<NodeValueType>
- *
  */
-class TreenodeOrdered implements TreenodeOrderedInterface
+class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterface
 {
-	/**
-	 * @phpstan-use TreenodeTrait<NodeValueType>
-	 */
-    use TreenodeTrait;
-
     /**
      * reference to the containing tree
      * @var TreeOrderedInterface<NodeValueType>|null
@@ -71,7 +66,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * list of the children of this node
-     * @var ListOrderedInterface<NodeValueType>
+     * @var ListOrderedInterface<TreenodeOrderedInterface<NodeValueType>>
      */
     protected ListOrderedInterface $children;
 
@@ -82,16 +77,6 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 	 */
 	protected int $hydrationIndex;
 
-    /**
-     * TreenodeOrdered constructor.
-     * @param int $nodeid
-     * @throws \pvc\struct\tree\err\InvalidNodeIdException
-     */
-    public function __construct(int $nodeid)
-    {
-        $this->setNodeId($nodeid);
-    }
-
 	/**
 	 * use this method to initialize the children property with an empty list.
 	 *
@@ -99,7 +84,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 	 * most usual way to create an ordered node is via a factory / dependency injection.
 	 *
 	 * setChildren
-	 * @param ListOrderedInterface<NodeValueType> $list
+	 * @param ListOrderedInterface<TreenodeOrderedInterface<NodeValueType>> $list
 	 */
 	public function setChildList(ListOrderedInterface $list) : void
 	{
@@ -137,13 +122,8 @@ class TreenodeOrdered implements TreenodeOrderedInterface
      */
     public function dehydrate(): array
     {
-        $array = [
-            'nodeid' => $this->getNodeId(),
-            'parentid' => $this->getParentId(),
-            'treeid' => $this->getTreeId(),
-            'index' => $this->getIndex(),
-	        'value' => $this->getValue(),
-        ];
+		$array = parent::dehydrate();
+        $array['index'] = $this->getIndex();
         return $array;
     }
 
@@ -156,11 +136,10 @@ class TreenodeOrdered implements TreenodeOrderedInterface
      */
     public function hydrate(array $row): void
     {
-        /** nodeid set in constructor */
-        $this->setParentId($row['parentid']);
-        $this->setTreeId($row['treeid']);
-        $this->setValue($row['value']);
-        $this->setHydrationIndex($row['index']);
+		parent::hydrate($row);
+		/** @var int $index */
+		$index = $row['index'];
+        $this->setHydrationIndex($index);
     }
 
     /**
@@ -174,28 +153,17 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 	     * if the node is not in the tree already, then throw an exception. See the class documentation at the top of
 	     * this file for more details on why
 	     */
-        if (is_null($tree->getNode($this->nodeid))) {
+        if (is_null($tree->getNode($this->getNodeId()))) {
             throw _ExceptionFactory::createException(NodeNotInTreeException::class, [$tree->getTreeId(),
                 $this->getNodeId()]);
         }
         $this->tree = $tree;
 
-        /**
-         * the root is the only node in the tree that does not have a parentid.  Strict data type checking is
-         * making some of this painful. Phpstan cannot know that if this node is not the root then getParentId
-         * cannot return null and then $parent cannot be null......
-         */
-	    if (!$this->isRoot()) {
-			/** make sure $parentId is not null */
-		    $parentId = $this->getParentId() ?? -1;
-            $this->parent = $tree->getNode($parentId);
-			/** make sure parent is not null */
-            if ($this->parent) {
-				/** even clumsier...... */
-				/** @var NodeValueType $myself */
-				$myself = $this;
-				$this->parent->getChildren()->push($myself);
-            }
+        if (!is_null($parentId = $this->getParentId())) {
+			/** @var TreenodeOrderedInterface<NodeValueType> $parent */
+	        $parent = $this->tree->getNode($parentId);
+			$this->parent = $parent;
+			$parent->getChildren()->push($this);
         }
     }
 
@@ -327,7 +295,7 @@ class TreenodeOrdered implements TreenodeOrderedInterface
 
     /**
      * @function getChildren
-     * @return ListOrderedInterface<NodeValueType>
+     * @return ListOrderedInterface<TreenodeOrderedInterface<NodeValueType>>
      */
     public function getChildren(): ListOrderedInterface
     {

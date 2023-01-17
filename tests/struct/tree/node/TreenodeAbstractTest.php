@@ -17,145 +17,151 @@ use pvc\struct\tree\err\InvalidParentNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeIdAndParentIdCannotBeTheSameException;
 use pvc\struct\tree\node\Treenode;
-use pvc\struct\tree\node\TreenodeTrait;
+use pvc\struct\tree\node\TreenodeAbstract;
 
-class TreenodeTraitTest extends TestCase
+class TreenodeAbstractTest extends TestCase
 {
-    /**
-     * @var TreenodeTrait&MockObject
-     */
-    protected $mockObjectWithTrait;
+
+	protected int $nodeId;
+    protected $node;
 
     public function setUp(): void
     {
-        $this->mockObjectWithTrait = $this->getMockForTrait(TreenodeTrait::class);
+		$this->nodeId = 0;
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+	                        ->setConstructorArgs([$this->nodeId])
+	                        ->getMockForAbstractClass();
     }
 
-    /**
+	/**
+	 * testConstruct
+	 * @throws InvalidNodeIdException
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
+	 */
+	public function testConstruct() : void
+	{
+		self::assertInstanceOf(MockObject::class, $this->node);
+	}
+
+	/**
      * testSetGetNodeid
      * @throws InvalidNodeIdException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setNodeId
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getNodeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setNodeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getNodeId
      */
     public function testSetGetNodeid(): void
     {
-	    /**
-	     * confirm getNodeId returns null before initialization
-	     */
-		self::assertNull($this->mockObjectWithTrait->getNodeId());
-        $nodeid = 4;
-        $this->mockObjectWithTrait->setNodeId($nodeid);
-        self::assertEquals($nodeid, $this->mockObjectWithTrait->getNodeId());
+        self::assertEquals($this->nodeId, $this->node->getNodeId());
     }
 
     /**
      * testSetBadNodeidThrowsException
      * @throws InvalidNodeIdException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setNodeId
-     * @covers \pvc\struct\tree\node\TreenodeTrait::validateNodeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setNodeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::validateNodeId
      */
     public function testSetBadNodeidThrowsException(): void
     {
         $this->expectException(InvalidNodeIdException::class);
-		$this->mockObjectWithTrait->setNodeId(-2);
+		$this->node->setNodeId(-2);
     }
 
 	/**
 	 * testSetNodeIdThrowsExceptionWhenParentWithSameIdIsAlreadySet
 	 * @throws InvalidNodeIdException
 	 * @throws InvalidParentNodeException
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::setNodeId
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::setNodeId
 	 */
 	public function testSetNodeIdThrowsExceptionWhenParentWithSameIdIsAlreadySet() : void
 	{
-		$this->mockObjectWithTrait->setParentId(3);
+		$this->node->setParentId(3);
 		$this->expectException(NodeIdAndParentIdCannotBeTheSameException::class);
-		$this->mockObjectWithTrait->setNodeId(3);
+		$this->node->setNodeId(3);
 	}
 
     /**
      * testSetGetParentId
      * @throws InvalidNodeIdException
      * @throws InvalidParentNodeException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getParentId
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setParentId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getParentId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setParentId
      */
     public function testSetGetParentId(): void
     {
 		$nodeId = 0;
         $parentId = 1;
-		$this->mockObjectWithTrait->setNodeId($nodeId);
+		$this->node->setNodeId($nodeId);
 
-        $this->mockObjectWithTrait->setParentId($parentId);
-        self::assertEquals($parentId, $this->mockObjectWithTrait->getParentId());
+        $this->node->setParentId($parentId);
+        self::assertEquals($parentId, $this->node->getParentId());
 
-        $this->mockObjectWithTrait->setParentId(null);
-	    self::assertNull($this->mockObjectWithTrait->getParentId());
+        $this->node->setParentId(null);
+	    self::assertNull($this->node->getParentId());
     }
 
     /**
      * testSetInvalidParentId
      * @throws InvalidNodeIdException
      * @throws InvalidParentNodeException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setParentId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setParentId
      */
     public function testSetInvalidParentId(): void
     {
 	    $this->expectException(InvalidNodeIdException::class);
-		$this->mockObjectWithTrait->setParentId(-3);
+		$this->node->setParentId(-3);
     }
 
     /**
      * testSetParentIdExceptionWhereParentIdHasSameIdAsChild
      * @throws InvalidNodeIdException
      * @throws InvalidParentNodeException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setParentId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setParentId
      */
     public function testSetParentIdExceptionWhereParentIdHasSameIdAsChild(): void
     {
-        $this->mockObjectWithTrait->setNodeId(1);
+        $this->node->setNodeId(1);
         $this->expectException(NodeIdAndParentIdCannotBeTheSameException::class);
-        $this->mockObjectWithTrait->setParentId(1);
+        $this->node->setParentId(1);
     }
 
 	/**
 	 * testIsRootReturnsFalseIfParentIdIsNotSet
 	 * @throws InvalidNodeIdException
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::isRoot
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::isRoot
 	 */
 
 	public function testIsRootReturnsFalseIfParentIdIsNotSet() : void
 	{
-		$this->mockObjectWithTrait->setNodeId(0);
-		self::assertFalse($this->mockObjectWithTrait->isRoot());
+		$this->node->setNodeId(0);
+		self::assertFalse($this->node->isRoot());
 	}
 
 	/**
 	 * testIsRootReturnsFalseIfParentIdIsNotNull
 	 * @throws InvalidNodeIdException
 	 * @throws InvalidParentNodeException
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::isRoot
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::isRoot
 	 */
 	public function testIsRootReturnsFalseIfParentIdIsNotNull() : void
 	{
 		$nodeId = 0;
 		$parentId = 1;
-		$this->mockObjectWithTrait->setNodeId($nodeId);
-		$this->mockObjectWithTrait->setParentId($parentId);
-		self::assertFalse($this->mockObjectWithTrait->isRoot());
+		$this->node->setNodeId($nodeId);
+		$this->node->setParentId($parentId);
+		self::assertFalse($this->node->isRoot());
 	}
 
 	/**
 	 * testIsRootReturnsTrueOnRootFixture
 	 * @throws InvalidNodeIdException
 	 * @throws InvalidParentNodeException
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::isRoot
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::isRoot
 	 */
 	public function testIsRootReturnsTrueOnRootFixture() : void
 	{
-		$this->mockObjectWithTrait->setNodeId(0);
-		$this->mockObjectWithTrait->setParentId(null);
-		 self::assertTrue($this->mockObjectWithTrait->isRoot());
+		$this->node->setNodeId(0);
+		$this->node->setParentId(null);
+		 self::assertTrue($this->node->isRoot());
 		//$node = new Treenode(0);
 		//$node->setParentId(null);
 		//self::assertTrue($node->isRoot());
@@ -164,86 +170,86 @@ class TreenodeTraitTest extends TestCase
 	/**
 	 * testSetTreeidThrowsExceptionOnInvalidTreeid
 	 * @throws \Exception
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::setTreeId
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::setTreeId
 	 */
 	public function testSetTreeidThrowsExceptionOnInvalidTreeid() : void
 	{
 		$treeid = -1;
 		$this->expectException(InvalidTreeidException::class);
-		$this->mockObjectWithTrait->setTreeId($treeid);
+		$this->node->setTreeId($treeid);
 	}
     /**
      * testSetGetTreeid
      * @throws InvalidNodeIdException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setTreeId
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getTreeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setTreeId
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getTreeId
      */
     public function testSetGetTreeid(): void
     {
 		$treeid = 1;
-        $this->mockObjectWithTrait->setTreeId($treeid);
-        self::assertEquals($treeid, $this->mockObjectWithTrait->getTreeId());
+        $this->node->setTreeId($treeid);
+        self::assertEquals($treeid, $this->node->getTreeId());
     }
 
     /**
      * testSetGetValueValidator
      * @throws InvalidNodeIdException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setValueValidator
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getValueValidator
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValueValidator
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getValueValidator
      */
     public function testSetGetValueValidator(): void
     {
         $validator = $this->createStub(ValidatorInterface::class);
-        $this->mockObjectWithTrait->setValueValidator($validator);
-        self::assertEquals($validator, $this->mockObjectWithTrait->getValueValidator());
+        $this->node->setValueValidator($validator);
+        self::assertEquals($validator, $this->node->getValueValidator());
     }
 
     /**
      * testSetValueWithNoValidatorSet
      * @throws InvalidNodeIdException
      * @throws InvalidNodeValueException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setValue
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getValue
      */
     public function testSetValueWithNoValidatorSet(): void
     {
         $anyValue = 1234567;
         // test with no validator set
-        $this->mockObjectWithTrait->setValue($anyValue);
-        static::assertEquals($anyValue, $this->mockObjectWithTrait->getValue());
+        $this->node->setValue($anyValue);
+        static::assertEquals($anyValue, $this->node->getValue());
     }
 
     /**
      * testSetGetValueThatPassesValidation
      * @throws InvalidNodeIdException
      * @throws InvalidNodeValueException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setValue
-     * @covers \pvc\struct\tree\node\TreenodeTrait::getValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getValue
      */
     public function testSetGetValueThatPassesValidation(): void
     {
         $valueValidator = $this->createMock(ValidatorInterface::class);
         $goodString = 'good string';
         $valueValidator->method('validate')->with($goodString)->willReturn(true);
-        $this->mockObjectWithTrait->setValueValidator($valueValidator);
-        $this->mockObjectWithTrait->setValue($goodString);
-        static::assertEquals($goodString, $this->mockObjectWithTrait->getValue());
+        $this->node->setValueValidator($valueValidator);
+        $this->node->setValue($goodString);
+        static::assertEquals($goodString, $this->node->getValue());
     }
 
     /**
      * testSetValueThatFailsValidation
      * @throws InvalidNodeIdException
      * @throws InvalidNodeValueException
-     * @covers \pvc\struct\tree\node\TreenodeTrait::setValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValue
      */
     public function testSetValueThatFailsValidation(): void
     {
         $valueValidator = $this->createMock(ValidatorInterface::class);
         $badString = 'bad string';
         $valueValidator->method('validate')->with($badString)->willReturn(false);
-		$this->mockObjectWithTrait->setValueValidator($valueValidator);
+		$this->node->setValueValidator($valueValidator);
         $this->expectException(InvalidNodeValueException::class);
-        $this->mockObjectWithTrait->setValue($badString);
+        $this->node->setValue($badString);
     }
 
 	/**
@@ -251,8 +257,8 @@ class TreenodeTraitTest extends TestCase
 	 * @throws InvalidNodeIdException
 	 * @throws InvalidNodeValueException
 	 * @throws InvalidParentNodeException
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::hydrate
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::dehydrate
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::hydrate
+	 * @covers \pvc\struct\tree\node\TreenodeAbstract::dehydrate
 	 */
 	public function testHydrateDehydrate() : void
 	{
@@ -262,14 +268,14 @@ class TreenodeTraitTest extends TestCase
 		$value = 'some string';
 		$testArray = ['nodeid' => $nodeid, 'parentid' => $parentid, 'treeid' => $treeid, 'value' => $value];
 
-		$this->mockObjectWithTrait->hydrate($testArray);
+		$this->node->hydrate($testArray);
 
-		self::assertEquals($nodeid, $this->mockObjectWithTrait->getNodeId());
-		self::assertEquals($parentid, $this->mockObjectWithTrait->getParentId());
-		self::assertEquals($treeid, $this->mockObjectWithTrait->getTreeId());
-		self::assertEquals($value, $this->mockObjectWithTrait->getValue());
+		self::assertEquals($nodeid, $this->node->getNodeId());
+		self::assertEquals($parentid, $this->node->getParentId());
+		self::assertEquals($treeid, $this->node->getTreeId());
+		self::assertEquals($value, $this->node->getValue());
 
-		$resultArray = $this->mockObjectWithTrait->dehydrate();
+		$resultArray = $this->node->dehydrate();
 		self::assertEqualsCanonicalizing($testArray, $resultArray);
 	}
 
@@ -285,33 +291,4 @@ class TreenodeTraitTest extends TestCase
 		$node->setValue($value);
 		return $node;
 	}
-
-	/**
-	 * testEqualsStrictIsTrue
-	 * @covers \pvc\struct\tree\node\TreenodeTrait::equals
-	 */
-	public function testEquals() : void
-	{
-		$nodeId = 1;
-		$parentId = 2;
-		$treeId = 3;
-		$valueValidator = $this->createStub(ValidatorInterface::class);
-		$valueValidator->method('validate')->willReturn(true);
-		$value = 4;
-
-		$strict = true;
-
-		$node1 = $this->makeNode($nodeId, $parentId, $treeId, $valueValidator, $value);
-		$node2 = $this->makeNode($nodeId, $parentId, $treeId, $valueValidator, $value);
-
-		self::assertTrue($node1->equals($node1, $strict));
-		self::assertFalse($node1->equals($node2, $strict));
-
-		$strict = false;
-
-		self::assertTrue($node1->equals($node1, $strict));
-		self::assertTrue($node1->equals($node2, $strict));
-	}
-
-
 }

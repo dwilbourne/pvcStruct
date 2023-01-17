@@ -10,13 +10,13 @@ namespace tests\struct\tree\node;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\lists\ordered\ListOrderedInterface;
-use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
-use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\SetChildrenException;
+use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\struct\tree\node\TreenodeOrdered;
 use stdClass;
 
@@ -186,10 +186,10 @@ class TreenodeOrderedTest extends TestCase
     }
 
     /**
-     * testSetReferencesWorksWhenParentIdIsNotNull
+     * testSetReferencesWorksWhenParentIsNotNull
      * @covers \pvc\struct\tree\node\TreenodeOrdered::setReferences
      */
-    public function testSetReferencesWorksWhenParentIdIsNotNull(): void
+    public function testSetReferencesWorksWhenParentIsNotNull(): void
     {
         $this->tree->expects($this->exactly(2))
                 ->method('getNode')

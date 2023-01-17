@@ -14,50 +14,18 @@ use pvc\struct\tree\tree\TreeOrdered;
 /**
  * Class TreeOrderedTest
  */
-class TreeOrderedTest extends AbstractTreeTest
+class TreeOrderedTest extends TreeAbstractTest
 {
-	/**
-	 * setUp
-	 * @throws \Exception
-	 */
     public function setUp(): void
     {
 	    parent::setUp();
-	    $this->tree = new TreeOrdered($this->fixture->getTreeId());
+	    $this->tree = new TreeOrdered($this->treeId);
     }
 
-	/**
-	 * testConstruct
-	 * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
-	 */
-	public function testConstruct() : void
-	{
-		$treeid = 3;
-		$tree = new TreeOrdered($treeid);
-		self::assertEquals($treeid, $tree->getTreeId());
-	}
 
-	/**
-	 * makeNode
-	 * @param array $row
-	 * @return mixed|\PHPUnit\Framework\MockObject\Stub|TreenodeOrdered|TreenodeOrdered&\PHPUnit\Framework\MockObject\Stub
-	 */
-	public function makeNode(array $row, bool $isRoot = false, bool $equalsMethod = false)
+	public function makeNodeStub()
 	{
-		$node = $this->makeNodeSkeleton($row);
-		$node->method('isRoot')->willReturn($isRoot);
-		$node->method('equals')->willReturn($equalsMethod);
-		return $node;
-	}
-
-	public function makeNodeSkeleton(array $row)
-	{
-		$node = $this->createStub(TreenodeOrdered::class);
-		$node->method('getNodeId')->willReturn($row['nodeid']);
-		$node->method('getParentId')->willReturn($row['parentid']);
-		$node->method('getTreeId')->willReturn($row['treeid']);
-		$node->method('getIndex')->willReturn($row['index']);
-		return $node;
+		return $this->createStub(TreenodeOrdered::class);
 	}
 
 	/**
@@ -94,44 +62,20 @@ class TreeOrderedTest extends AbstractTreeTest
 	}
 
 	/**
-	 * testDeleteNodeRecurse
-	 * @covers \pvc\struct\tree\tree\TreeOrdered::deleteNodeRecurse
+	 * testDeleteNodeCallsForRemovalOfNodeFromParentListOfChildren
 	 * @covers \pvc\struct\tree\tree\TreeOrdered::deleteNode
 	 */
-	public function testDeleteNodeRecurse() : void
+	public function testDeleteNodeCallsForRemovalOfNodeFromParentListOfChildren() : void
 	{
-		$node_1 = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData(), true, true);
-		$node_2 = $this->makeNode($this->fixture->makeSingleNodeRowWithRootAsParent(), false, true);
+		$node_1 = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData());
+		$node_2 = $this->makeNode($this->fixture->makeSingleNodeRowWithRootAsParent());
 
 		$this->tree->addNode($node_1);
 		$this->tree->addNode($node_2);
 
 		$node_1->method('getChildrenArray')->willReturn([$node_2]);
-		$node_2->method('getChildrenArray')->willReturn([]);
-
-		$deleteBranch = true;
-		$this->tree->deleteNode($node_1, $deleteBranch);
-		/**
-		 * demonstrate $node_1 and its child are both gone
-		 */
-		self::assertTrue($this->tree->isEmpty());
-	}
-
-	/**
-	 * testDeleteNodeCleanupCallsForRemovalOfNodeFromParentListOfChildren
-	 * @covers \pvc\struct\tree\tree\TreeOrdered::deleteNode
-	 */
-	public function testDeleteNodeCleanupCallsForRemovalOfNodeFromParentListOfChildren() : void
-	{
-		$node_1 = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData(), true, true);
-		$node_2 = $this->makeNode($this->fixture->makeSingleNodeRowWithRootAsParent(), false, true);
-
-		$this->tree->addNode($node_1);
-		$this->tree->addNode($node_2);
-
-		$node_1->method('getChildrenArray')->willReturn([$node_2]);
-		$node_2->method('getChildrenArray')->willReturn([]);
 		$node_2->method('getParent')->willReturn($node_1);
+		$node_2->method('getIndex')->willReturn(0);
 
 		$mockChildList = $this->createMock(ListOrderedInterface::class);
 		$mockChildList->expects($this->once())->method('delete')->with($node_2->getIndex());
@@ -151,7 +95,7 @@ class TreeOrderedTest extends AbstractTreeTest
 		 * into all thirteen nodes, the list should call its add method 12 times.
 		 */
 
-		$nodeArray = $this->makeFullTreeNodeArray(true);
+		$nodeArray = $this->makeNodeArray($this->fixture->makeArrayOfNodeIdsForTree());
 		$mockList = $this->createMock(ListOrderedInterface::class);
 		foreach($nodeArray as $node) {
 			$node->method('getChildren')->willReturn($mockList);
@@ -181,7 +125,7 @@ class TreeOrderedTest extends AbstractTreeTest
 	public function testGetChildrenOfCallsGetElementsOfChildList() : void
 	{
 
-		$node = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData(), true, true);
+		$node = $this->makeNode($this->fixture->makeRootNodeRowWithGoodData());
 		$this->tree->addNode($node);
 
 		/** does not matter what these child ids are */
@@ -204,7 +148,7 @@ class TreeOrderedTest extends AbstractTreeTest
 		 * need to change the equals expectations on each node so that when the tree calls getParentOf with child as
 		 * its argument, the tree knows that child is in the tree.
 		 */
-		$nodeArray = $this->makeFullTreeNodeArray(true);
+		$nodeArray = $this->makeNodeArray($this->fixture->makeArrayOfNodeIdsForTree());
 		$this->tree->setNodes($nodeArray);
 		/**
 		 * node with id = 4 is a child of node with id = 1.

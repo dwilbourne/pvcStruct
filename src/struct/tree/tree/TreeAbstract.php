@@ -8,8 +8,6 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\tree\node\TreenodeInterface;
-use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\struct\tree\err\_ExceptionFactory;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\AlreadySetRootException;
@@ -26,18 +24,34 @@ use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\RootCountForTreeException;
 use pvc\struct\tree\err\SetNodesException;
 use pvc\struct\tree\err\SetTreeIdException;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 
 /**
- * Trait TreeTrait
- * @template NodeValueType
+ * Trait TreeAbstract
+ * @template NodeType
+ * @implements TreeAbstractInterface<NodeType>
  */
-trait TreeTrait
+abstract class TreeAbstract implements TreeAbstractInterface
 {
-
 	/**
 	 * @var int
 	 */
 	protected int $treeid;
+
+	/**
+	 * @var NodeType|null
+	 */
+	protected $root;
+
+	/**
+	 * @var NodeType[]
+	 */
+	protected array $nodes = [];
+
+	public function __construct(int $treeid)
+	{
+		$this->setTreeId($treeid);
+	}
 
 	/**
 	 * all treeids are integers >= 0
@@ -83,11 +97,173 @@ trait TreeTrait
 	}
 
 	/**
+	 * setRoot sets a reference to the root node of the tree
+	 *
+	 * @function setRoot
+	 * @param NodeType $node
+	 * @throws AlreadySetRootException
+	 */
+	protected function setRoot($node): void
+	{
+		/**
+		 * if the root is already set, throw an exception
+		 */
+		if (isset($this->root)) {
+			throw _ExceptionFactory::createException(AlreadySetRootException::class);
+		}
+
+		$this->root = $node;
+	}
+
+	/**
+	 * @function getRoot
+	 * @return NodeType|null
+	 */
+	public function getRoot()
+	{
+		return $this->root ?? null;
+	}
+
+	/**
+	 * addNodesToNodelistAndSetRoot
+	 * @param NodeType[] $nodeArray
+	 * @param string $classString
+	 * @throws AlreadySetRootException
+	 * @throws CircularGraphException
+	 */
+	protected function addNodesToNodelistAndSetRoot(array $nodeArray, string $classString) : void
+	{
+		/**
+		 * tree must be empty before calling this method.
+		 */
+		if (!$this->isEmpty()) {
+			throw _ExceptionFactory::createException(SetNodesException::class);
+		}
+
+		/**
+		 * if the array is empty, just return because the rest of the method starts testing actual node data
+		 */
+		if (empty($nodeArray)) {
+			return;
+		}
+
+		/**
+		 * make sure each node in the array has TreenodeInterface, belongs in this tree, and has a key that matches
+		 * its nodeid
+		 */
+		foreach ($nodeArray as $key => $node) {
+			if (!$node instanceof $classString) {
+				throw _ExceptionFactory::createException(InvalidNodeException::class);
+			}
+			if ($node->getTreeId() != $this->getTreeId()) {
+				throw _ExceptionFactory::createException(NodeHasInvalidTreeidException::class, [
+					$node->getNodeId(), $node->getTreeId(), $this->getTreeId()
+				]);
+			}
+			if ($key != $node->getNodeId()) {
+				throw _ExceptionFactory::createException(InvalidNodeArrayException::class, [$key, $node->getNodeId()]);
+			}
+		}
+
+		/**
+		 * verify there is one root and that all non-null parent ids are in the array.
+		 */
+		$rootCount = 0;
+		foreach ($nodeArray as $node) {
+			if ($node->isRoot()) {
+				$root = $node;
+				$rootCount++;
+			} else {
+				$parentId = $node->getParentId();
+				if (!isset($nodeArray[$parentId])) {
+					throw _ExceptionFactory::createException(InvalidParentNodeException::class, [$parentId]);
+				}
+			}
+		}
+		if ($rootCount != 1) {
+			throw _ExceptionFactory::createException(RootCountForTreeException::class, [$rootCount]);
+		}
+
+		/**
+		 * insure there are no circular references in the tree and ensure array is keyed properly
+		 */
+		$keyedNodeArray = [];
+		foreach ($nodeArray as $node) {
+			$this->checkCircularity($node, $nodeArray);
+			$keyedNodeArray[$node->getNodeId()] = $node;
+		}
+
+		/**
+		 * add nodes and set the root.
+		 * static analysis tools cannot see that $root must be set at this point.  The if statement is superfluous
+		 * but makes the static analysis warning go away
+		 */
+		if (isset($root)) {
+			$this->setRoot($root);
+		}
+		$this->nodes = $keyedNodeArray;
+	}
+
+	/**
+	 * addNodeToNodelistAndSetRoot
+	 * @param NodeType $node
+	 * @throws AlreadySetRootException
+	 */
+	protected function addNodeToNodelistAndSetRoot($node) : void
+	{
+		$nodeid = $node->getNodeId();
+
+		/**
+		 * make sure nodeid does not already exist in the tree
+		 */
+		if (!is_null($this->getNode($nodeid))) {
+			throw _ExceptionFactory::createException(AlreadySetNodeidException::class, [$nodeid]);
+		}
+
+		/**
+		 * make sure the treeid of the node matches the tree's id.  Use a strict comparison so that in the off chance
+		 * that the treeid is 0 and node's treeid is nul, we don't have a type casting problem.
+		 */
+		if ($this->getTreeId() !== $node->getTreeId()) {
+			throw _ExceptionFactory::createException(NodeHasInvalidTreeidException::class, [
+				$node->getNodeId(), $node->getTreeId(), $this->getTreeId()
+			]);
+		}
+
+		/**
+		 * if there's a parentid, make sure that exists in the tree as well
+		 */
+		$parentid = $node->getParentId();
+		if ((!is_null($parentid)) && (is_null($this->getNode($parentid)))) {
+			throw _ExceptionFactory::createException(InvalidParentNodeException::class, [$parentid]);
+		}
+
+		/**
+		 * set node as the root if it has root characteristics
+		 */
+		if ($node->isRoot()) {
+			$this->setRoot($node);
+		}
+
+		$this->nodes[$nodeid] = $node;
+	}
+
+	/**
+	 * @function getNode
+	 * @param int $nodeid
+	 * @return NodeType|null
+	 */
+	public function getNode(int $nodeid)
+	{
+		return $this->nodes[$nodeid] ?? null;
+	}
+
+	/**
 	 * checkCircularity verifies there are no circularities in the tree structure.
 	 *
 	 * @function checkCircularity
-	 * @param TreenodeInterface<NodeValueType> $node
-	 * @param TreenodeInterface<NodeValueType>[] $nodeArray
+	 * @param NodeType $node
+	 * @param NodeType[] $nodeArray
 	 * @throws CircularGraphException
 	 */
 	protected function checkCircularity($node, array $nodeArray): void
@@ -111,19 +287,28 @@ trait TreeTrait
 	}
 
 	/**
+	 * @function getNodes
+	 * @return NodeType[]
+	 */
+	public function getNodes(): array
+	{
+		return $this->nodes;
+	}
+
+	/**
 	 * hasNode does an object compare between its argument and each node in the tree, returning true
 	 * if it finds a match.  The $strict parameter controls whether the method uses "==" (all properties have the
 	 * same values) or "===" ($obj1 and $obj2 are the same instance).
 	 *
 	 * @function hasNode
-	 * @param TreenodeInterface<NodeValueType>|null $nodeToBeTested
+	 * @param NodeType|null $nodeToBeTested
 	 * @param bool $strict
 	 * @return bool
 	 */
 	public function hasNode($nodeToBeTested = null, bool $strict = true): bool
 	{
 		foreach($this->getNodes() as $node) {
-			if ($node->equals($nodeToBeTested, $strict)) {
+			if ($node === $nodeToBeTested) {
 				return true;
 			}
 		}
@@ -150,14 +335,45 @@ trait TreeTrait
 		return count($this->nodes);
 	}
 
+	/**
+	 * deletes a node from the tree.
+	 *
+	 * If deleteBranch is true then node and all its descendants will be deleted as well.  If deleteBranch is false
+	 * and $nose is an interior node, then it throws an exception.
+	 *
+	 * @function deleteNode
+	 * @param NodeType $node
+	 * @param bool $deleteBranch
+	 * @throws DeleteInteriorNodeException
+	 * @throws NodeNotInTreeException
+	 */
+	public function deleteNode($node, bool $deleteBranch = false) : void
+	{
+		/**
+		 * make sure node is in the tree, and we are not trying to delete an interior node unless $deleteBranch is true.
+		 */
+		$this->verifyDeleteNodeInitialConditions($node, $deleteBranch);
+
+		/**
+		 * if deleteBranch is true then recursively delete all descendants.  Finish by deleting the node.
+		 */
+		$this->deleteNodeRecurse($node, $deleteBranch);
+
+		/**
+		 * If this node happens to be the root of the tree, delete the root reference.
+		 */
+		if ($node === $this->getRoot()) {
+			$this->root = null;
+		}
+	}
 
 	/**
 	 * @function verifyDeleteNodeInitialConditions
-	 * @param TreenodeInterface<NodeValueType> $node
+	 * @param NodeType $node
 	 * @param bool $deleteBranch
 	 * @throws \Exception
 	 */
-	protected function verifyDeleteNodeInitialConditions(TreenodeInterface $node, bool $deleteBranch) : void
+	protected function verifyDeleteNodeInitialConditions($node, bool $deleteBranch) : void
 	{
 		$nodeid = $node->getNodeId();
 
@@ -176,6 +392,35 @@ trait TreeTrait
 		}
 	}
 
+
+	/**
+	 * @function deleteNodeRecurse
+	 * @param NodeType $node
+	 * @param bool $deleteBranch
+	 * @throws DeleteInteriorNodeException
+	 * @throws NodeNotInTreeException
+	 */
+	protected function deleteNodeRecurse($node, bool $deleteBranch): void
+	{
+		/**
+		 * if deleteBranch is true, delete all the children first.
+		 */
+		if ($deleteBranch) {
+			/**
+			 * unlike TreeOrder where the node can get its own children, in this implementation we have to go to the
+			 * tree and run through all the nodes to get the children.
+			 */
+			$children = $this->getChildrenOf($node);
+			foreach ($children as $child) {
+				$this->deleteNodeRecurse($child, $deleteBranch);
+			}
+		}
+		/**
+		 * remove the node from the nodelist
+		 */
+		unset($this->nodes[$node->getNodeId()]);
+	}
+
 	/**
 	 * getTreeDepthFirst allows you to search the tree from a given starting node using a depth-first algorithm.
 	 *
@@ -185,15 +430,46 @@ trait TreeTrait
 	 * an array of nodes where the key for each array element is its nodeid.
 	 *
 	 * @function getTreeDepthFirst
-	 * @param TreenodeInterface<NodeValueType>|null $startNode     Defaults to the root node if not supplied
+	 * @param NodeType|null $startNode     Defaults to the root node if not supplied
 	 * @param callable|null $callback               Defaults to true (return all nodes) if not supplied
-	 * @return TreenodeInterface<NodeValueType>[]
+	 * @return NodeType[]
 	 * @throws NodeNotInTreeException
 	 */
-	public function getTreeDepthFirst(TreenodeInterface $startNode = null, callable $callback = null): array
+	public function getTreeDepthFirst($startNode = null, callable $callback = null): array
 	{
 		$this->verifyTreeSearchInitialConditions($startNode, $callback);
 		return $this->getTreeDepthFirstRecurse($startNode, $callback);
+	}
+
+	/**
+	 * getTreeDepthFirstRecurse does the actual work of traversing the tree.
+	 *
+	 * @function getTreeDepthFirstRecurse
+	 * @param NodeType $startNode
+	 * @param callable $callable
+	 * @return NodeType[]
+	 * @throws NodeNotInTreeException
+	 */
+	protected function getTreeDepthFirstRecurse($startNode, callable $callable): array
+	{
+		$result = [];
+
+		/**
+		 * if the filter callback returns true, add the node to the resultset.
+		 */
+		if ($callable($startNode)) {
+			$result[$startNode->getNodeId()] = $startNode;
+		}
+
+		/**
+		 * get the list of children and recurse on each child, merging the resultset arrays back together and
+		 * returning the merged resultset.
+		 */
+		$children = $this->getChildrenOf($startNode);
+		foreach ($children as $child) {
+			$result = array_merge($result, $this->getTreeDepthFirstRecurse($child, $callable));
+		}
+		return $result;
 	}
 
 	/**
@@ -209,7 +485,7 @@ trait TreeTrait
 	 * which is different from restricting it to returning a boolean value.
 	 *
 	 * verifyTreeSearchInitialConditions
-	 * @param TreenodeInterface<NodeValueType>|null $startNode
+	 * @param NodeType|null $startNode
 	 * @param callable|null $callback
 	 * @throws \Exception
 	 */
@@ -251,17 +527,14 @@ trait TreeTrait
 	 * nodeid.
 	 *
 	 * @function getTreeBreadthFirst
-	 * @param TreenodeInterface<NodeValueType>|null $startNode
+	 * @param NodeType|null $startNode
 	 * @param callable|null $callback
 	 * @param int|null $maxLevels
-	 * @return TreenodeInterface<NodeValueType>[]
+	 * @return NodeType[]
 	 * @throws NodeNotInTreeException
 	 */
-	public function getTreeBreadthFirst(
-		$startNode = null,
-		callable $callback = null,
-		int $maxLevels = null
-	): array {
+	public function getTreeBreadthFirst($startNode = null, callable $callback = null, int $maxLevels = null): array {
+
 		$this->verifyTreeSearchInitialConditions($startNode, $callback);
 
 		/**
@@ -278,10 +551,10 @@ trait TreeTrait
 	 * getTreeBreadthFirstRecurse does the actual work of traversing the tree.
 	 *
 	 * @function getTreeBreadthFirstRecurse
-	 * @param TreenodeInterface<NodeValueType>[] $result
+	 * @param NodeType[] $result
 	 * @param callable $callback
 	 * @param int|null $maxLevels
-	 * @return TreenodeInterface<NodeValueType>[]
+	 * @return NodeType[]
 	 */
 	protected function getTreeBreadthFirstRecurse(array $result, callable $callback, int $maxLevels = null): array
 	{
@@ -312,6 +585,7 @@ trait TreeTrait
 		 * @var callable $callable
 		 */
 		$callable = [$this, 'getChildrenOf'];
+		/** @var NodeType[] $allChildren */
 		$allChildren = call_user_func_array('array_merge', array_map($callable, $result));
 
 		/**
@@ -383,7 +657,7 @@ trait TreeTrait
 	 * getLeaves returns an array of all nodes in the tree that do not have children
 	 *
 	 * @function getLeaves
-	 * @return TreenodeInterface<NodeValueType>[]
+	 * @return NodeType[]
 	 */
 	public function getLeaves(): array
 	{
@@ -400,7 +674,7 @@ trait TreeTrait
 	 * getInteriorNodes returns an array of all nodes in the tree that have children
 	 *
 	 * @function getInteriorNodes
-	 * @return TreenodeInterface<NodeValueType>[]
+	 * @return NodeType[]
 	 */
 	public function getInteriorNodes(): array
 	{

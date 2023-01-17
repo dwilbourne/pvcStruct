@@ -98,16 +98,6 @@ class TreenodeConfigurationsFixture
 		];
 	}
 
-	/**
-	 * makeNodeRowWithNullNodeId
-	 * @return array
-	 */
-	public function makeNodeRowWithNullNodeId() : array
-	{
-		return $this->makeRow([null, null, 0]);
-	}
-
-
     /**
      * @function makeTreeStructureWithGoodData
      * @return array
