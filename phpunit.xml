@@ -3,7 +3,7 @@
          colors="true"
          bootstrap="vendor/autoload.php"
          forceCoversAnnotation="true"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd">
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd">
 
   <coverage>
     <include>

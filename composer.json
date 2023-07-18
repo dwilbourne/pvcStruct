@@ -14,14 +14,15 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"pvc\\": "src/",
-			"tests\\": "tests/"
+			"pvc\\struct\\": "src/",
+			"pvcTests\\struct\\": "tests/",
+			"pvcExamples\\struct\\": "examples/"
 		}
 	},
 	"minimum-stability": "dev",
 	"require": {
-		"pvc/err": "*",
-		"nesbot/carbon": "*"
+		"pvc/interfaces": "*",
+		"pvc/err": "*"
 	},
 	"require-dev": {
 		"phpunit/phpunit": "^9",
