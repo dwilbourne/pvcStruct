@@ -14,4 +14,6 @@ use pvc\err\stock\LogicException;
 /**
  * Class SetTreeIdException
  */
-class SetTreeIdException extends LogicException {}
+class SetTreeIdException extends LogicException
+{
+}

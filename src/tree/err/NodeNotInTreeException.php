@@ -3,7 +3,7 @@
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pvc\struct\tree\err;
 
@@ -20,7 +20,7 @@ class NodeNotInTreeException extends LogicException
         /**
          * it is possible for nodes to be created without having a treeid set
          */
-        $treeidString  = (is_null($treeid) ? '{treeid not set}' : (string)$treeid);
+        $treeidString = (is_null($treeid) ? '{treeid not set}' : (string)$treeid);
         parent::__construct($treeidString, $nodeid, $prev);
     }
 }

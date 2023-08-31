@@ -5,256 +5,331 @@
  */
 declare (strict_types=1);
 
-
 namespace pvc\struct\tree\node;
 
+use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\validator\ValidatorInterface;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
+use pvc\struct\payload\PayloadTrait;
+use pvc\struct\tree\err\AlreadySetNodeidException;
+use pvc\struct\tree\err\ChildCollectionException;
+use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
-use pvc\struct\tree\err\InvalidNodeValueException;
 use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\err\InvalidTreeidException;
-use pvc\struct\tree\err\NodeIdAndParentIdCannotBeTheSameException;
+use pvc\struct\tree\err\RootCannotBeMovedException;
+use pvc\struct\tree\err\SetTreeIdException;
 
 /**
- * Class TreenodeAbstract
- * @template NodeType
- * @template NodeValueType
- * @implements TreenodeAbstractInterface<NodeType, NodeValueType>
+ * @template ValueType
+ * @template NodeType of TreenodeAbstractInterface
+ * @template TreeType of TreeAbstractInterface
+ * @template CollectionType of CollectionAbstractInterface
+ * @implements TreenodeAbstractInterface<ValueType, NodeType, TreeType, CollectionType>
  */
 class TreenodeAbstract implements TreenodeAbstractInterface
 {
+    use PayloadTrait;
+
     /**
      * unique id for this node
-     * @var int
+     * @var non-negative-int $nodeid
      */
     protected int $nodeid;
 
     /**
-     * id of parent
-     * @var int|null
+     * reference to parent
+     * @var NodeType|null
      */
-    protected ? int $parentid = -1;
+    protected ?TreenodeAbstractInterface $parent;
 
     /**
      * reference to containing tree
-     * @var int
+     * @var TreeType
      */
-    protected int $treeid;
+    protected TreeAbstractInterface $tree;
 
     /**
-     * object responsible for validating values
-     * @var ValidatorInterface|null
+     * @var CollectionType $children
      */
-    protected ?ValidatorInterface $valueValidator;
+    protected CollectionAbstractInterface $children;
 
     /**
-     * @var NodeValueType
+     * @var non-negative-int
      */
-    protected $value;
+    protected int $visitCount = 0;
 
     /**
-     * Treenode constructor.
-     * @param int $nodeid
+     * @param non-negative-int $nodeid
+     * @param ?non-negative-int $parentId
+     * @param non-negative-int $treeId
+     * @param TreeType $tree
+     * @param CollectionType $collection
      * @throws InvalidNodeIdException
      */
-    public function __construct(int $nodeid)
-    {
-        $this->setNodeId($nodeid);
-    }
-
-    /**
-     * all nodeids are integers greater than or equal to 0
-     *
-     * validateNodeId
-     * @param int $nodeid
-     * @return bool
-     */
-    private function validateNodeId(int $nodeid): bool
-    {
-        return 0 <= $nodeid;
-    }
-
-    /**
-     * set the id of the node.
-     *
-     * @function setNodeId
-     * @param int $nodeId
-     * @throws InvalidNodeIdException
-     */
-    public function setNodeId(int $nodeId): void
-    {
+    public function __construct(
+        int $nodeid,
+        ?int $parentId,
+        int $treeId,
+        TreeAbstractInterface $tree,
+        CollectionAbstractInterface $collection
+    ) {
         /**
-         * nodeId must be valid
+         * nodeid must be non-negative.  phpstan will catch static problems but to be thorough, let's catch it anyway
          */
-        if (!$this->validateNodeId($nodeId)) {
-            throw new InvalidNodeIdException($nodeId);
+        if ($nodeid < 0) {
+            throw new InvalidNodeIdException($nodeid);
         }
 
         /**
-         * cannot be the same as parentid.  Use "===" because getParentId can return null which gets cast to zero if
-         * doing a standard equality test
+         * node id cannot already exist in the tree
          */
-        if ($this->getParentId() === $nodeId) {
-            throw new NodeIdAndParentIdCannotBeTheSameException($nodeId);
+        if ($tree->getNode($nodeid)) {
+            throw new AlreadySetNodeidException($nodeid);
         }
-        $this->nodeid = $nodeId;
+        $this->nodeid = $nodeid;
+
+        /**
+         * verify that the tree id in the arguments matches the tree id of the tree we are setting a reference to
+         */
+        if ($treeId != $tree->getTreeId()) {
+            throw new SetTreeIdException();
+        }
+
+        /**
+         * tree reference in this structure must be set before calling setParent so that we ensure $parent is
+         * already in the same tree
+         */
+        $this->tree = $tree;
+
+        /**
+         * set the child collection
+         */
+        if (!$collection->isEmpty()) {
+            throw new ChildCollectionException();
+        } else {
+            $this->children = $collection;
+        }
+
+        /**
+         * set the value validator to a default
+         */
+        $this->setValueValidator(new TreenodeValueValidatorDefault());
+
+        /**
+         * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent
+         */
+        $this->setParent($parentId);
+    }
+
+    /**
+     * @function setParent
+     *
+     * @param non-negative-int|null $parentId
+     */
+    public function setParent(?int $parentId): void
+    {
+        if (!is_null($parentId)) {
+            /** @var NodeType $parent */
+            $parent = $this->getTree()->getNode($parentId);
+            if (is_null($parent)) {
+                /**
+                 * parent id is not null but there is no existing node in the tree with node id == parent id
+                 */
+                throw new InvalidParentNodeException($parentId);
+            }
+        } else {
+            /**
+             * parent id is null so parent is also null - it thinks it is the root node.  It is up to the containing
+             * tree to decide whether it really is or is not. See the setRoot method in TreeAbstract
+             */
+            $parent = null;
+        }
+
+        /**
+         * make sure we are not creating a circular graph
+         */
+        if ($parent && $parent->isDescendantOf($this)) {
+            throw new CircularGraphException($parent->getNodeId());
+        }
+
+        /**
+         * setParent is not just for construction - it is used to move nodes around in the tree as well.  If this
+         * node is the root node, then it cannot be moved in the tree
+         */
+        if ($this->tree->getRoot()?->getNodeId() === $this->getNodeId()) {
+            throw new RootCannotBeMovedException();
+        }
+
+        /**
+         * if parent is not null, add this node to the parent's child collection
+         */
+        if ($childCollection = $parent?->getChildren()) {
+            $childCollection->push($this);
+        }
+
+        /**
+         * set the parent
+         */
+        $this->parent = $parent;
     }
 
     /**
      * @function getNodeId
-     * @return int
+     * @return non-negative-int
      */
-    public function getNodeId():  int
+    public function getNodeId(): int
     {
         return $this->nodeid;
     }
 
     /**
      * @function getParentId
-     * @return int|null
+     * @return non-negative-int|null
      */
     public function getParentId(): ?int
     {
-        return $this->parentid ?? null;
+        return ($parent = $this->getParent()) ? $parent->getNodeId() : null;
     }
 
     /**
-     * @function setParentId
-     * @param int|null $parentId
-     * @throws InvalidNodeIdException
-     * @throws InvalidParentNodeException
+     * @function getParent
+     * @return NodeType|null
      */
-    public function setParentId($parentId): void
+    public function getParent(): ?TreenodeAbstractInterface
     {
-        /**
-         * parentIds can be null, so only verify the nodeId is valid if it is not null
-         */
-        if (!is_null($parentId) && !$this->validateNodeId($parentId)) {
-            throw new InvalidNodeIdException($parentId);
-        }
-
-        /**
-         * nodeId and parentid cannot be the same.  Use strict "===" because getNodeId can return null which gets
-         * cast to zero using standard equality test
-         */
-        if ($this->getNodeId() === $parentId) {
-            throw new NodeIdAndParentIdCannotBeTheSameException($parentId);
-        }
-        $this->parentid = $parentId;
+        return $this->parent ?? null;
     }
 
     /**
-     * isRoot encapsulates the logic for determining whether a node might be a root node.
-     *
-     * @function isRoot
+     * @function getTree
+     * @return TreeType
+     */
+    public function getTree(): TreeAbstractInterface
+    {
+        return $this->tree;
+    }
+
+    /**
+     * getTreeId
+     * @return non-negative-int
+     */
+    public function getTreeId(): int
+    {
+        return $this->getTree()->getTreeId();
+    }
+
+    /**
+     * @function getChildren
+     * @return CollectionType
+     */
+    public function getChildren(): CollectionAbstractInterface
+    {
+        return $this->children;
+    }
+
+    /**
+     * @function isLeaf
      * @return bool
      */
-    public function isRoot() : bool
+    public function isLeaf(): bool
     {
-        return is_null($this->getParentId());
+        return ($this->getChildren()->isEmpty());
     }
 
     /**
-     * @function setTreeId
-     * @param int $treeId
+     * @function isInteriorNode
+     * @return bool
      */
-    public function setTreeId(int $treeId): void
+    public function isInteriorNode(): bool
     {
-        if (!$this->validateNodeId($treeId)) {
-            throw new InvalidTreeidException($treeId);
+        return (!$this->getChildren()->isEmpty());
+    }
+
+    /**
+     * @function getChild
+     * @param non-negative-int $nodeid
+     * @return NodeType|null
+     */
+    public function getChild(int $nodeid): ?TreenodeAbstractInterface
+    {
+        /** @var NodeType $child */
+        foreach ($this->getChildren() as $child) {
+            if ($nodeid == $child->getNodeId()) {
+                return $child;
+            }
         }
-        $this->treeid = $treeId;
+        return null;
     }
 
     /**
-     * @function getTreeId
-     * @return int
+     * getSiblings returns a collection of this node's siblings
+     *
+     * @return CollectionType
      */
-    public function getTreeId(): ?int
+    public function getSiblings(): CollectionAbstractInterface
     {
-        return $this->treeid ?? null;
-    }
-
-    /**
-     * @function getValueValidator
-     * @return ValidatorInterface|null
-     */
-    public function getValueValidator(): ?ValidatorInterface
-    {
-        return $this->valueValidator ?? null;
-    }
-
-    /**
-     * @function setValueValidator
-     * @param ValidatorInterface $validator
-     */
-    public function setValueValidator(ValidatorInterface $validator): void
-    {
-        $this->valueValidator = $validator;
-    }
-
-    /**
-     * @function getValue
-     * @return NodeValueType|null
-     */
-    public function getValue()
-    {
-        return $this->value ?? null;
-    }
-
-    /**
-     * @function setValue
-     * @param NodeValueType $value
-     * @throws InvalidNodeValueException
-     */
-    public function setValue($value): void
-    {
-        // validation of the value is optional
-        if (isset($this->valueValidator) && !$this->valueValidator->validate($value)) {
-            throw new InvalidNodeValueException($value);
+        if ($this->getTree()->rootTest($this)) {
+            /** @var CollectionType $collection */
+            $collection = $this->tree->makeCollection();
+            $collection->push($this);
+        } else {
+            /** @var NodeType $parent */
+            $parent = $this->getParent();
+            /** @var CollectionType $collection */
+            $collection = $parent->getChildren();
         }
-        $this->value = $value;
+        return $collection;
     }
 
     /**
-     * @function hydrate
-     * @param array<mixed> $nodeData
-     * @throws InvalidNodeIdException
-     * @throws InvalidNodeValueException
-     * @throws InvalidParentNodeException
+     * @function isAncestorOf
+     * @param NodeType $node
+     * @return bool
      */
-    public function hydrate(array $nodeData): void
+    public function isAncestorOf(TreenodeAbstractInterface $node): bool
     {
-        /**
-         * painful to get the static analyzer happy.  Have to typehint intermediate variables.
-         */
-        /** @var int $nodeid */
-        $nodeid = $nodeData['nodeid'];
-        $this->setNodeId($nodeid);
-
-        /** @var int $parentid */
-        $parentid = $nodeData['parentid'];
-        $this->setParentId($parentid);
-
-        /** @var int $treeid */
-        $treeid = $nodeData['treeid'];
-        $this->setTreeId($treeid);
-
-        $this->setValue($nodeData['value']);
+        return $node->isDescendantOf($this);
     }
 
     /**
-     * @function dehydrate
-     * @return array<mixed>
+     * @function isDescendantOf
+     * @param NodeType $node
+     * @return bool
      */
-    public function dehydrate(): array
+    public function isDescendantOf(TreenodeAbstractInterface $node): bool
     {
-        return [
-            'nodeId' => $this->getNodeId(),
-            'parentid' => $this->getParentId(),
-            'treeId' => $this->getTreeId(),
-            'value' => $this->getValue()
-        ];
+        if ($this->getParent() === $node) {
+            return true;
+        }
+        if (is_null($this->getParent())) {
+            return false;
+        } else {
+            return $this->getParent()->isDescendantOf($node);
+        }
+    }
+
+    /**
+     * getVisitCount
+     * @return non-negative-int
+     */
+    public function getVisitCount(): int
+    {
+        return $this->visitCount;
+    }
+
+    /**
+     * addVisit
+     */
+    public function addVisit(): void
+    {
+        $this->visitCount++;
+    }
+
+    /**
+     * clearVisitCount
+     */
+    public function clearVisitCount(): void
+    {
+        $this->visitCount = 0;
     }
 }

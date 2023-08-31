@@ -28,6 +28,8 @@
 		"phpunit/phpunit": "^9",
 		"squizlabs/php_codesniffer": "*",
 		"friendsofphp/php-cs-fixer": "*",
-		"phpstan/phpstan": "*"
+		"phpstan/phpstan": "*",
+		"pvc/testing-traits": "*",
+		"php-di/php-di": "*"
 	}
 }
