@@ -13,6 +13,6 @@ There is an additional level of safety embodied in the use of a ValueValidator o
 Type safety is good, but not perfect.  Imagine, for example, that you want your tree node to hold objects that are
 not only the same type, but whose properties also conform to some business rule (say only objects whose color is red).
 Generics cannot implement business rules like "red" or ensuring that each payload in the structure is unique, so
-using a value validator may be helpful.
+using a x validator may be helpful.
 
 

@@ -37,7 +37,7 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     protected NodeTypeFactoryInterface $nodeTypeFactory;
 
     /**
-     * @var ValidatorInterface $validator
+     * @var ValidatorInterface<ValueType> $validator
      */
     protected ValidatorInterface $validator;
 
@@ -49,16 +49,18 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     /**
      * @param NodeTypeFactoryInterface<ValueType, NodeType, TreeType, CollectionType> $nodeTypeFactory
      * @param CollectionFactoryInterface<CollectionType> $collectionFactory
-     * @param ValidatorInterface $validator
+     * @param ValidatorInterface<ValueType>|null $validator
      */
     public function __construct(
         NodeTypeFactoryInterface $nodeTypeFactory,
         CollectionFactoryInterface $collectionFactory,
-        ValidatorInterface $validator
+        ValidatorInterface $validator = null
     ) {
         $this->nodeTypeFactory = $nodeTypeFactory;
         $this->collectionFactory = $collectionFactory;
-        $this->validator = $validator;
+        if ($validator) {
+            $this->validator = $validator;
+        }
     }
 
     /**
@@ -99,8 +101,9 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
 
         /** @var NodeType $node */
         $node = $this->getNodeTypeFactory()->makeNodeType($valueObject, $this->tree, $collection);
-
-        $node->setValueValidator($this->GetValueValidator());
+        if ($this->getValueValidator()) {
+            $node->setValueValidator($this->getValueValidator());
+        }
         $node->setValue($valueObject->getValue());
         return $node;
     }
@@ -123,10 +126,10 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return ValidatorInterface
+     * @return ValidatorInterface<ValueType>|null
      */
-    public function GetValueValidator(): ValidatorInterface
+    public function getValueValidator(): ?ValidatorInterface
     {
-        return $this->validator;
+        return $this->validator ?? null;
     }
 }

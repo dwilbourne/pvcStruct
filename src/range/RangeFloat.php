@@ -7,13 +7,11 @@ declare(strict_types=1);
 
 namespace pvc\struct\range;
 
-use pvc\interfaces\struct\range\RangeFloatInterface;
-
 /**
  * @class RangeElementFloat
- * @extends Range<RangeFloatInterface, float>
+ * @extends Range<float>
  */
-class RangeFloat extends Range implements RangeFloatInterface
+class RangeFloat extends Range
 {
     /**
      * @return float

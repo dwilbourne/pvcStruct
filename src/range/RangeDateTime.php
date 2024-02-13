@@ -9,13 +9,12 @@ namespace pvc\struct\range;
 
 use DateTime;
 use DateTimeImmutable;
-use pvc\interfaces\struct\range\RangeDateTimeInterface;
 
 /**
  * @class RangeElementDateTime
- * @extends Range<RangeDateTimeInterface, DateTime|DateTimeImmutable>
+ * @extends Range<DateTime|DateTimeImmutable>
  */
-class RangeDateTime extends Range implements RangeDateTimeInterface
+class RangeDateTime extends Range
 {
     /**
      * @return DateTime|DateTimeImmutable

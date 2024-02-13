@@ -34,11 +34,9 @@ class SearchStrategyDepthFirstTest extends TestCase
 
         $collectionFactory = new CollectionUnorderedFactory();
         $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $valueValidator = new TreenodeValueValidatorDefault();
         $treenodeFactory = new TreenodeAbstractFactory(
             $nodeTypeFactory,
-            $collectionFactory,
-            $valueValidator
+            $collectionFactory
         );
 
         $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
@@ -62,7 +60,7 @@ class SearchStrategyDepthFirstTest extends TestCase
 
     /**
      * testSetGetOrdering
-     * @throws \pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException
+     * @throws InvalidDepthFirstSearchOrderingException
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::setOrdering
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::getOrdering
      */

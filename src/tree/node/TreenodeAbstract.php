@@ -28,6 +28,9 @@ use pvc\struct\tree\err\SetTreeIdException;
  */
 class TreenodeAbstract implements TreenodeAbstractInterface
 {
+    /**
+     * @use PayloadTrait<ValueType>
+     */
     use PayloadTrait;
 
     /**
@@ -59,9 +62,9 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     protected int $visitCount = 0;
 
     /**
-     * @param non-negative-int $nodeid
+     * @param int $nodeid
      * @param ?non-negative-int $parentId
-     * @param non-negative-int $treeId
+     * @param int $treeId
      * @param TreeType $tree
      * @param CollectionType $collection
      * @throws InvalidNodeIdException
@@ -111,11 +114,6 @@ class TreenodeAbstract implements TreenodeAbstractInterface
         }
 
         /**
-         * set the value validator to a default
-         */
-        $this->setValueValidator(new TreenodeValueValidatorDefault());
-
-        /**
          * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent
          */
         $this->setParent($parentId);
@@ -129,7 +127,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     public function setParent(?int $parentId): void
     {
         if (!is_null($parentId)) {
-            /** @var NodeType $parent */
+            /** @var NodeType|null $parent */
             $parent = $this->getTree()->getNode($parentId);
             if (is_null($parent)) {
                 /**

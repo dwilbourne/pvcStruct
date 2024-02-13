@@ -42,12 +42,12 @@ class RangeTest extends TestCase
     protected function makeConcreteClass($min, $max): Range
     {
         return new class($min, $max) extends Range {
-            public function getMin()
+            public function getMin(): mixed
             {
                 return $this->min;
             }
 
-            public function getMax()
+            public function getMax(): mixed
             {
                 return $this->max;
             }

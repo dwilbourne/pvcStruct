@@ -74,6 +74,7 @@ class TreenodeAbstractTest extends TestCase
         self::expectException(AlreadySetNodeidException::class);
 
         $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        unset($node);
     }
 
     /**
@@ -94,6 +95,7 @@ class TreenodeAbstractTest extends TestCase
         self::expectException(SetTreeIdException::class);
 
         $node = new TreenodeAbstract($nodeId, $parentId, $nonMatchingTreeId, $mockTree, $mockCollection);
+        unset($node);
     }
 
     /**
@@ -115,6 +117,26 @@ class TreenodeAbstractTest extends TestCase
         self::expectException(ChildCollectionException::class);
 
         $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        unset($node);
+    }
+
+    /**
+     * testConstructSucceeds
+     * @throws InvalidNodeIdException
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
+     */
+    public function testConstructSucceeds(): void
+    {
+        $treeId = 0;
+        $nodeId = 0;
+        $parentId = null;
+        $mockTree = $this->createMock(TreeAbstractInterface::class);
+        $mockTree->method('getTreeId')->willReturn($treeId);
+        $mockTree->method('getNode')->with($nodeId)->willReturn(null);
+        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
+        $mockCollection->method('isEmpty')->willReturn(true);
+        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        self::assertInstanceOf(TreenodeAbstractInterface::class, $node);
     }
 
     /**
@@ -141,6 +163,7 @@ class TreenodeAbstractTest extends TestCase
         self::expectException(InvalidParentNodeException::class);
 
         $node = new TreenodeAbstract($nodeId, $badParentId, $treeId, $mockTree, $mockCollection);
+        unset($node);
     }
 
     /**
@@ -268,16 +291,6 @@ class TreenodeAbstractTest extends TestCase
         $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
 
         self::assertNull($node->getParent());
-    }
-
-    /**
-     * testNodeHasDefaultValueValidator
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
-     */
-    public function testNodeHasDefaultValueValidator(): void
-    {
-        $this->createTree();
-        self::assertInstanceOf(ValidatorInterface::class, $this->getRoot()->getValueValidator());
     }
 
     protected function createTree(): void

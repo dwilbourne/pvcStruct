@@ -16,17 +16,29 @@ use pvc\struct\tree\err\InvalidValueException;
  */
 trait PayloadTrait
 {
+    /**
+     * @var ValidatorInterface<ValueType>
+     */
     protected ValidatorInterface $validator;
 
     protected mixed $value;
 
     /**
      * SetValueValidator
-     * @param ValidatorInterface $validator
+     * @param ValidatorInterface<ValueType> $validator
      */
     public function setValueValidator(ValidatorInterface $validator): void
     {
         $this->validator = $validator;
+    }
+
+    /**
+     * GetValueValidator
+     * @return ValidatorInterface<ValueType>|null
+     */
+    public function getValueValidator(): ?ValidatorInterface
+    {
+        return $this->validator ?? null;
     }
 
     /**
@@ -44,18 +56,9 @@ trait PayloadTrait
      */
     public function setValue(mixed $value): void
     {
-        if (!$this->GetValueValidator()->validate($value)) {
+        if ($this->getValueValidator() && !$this->getValueValidator()->validate($value)) {
             throw new InvalidValueException();
         }
         $this->value = $value;
-    }
-
-    /**
-     * GetValueValidator
-     * @return ValidatorInterface
-     */
-    public function getValueValidator(): ValidatorInterface
-    {
-        return $this->validator;
     }
 }

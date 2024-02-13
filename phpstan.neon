@@ -1,10 +1,7 @@
 parameters:
 
-	treatPhpDocTypesAsCertain: false
-
 	level: max
 
 	paths:
-		- interfaces
 		- src
 

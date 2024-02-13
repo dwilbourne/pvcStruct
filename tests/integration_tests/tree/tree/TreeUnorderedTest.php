@@ -8,6 +8,8 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\tree;
 
 use PHPUnit\Framework\TestCase;
+use pvc\struct\tree\err\DeleteInteriorNodeException;
+use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
 use pvc\struct\tree\tree\TreeUnordered;
@@ -32,11 +34,9 @@ class TreeUnorderedTest extends TestCase
 
         $collectionFactory = new CollectionUnorderedFactory();
         $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $valueValidator = new TreenodeValueValidatorDefault();
         $treenodeFactory = new TreenodeAbstractFactory(
             $nodeTypeFactory,
-            $collectionFactory,
-            $valueValidator
+            $collectionFactory
         );
 
         $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
@@ -58,8 +58,8 @@ class TreeUnorderedTest extends TestCase
 
     /**
      * testDeleteNodeRecurse
-     * @throws \pvc\struct\tree\err\DeleteInteriorNodeException
-     * @throws \pvc\struct\tree\err\NodeNotInTreeException
+     * @throws DeleteInteriorNodeException
+     * @throws NodeNotInTreeException
      * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNode
      * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNodeRecurse
      */

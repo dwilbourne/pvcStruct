@@ -7,13 +7,11 @@ declare(strict_types=1);
 
 namespace pvc\struct\range;
 
-use pvc\interfaces\struct\range\RangeIntegerInterface;
-
 /**
  * @class RangeElementInteger
- * @extends Range<RangeIntegerInterface, int>
+ * @extends Range<int>
  */
-class RangeInteger extends Range implements RangeIntegerInterface
+class RangeInteger extends Range
 {
 
     /**

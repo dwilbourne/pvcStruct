@@ -33,11 +33,9 @@ class TreenodeOrderedTest extends TestCase
 
         $collectionFactory = new CollectionOrderedFactory();
         $nodeTypeFactory = new NodeTypeOrderedFactory();
-        $valueValidator = new TreenodeValueValidatorDefault();
         $treenodeFactory = new TreenodeAbstractFactory(
             $nodeTypeFactory,
-            $collectionFactory,
-            $valueValidator
+            $collectionFactory
         );
 
         $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory);

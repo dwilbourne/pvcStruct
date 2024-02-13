@@ -3,6 +3,7 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+
 declare(strict_types=1);
 
 namespace pvc\struct\range;
@@ -16,9 +17,8 @@ use pvc\interfaces\struct\range\RangeInterface;
  * range.  This is all done in an object-oriented way which is overkill for the interface, but makes it far easier to
  * extend the behavior of a range to do other things.
  *
- * @template RangeElementType
  * @template RangeElementDataType
- * @implements RangeInterface<RangeElementType, RangeElementDataType>
+ * @implements RangeInterface<RangeElementDataType>
  */
 abstract class Range implements RangeInterface
 {
@@ -57,7 +57,7 @@ abstract class Range implements RangeInterface
      * getMin
      * @return RangeElementDataType
      */
-    abstract public function getMin();
+    abstract public function getMin(): mixed;
 
     /**
      * setMin
@@ -72,7 +72,7 @@ abstract class Range implements RangeInterface
      * getMax
      * @return RangeElementDataType
      */
-    abstract public function getMax();
+    abstract public function getMax(): mixed;
 
     /**
      * setMax
@@ -85,11 +85,11 @@ abstract class Range implements RangeInterface
 
     /**
      * isInRange
-     * @param RangeElementDataType $value
+     * @param RangeElementDataType $x
      * @return bool
      */
-    public function isInRange($value): bool
+    public function isInRange($x): bool
     {
-        return (($this->getMin() <= $value) && ($value <= $this->getMax()));
+        return (($this->getMin() <= $x) && ($x <= $this->getMax()));
     }
 }

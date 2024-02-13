@@ -33,9 +33,9 @@ abstract class TreenodeValueObjectAbstract implements TreenodeValueObjectInterfa
     protected int $treeId;
 
     /**
-     * @var ValueType $value
+     * @var ValueType|null $value
      */
-    protected mixed $value;
+    protected $value;
 
     /**
      * getNodeId
@@ -93,11 +93,11 @@ abstract class TreenodeValueObjectAbstract implements TreenodeValueObjectInterfa
 
     /**
      * getValue
-     * @return ValueType
+     * @return ValueType|null
      */
     public function getValue(): mixed
     {
-        return $this->value;
+        return $this->value ?? null;
     }
 
     /**

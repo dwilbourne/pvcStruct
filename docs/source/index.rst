@@ -14,9 +14,9 @@ The pvcStruct package provides generic data structures:
 
 * Collections (ordered and unordered)
 * Trees (leaves ordered or unordered)
-* Range, which is a simple structure containing a min and a max and which allows you to test a value to see if the
-value falls within the range.  Combine this structure into a collection and you can produce a series of possibly
-discontiguous ranges and easily determine whether a value falls within the ranges.
+* Range, which is a simple structure containing a min and a max and which allows you to test a x to see if the
+x falls within the range.  Combine this structure into a collection and you can produce a series of possibly
+discontiguous ranges and easily determine whether a x falls within the ranges.
 
 
 Design Points

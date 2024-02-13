@@ -34,11 +34,9 @@ class SearchStrategyAbstractTest extends TestCase
 
         $collectionFactory = new CollectionUnorderedFactory();
         $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $valueValidator = new TreenodeValueValidatorDefault();
         $treenodeFactory = new TreenodeAbstractFactory(
             $nodeTypeFactory,
-            $collectionFactory,
-            $valueValidator
+            $collectionFactory
         );
 
         $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);

@@ -9,6 +9,7 @@ namespace pvcTests\struct\integration_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
 use pvc\struct\tree\err\BadSearchLevelsException;
+use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
 use pvc\struct\tree\search\SearchFilterDefault;
@@ -34,11 +35,9 @@ class SearchStrategyBreadthFirstTest extends TestCase
 
         $collectionFactory = new CollectionUnorderedFactory();
         $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $valueValidator = new TreenodeValueValidatorDefault();
         $treenodeFactory = new TreenodeAbstractFactory(
             $nodeTypeFactory,
-            $collectionFactory,
-            $valueValidator
+            $collectionFactory
         );
 
         $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
@@ -62,7 +61,7 @@ class SearchStrategyBreadthFirstTest extends TestCase
 
     /**
      * testSetGetMaxLevels
-     * @throws \pvc\struct\tree\err\BadSearchLevelsException
+     * @throws BadSearchLevelsException
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::setMaxLevels
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getMaxLevels
      */
@@ -156,7 +155,7 @@ class SearchStrategyBreadthFirstTest extends TestCase
 
     /**
      * testResetSearch
-     * @throws \pvc\struct\tree\err\StartNodeUnsetException
+     * @throws StartNodeUnsetException
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::resetSearch
      */
     public function testResetSearch(): void
