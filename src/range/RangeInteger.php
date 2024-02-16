@@ -13,21 +13,21 @@ namespace pvc\struct\range;
  */
 class RangeInteger extends Range
 {
-
     /**
+     * getMin
      * @return int
      */
-    public function getMin(): int
+    protected function getMin(): mixed
     {
-        return $this->min;
+        return $this->min ?? PHP_INT_MIN;
     }
 
-
     /**
+     * getMax
      * @return int
      */
-    public function getMax(): int
+    protected function getMax(): mixed
     {
-        return $this->max;
+        return $this->max ?? PHP_INT_MAX;
     }
 }

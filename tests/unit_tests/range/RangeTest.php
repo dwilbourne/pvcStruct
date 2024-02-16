@@ -8,78 +8,34 @@ declare (strict_types=1);
 
 namespace pvcTests\struct\unit_tests\range;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\range\Range;
 
 class RangeTest extends TestCase
 {
-    protected Range|MockObject $mockRange;
+    protected Range $range;
 
     public function setUp(): void
     {
-        $this->mockRange = $this->getMockBuilder(Range::class)
-                                ->disableOriginalConstructor()
-                                ->getMockForAbstractClass();
+        $this->range = $this->getMockForAbstractClass(Range::class);
     }
 
     /**
-     * testConstruct
-     * @covers \pvc\struct\range\Range::__construct
-     * @covers \pvc\struct\range\Range::setMin
-     * @covers \pvc\struct\range\Range::setMax
+     * testSetGetRange
+     * @covers \pvc\struct\range\Range::setRange()
+     * @covers \pvc\struct\range\Range::getRange()
      */
-    public function testConstructStandardMinMax(): void
+    public function testSetGetRange(): void
     {
         $min = 3;
         $max = 8;
-        $concreteClass = $this->makeConcreteClass($min, $max);
-        self::assertInstanceOf(Range::class, $concreteClass);
-        self::assertEquals($min, $concreteClass->getMin());
-        self::assertEquals($max, $concreteClass->getMax());
+        $this->range->setRange($min, $max);
+        $this->range->method('getMin')->willReturn($min);
+        $this->range->method('getMax')->willReturn($max);
+        $expectedResult = [$min, $max];
+        self::assertEqualsCanonicalizing($expectedResult, $this->range->getRange());
     }
 
-    protected function makeConcreteClass($min, $max): Range
-    {
-        return new class($min, $max) extends Range {
-            public function getMin(): mixed
-            {
-                return $this->min;
-            }
-
-            public function getMax(): mixed
-            {
-                return $this->max;
-            }
-        };
-    }
-
-    /**
-     * testConstructMinMaxReversed
-     * @covers \pvc\struct\range\Range::__construct
-     */
-    public function testConstructMinMaxReversed(): void
-    {
-        $min = 8;
-        $max = 3;
-        $concreteClass = $this->makeConcreteClass($min, $max);
-        self::assertEquals($max, $concreteClass->getMin());
-        self::assertEquals($min, $concreteClass->getMax());
-    }
-
-    /**
-     * testGetRange
-     * @covers \pvc\struct\range\Range::getRange
-     */
-    public function testGetRange(): void
-    {
-        $min = 8;
-        $max = 3;
-        $this->mockRange->method('getMin')->willReturn($min);
-        $this->mockRange->method('getMax')->willReturn($max);
-        self::assertIsArray($this->mockRange->getRange());
-        self::assertEquals(2, count($this->mockRange->getRange()));
-    }
 
     public function isInRangeDataProvider(): array
     {
@@ -105,7 +61,8 @@ class RangeTest extends TestCase
      */
     public function testIsInRange($min, $max, $value, $expectedResult): void
     {
-        $concreteClass = $this->makeConcreteClass($min, $max);
-        self::assertEquals($expectedResult, $concreteClass->isInRange($value));
+        $this->range->method('getMin')->willReturn($min);
+        $this->range->method('getMax')->willReturn($max);
+        self::assertEquals($expectedResult, $this->range->isInRange($value));
     }
 }

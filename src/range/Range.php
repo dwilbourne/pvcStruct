@@ -13,9 +13,7 @@ use pvc\interfaces\struct\range\RangeInterface;
 /**
  * @class Range
  *
- * The class provides methods for creating a range, getting a range as an array, getting the min and the max of the
- * range.  This is all done in an object-oriented way which is overkill for the interface, but makes it far easier to
- * extend the behavior of a range to do other things.
+ * The class provides methods for creating a range, getting a range as an array, checking if a value is in the range.
  *
  * @template RangeElementDataType
  * @implements RangeInterface<RangeElementDataType>
@@ -23,25 +21,35 @@ use pvc\interfaces\struct\range\RangeInterface;
 abstract class Range implements RangeInterface
 {
     /**
-     * @var RangeElementDataType
+     * @var RangeElementDataType|null
      */
     protected $min;
 
     /**
-     * @var RangeElementDataType
+     * @var RangeElementDataType|null
      */
     protected $max;
 
     /**
-     * @param RangeElementDataType $x
-     * @param RangeElementDataType $y
+     * getMin
+     * @return RangeElementDataType
      */
-    public function __construct($x, $y)
+    abstract protected function getMin(): mixed;
+
+    /**
+     * getMax
+     * @return RangeElementDataType
+     */
+    abstract protected function getMax(): mixed;
+
+    /**
+     * @param RangeElementDataType $min
+     * @param RangeElementDataType $max
+     */
+    public function setRange($min, $max): void
     {
-        $min = ($x < $y) ? $x : $y;
-        $max = ($x < $y) ? $y : $x;
-        $this->setMin($min);
-        $this->setMax($max);
+        $this->min = ($min < $max) ? $min : $max;
+        $this->max = ($min < $max) ? $max : $min;
     }
 
     /**
@@ -51,36 +59,6 @@ abstract class Range implements RangeInterface
     public function getRange(): array
     {
         return [$this->getMin(), $this->getMax()];
-    }
-
-    /**
-     * getMin
-     * @return RangeElementDataType
-     */
-    abstract public function getMin(): mixed;
-
-    /**
-     * setMin
-     * @param RangeElementDataType $min
-     */
-    public function setMin($min): void
-    {
-        $this->min = $min;
-    }
-
-    /**
-     * getMax
-     * @return RangeElementDataType
-     */
-    abstract public function getMax(): mixed;
-
-    /**
-     * setMax
-     * @param RangeElementDataType $max
-     */
-    public function setMax($max): void
-    {
-        $this->max = $max;
     }
 
     /**

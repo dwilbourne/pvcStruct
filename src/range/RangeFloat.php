@@ -14,18 +14,20 @@ namespace pvc\struct\range;
 class RangeFloat extends Range
 {
     /**
+     * getMin
      * @return float
      */
-    public function getMin(): float
+    protected function getMin(): mixed
     {
-        return $this->min;
+        return $this->min ?? PHP_FLOAT_MIN;
     }
 
     /**
+     * getMax
      * @return float
      */
-    public function getMax(): float
+    protected function getMax(): mixed
     {
-        return $this->max;
+        return $this->max ?? PHP_FLOAT_MAX;
     }
 }
