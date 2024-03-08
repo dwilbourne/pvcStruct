@@ -12,6 +12,7 @@ use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -28,7 +29,7 @@ use pvc\struct\tree\err\TreeNotEmptyHydrationException;
  * @template TreeType of TreeAbstractInterface
  * @template NodeValueObjectType of TreenodeValueObjectInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreeAbstractInterface<ValueType, NodeType, CollectionType>
+ * @implements TreeAbstractInterface<ValueType, NodeType, TreeType, CollectionType>
  */
 abstract class TreeAbstract implements TreeAbstractInterface
 {
@@ -43,6 +44,11 @@ abstract class TreeAbstract implements TreeAbstractInterface
     protected TreenodeFactoryInterface $treenodeFactory;
 
     /**
+     * @var TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType>
+     */
+    protected TreeAbstractEventHandlerInterface $eventHandler;
+
+    /**
      * @var NodeType|null
      */
     protected $root;
@@ -55,13 +61,18 @@ abstract class TreeAbstract implements TreeAbstractInterface
     /**
      * @param int $treeid
      * @param TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @param TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType> $handler
      * @throws InvalidTreeidException
      * @throws SetTreeIdException
      */
-    public function __construct(int $treeid, TreenodeFactoryInterface $treenodeFactory)
-    {
+    public function __construct(
+        int $treeid,
+        TreenodeFactoryInterface $treenodeFactory,
+        TreeAbstractEventHandlerInterface $handler
+    ) {
         $this->setTreeId($treeid);
         $this->setTreenodeFactory($treenodeFactory);
+        $this->setEventHandler($handler);
     }
 
     /**
@@ -128,6 +139,24 @@ abstract class TreeAbstract implements TreeAbstractInterface
         /** @var TreeType $that */
         $that = $this;
         $this->treenodeFactory->setTree($that);
+    }
+
+    /**
+     * setEventHandler
+     * @param TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType> $handler
+     */
+    public function setEventHandler(TreeAbstractEventHandlerInterface $handler): void
+    {
+        $this->eventHandler = $handler;
+    }
+
+    /**
+     * getEventHandler
+     * @return TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType>
+     */
+    public function getEventHandler(): TreeAbstractEventHandlerInterface
+    {
+        return $this->eventHandler;
     }
 
     /**
@@ -213,11 +242,15 @@ abstract class TreeAbstract implements TreeAbstractInterface
     {
         $node = $this->treenodeFactory->makeNode($valueObject);
 
+        $this->eventHandler->beforeAddNode($node);
+
         $this->nodes[$node->getNodeId()] = $node;
 
         if ($this->rootTest($node)) {
             $this->setRoot($node);
         }
+
+        $this->eventHandler->afterAddNode($node);
     }
 
     /**
@@ -360,10 +393,15 @@ abstract class TreeAbstract implements TreeAbstractInterface
                 $this->deleteNodeRecurse($child, true);
             }
         }
+
+        $this->eventHandler->beforeDeleteNode($node);
+
         /**
-         * remove the node from the nodelist
+         * remove the node from the node list
          */
         unset($this->nodes[$node->getNodeId()]);
+
+        $this->eventHandler->afterDeleteNode($node);
     }
 
     /**

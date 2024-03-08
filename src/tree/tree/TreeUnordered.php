@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\tree;
 
+use pvc\interfaces\struct\collection\CollectionUnorderedInterface;
 use pvc\interfaces\struct\tree\node\TreenodeUnorderedInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectUnorderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
@@ -16,8 +17,8 @@ use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
  * Class TreeUnordered
  *
  * @template ValueType
- * @extends TreeAbstract<ValueType, TreenodeUnorderedInterface, TreeUnorderedInterface,
- *     TreenodeValueObjectUnorderedInterface, CollectionUnorderedInterface>
+ * @phpcs:ignore
+ * @extends TreeAbstract<ValueType, TreenodeUnorderedInterface, TreeUnorderedInterface, TreenodeValueObjectUnorderedInterface, CollectionUnorderedInterface>
  * @implements TreeUnorderedInterface<ValueType>
  */
 class TreeUnordered extends TreeAbstract implements TreeUnorderedInterface
