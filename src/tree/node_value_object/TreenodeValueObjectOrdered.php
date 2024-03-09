@@ -46,6 +46,15 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
     }
 
     /**
+     * setIndex
+     * @param non-negative-int $index
+     */
+    public function setIndex(int $index): void
+    {
+        $this->index = $index;
+    }
+
+    /**
      * hydrateFromArray
      * @param array{
      *     'nodeId': non-negative-int,
