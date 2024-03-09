@@ -2,6 +2,9 @@
 
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
+ * @noinspection PhpCSValidationInspection
+ * skipping the phpCS inspection allows us to keep the opening and closing braces of the (empty) methods on the same
+ * line so that phpunit counts them in the coverage data
  */
 
 declare(strict_types=1);

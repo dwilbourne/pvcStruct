@@ -8,12 +8,14 @@ declare(strict_types=1);
 
 namespace pvcTests\struct\unit_tests\tree\tree;
 
+use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -35,6 +37,8 @@ class TreeAbstractTest extends TestCase
      */
     protected int $treeId;
 
+    protected TreeAbstractEventHandlerInterface|MockObject $handler;
+
     /**
      * @var TreeAbstractInterface|MockObject
      */
@@ -47,8 +51,9 @@ class TreeAbstractTest extends TestCase
     {
         $this->treeId = 0;
         $factory = $this->createMock(TreenodeFactoryInterface::class);
+        $this->handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
         $this->tree = $this->getMockBuilder(TreeAbstract::class)
-                           ->setConstructorArgs([$this->treeId, $factory])
+                           ->setConstructorArgs([$this->treeId, $factory, $this->handler])
                            ->getMockForAbstractClass();
     }
 
@@ -74,7 +79,7 @@ class TreeAbstractTest extends TestCase
 
     /**
      * testSetInvalidTreeidThrowsException
-     * @throws \Exception
+     * @throws Exception
      * @covers \pvc\struct\tree\tree\TreeAbstract::setTreeId
      * @covers \pvc\struct\tree\tree\TreeAbstract::validateTreeId
      */
@@ -114,6 +119,18 @@ class TreeAbstractTest extends TestCase
         $factory = $this->createMock(TreenodeAbstractFactory::class);
         $this->tree->setTreenodeFactory($factory);
         self::assertEquals($factory, $this->tree->getTreenodeFactory());
+    }
+
+    /**
+     * testSetGetEventHandler
+     * @covers \pvc\struct\tree\tree\TreeAbstract::getEventHandler
+     * @covers \pvc\struct\tree\tree\TreeAbstract::setEventHandler
+     */
+    public function testSetGetEventHandler(): void
+    {
+        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
+        $this->tree->setEventHandler($handler);
+        self::assertEquals($handler, $this->tree->getEventHandler());
     }
 
     /**
@@ -377,6 +394,10 @@ class TreeAbstractTest extends TestCase
     /**
      * testDeleteNodeUnsetsRootIfThereAreNoNodesLeftinTree
      * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNode
+     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::beforeAddNode
+     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::afterAddNode
+     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::beforeDeleteNode
+     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::afterDeleteNode
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
      */
@@ -398,10 +419,13 @@ class TreeAbstractTest extends TestCase
                     ->with($valueObject)
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
-
+        $this->handler->expects($this->once())->method('beforeAddNode')->with($root);
+        $this->handler->expects($this->once())->method('afterAddNode')->with($root);
         $this->tree->addNode($valueObject);
 
         $deleteBranch = false;
+        $this->handler->expects($this->once())->method('beforeDeleteNode')->with($root);
+        $this->handler->expects($this->once())->method('afterDeleteNode')->with($root);
         $this->tree->deleteNode($rootId, $deleteBranch);
 
         self::assertTrue($this->tree->isEmpty());

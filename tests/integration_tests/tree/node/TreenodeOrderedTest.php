@@ -8,8 +8,8 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\node;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
-use pvc\struct\tree\node\TreenodeValueValidatorDefault;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvcTests\struct\integration_tests\tree\fixture\CollectionOrderedFactory;
 use pvcTests\struct\integration_tests\tree\fixture\NodeTypeOrderedFactory;
@@ -38,7 +38,9 @@ class TreenodeOrderedTest extends TestCase
             $collectionFactory
         );
 
-        $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory);
+        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
+
+        $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory, $handler);
 
         $this->valueObjectArray = $this->fixture->makeValueObjectArray();
         $this->tree->hydrate($this->valueObjectArray);

@@ -8,6 +8,7 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
@@ -38,8 +39,8 @@ class SearchStrategyAbstractTest extends TestCase
             $nodeTypeFactory,
             $collectionFactory
         );
-
-        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
+        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
+        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory, $handler);
 
         $this->valueObjectArray = $this->fixture->makeValueObjectArray();
         $this->tree->hydrate($this->valueObjectArray);

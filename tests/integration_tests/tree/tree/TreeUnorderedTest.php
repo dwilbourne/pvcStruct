@@ -8,10 +8,10 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\tree;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
-use pvc\struct\tree\node\TreenodeValueValidatorDefault;
 use pvc\struct\tree\tree\TreeUnordered;
 use pvcTests\struct\integration_tests\tree\fixture\CollectionUnorderedFactory;
 use pvcTests\struct\integration_tests\tree\fixture\NodeTypeUnorderedFactory;
@@ -38,8 +38,9 @@ class TreeUnorderedTest extends TestCase
             $nodeTypeFactory,
             $collectionFactory
         );
+        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
 
-        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
+        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory, $handler);
 
         $this->valueObjectArray = $this->fixture->makeValueObjectArray();
         $this->tree->hydrate($this->valueObjectArray);
