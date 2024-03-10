@@ -29,11 +29,11 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
      */
     public function hydrateFromNode(TreenodeOrderedInterface $node): void
     {
-        $this->nodeId = $node->getNodeId();
-        $this->parentId = $node->getParentId();
-        $this->treeId = $node->getTreeId();
-        $this->value = $node->getValue();
-        $this->index = $node->getIndex();
+        $this->setNodeId($node->getNodeId());
+        $this->setParentId($node->getParentId());
+        $this->setTreeId($node->getTreeId());
+        $this->setValue($node->getValue());
+        $this->setIndex($node->getIndex());
     }
 
     /**
@@ -63,14 +63,15 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
      *     'value': ValueType,
      *     'index': non-negative-int
      * } $nodeData
+     *
+     * phpstan does not like the fact that the shape of the argument in the parent class is a subset of the shape of
+     * the argument in this class.....
+     * @phpstan-ignore argument.type
      */
     public function hydrateFromAssociativeArray(array $nodeData): void
     {
-        $this->nodeId = $nodeData['nodeId'];
-        $this->parentId = $nodeData['parentId'];
-        $this->treeId = $nodeData['treeId'];
-        $this->value = $nodeData['value'];
-        $this->index = $nodeData['index'];
+        parent::hydrateFromAssociativeArray($nodeData);
+        $this->setIndex($nodeData['index']);
     }
 
     /**
@@ -82,13 +83,14 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
      *        3: ValueType,
      *        4: non-negative-int,
      *    } $nodeData
+     *
+     *  phpstan does not like the fact that the shape of the argument in the parent class is a subset of the shape of
+     *  the argument in this class.....
+     * @phpstan-ignore argument.type
      */
     public function hydrateFromNumericArray(array $nodeData): void
     {
-        $this->nodeId = $nodeData[0];
-        $this->parentId = $nodeData[1];
-        $this->treeId = $nodeData[2];
-        $this->value = $nodeData[3];
-        $this->index = $nodeData[4];
+        parent::hydrateFromNumericArray($nodeData);
+        $this->setIndex($nodeData[4]);
     }
 }

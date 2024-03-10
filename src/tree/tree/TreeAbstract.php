@@ -207,6 +207,16 @@ abstract class TreeAbstract implements TreeAbstractInterface
     }
 
     /**
+     * initialize
+     * initializes the tree, e.g. removes all the nodes and sets the root to null.
+     */
+    public function initialize(): void
+    {
+        $this->nodes = [];
+        $this->root = null;
+    }
+
+    /**
      * @function getNodes
      * @return array<NodeType>
      */

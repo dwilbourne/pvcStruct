@@ -108,4 +108,38 @@ abstract class TreenodeValueObjectAbstract implements TreenodeValueObjectInterfa
     {
         $this->value = $value;
     }
+
+    /**
+     * hydrateFromArray
+     * @param array{
+     *     'nodeId': non-negative-int,
+     *     'parentId': non-negative-int|null,
+     *     'treeId': non-negative-int,
+     *     'value': ValueType,
+     * } $nodeData
+     */
+    public function hydrateFromAssociativeArray(array $nodeData): void
+    {
+        $this->setNodeId($nodeData['nodeId']);
+        $this->setParentId($nodeData['parentId']);
+        $this->setTreeId($nodeData['treeId']);
+        $this->setValue($nodeData['value']);
+    }
+
+    /**
+     * hydrateFromNumericArray
+     * @param array{
+     *        0: non-negative-int,
+     *        1: non-negative-int|null,
+     *        2: non-negative-int,
+     *        3: ValueType,
+     *    } $nodeData
+     */
+    public function hydrateFromNumericArray(array $nodeData): void
+    {
+        $this->setNodeId($nodeData[0]);
+        $this->setParentId($nodeData[1]);
+        $this->setTreeId($nodeData[2]);
+        $this->setValue($nodeData[3]);
+    }
 }

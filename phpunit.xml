@@ -9,6 +9,11 @@
     <include>
       <directory>src*</directory>
     </include>
+    <exclude>
+      <!-- TreeEventHandlerDefault has empty methods and phpunit only covers the methods if they are formatted in non-PSR-2
+      compliant manner -->
+      <file>src/tree/tree/event/TreeEventHandlerDefault.php</file>
+    </exclude>
     <report>
       <html outputDirectory="coverage"/>
     </report>

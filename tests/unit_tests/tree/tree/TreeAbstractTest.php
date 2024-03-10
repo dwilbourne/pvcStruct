@@ -213,6 +213,7 @@ class TreeAbstractTest extends TestCase
      * @covers \pvc\struct\tree\tree\TreeAbstract::getNode
      * @covers \pvc\struct\tree\tree\TreeAbstract::setRoot
      * @covers \pvc\struct\tree\tree\TreeAbstract::getRoot
+     * @covers \pvc\struct\tree\tree\TreeAbstract::initialize
      */
     public function testWhenTreeHasOneNode(): void
     {
@@ -235,6 +236,10 @@ class TreeAbstractTest extends TestCase
         self::assertEqualsCanonicalizing([$root], $this->tree->getNodes());
         self::assertEquals($root, $this->tree->getNode($rootId));
         self::assertEquals($root, $this->tree->getRoot());
+
+        $this->tree->initialize();
+        self::assertTrue($this->tree->isEmpty());
+        self::assertEquals(0, $this->tree->nodeCount());
     }
 
     /**

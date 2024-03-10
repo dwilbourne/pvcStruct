@@ -34,6 +34,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
      * testHydrateFromNode
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::hydrateFromNode
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::getIndex
+     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::setIndex
      */
     public function testHydrateFromNode(): void
     {
@@ -56,6 +57,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
     /**
      * testHydrateFromAssociativeArray
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::hydrateFromAssociativeArray
+     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::setIndex
      *
      * there are no checks on the shape of the incoming array in the code - it is type hinted in the PHPDoc
      *
@@ -81,6 +83,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
     /**
      * testHydrateFromNumericArray
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::hydrateFromNumericArray
+     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectOrdered::setIndex
      */
     public function testHydrateFromNumericArray(): void
     {
