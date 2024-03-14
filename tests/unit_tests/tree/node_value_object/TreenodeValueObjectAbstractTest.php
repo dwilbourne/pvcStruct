@@ -20,15 +20,12 @@ class TreenodeValueObjectAbstractTest extends TestCase
 
     protected int $treeId = 7;
 
-    protected string $value = 'foo';
-
     public function setUp(): void
     {
         $this->valueObject = $this->getMockForAbstractClass(TreenodeValueObjectAbstract::class);
         $this->valueObject->setNodeId($this->nodeId);
         $this->valueObject->setParentId($this->parentId);
         $this->valueObject->setTreeId($this->treeId);
-        $this->valueObject->setValue($this->value);
     }
 
     /**
@@ -39,14 +36,13 @@ class TreenodeValueObjectAbstractTest extends TestCase
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::getParentId
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::setTreeId
      * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::getTreeId
-     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::setValue
-     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::getValue
+     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::setPayload
+     * @covers \pvc\struct\tree\node_value_object\TreenodeValueObjectAbstract::getPayload
      */
     public function testSettersGetters(): void
     {
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
     }
 }

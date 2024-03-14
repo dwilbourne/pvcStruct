@@ -21,7 +21,7 @@ class TreenodeValueObjectUnorderedTest extends TestCase
 
     protected int $treeId = 7;
 
-    protected string $value = 'foo';
+    protected string $payload = 'foo';
 
     public function setUp(): void
     {
@@ -38,14 +38,14 @@ class TreenodeValueObjectUnorderedTest extends TestCase
         $node->method('getNodeId')->willReturn($this->nodeId);
         $node->method('getParentId')->willReturn($this->parentId);
         $node->method('getTreeId')->willReturn($this->treeId);
-        $node->method('getValue')->willReturn($this->value);
+        $node->method('getPayload')->willReturn($this->payload);
 
         $this->valueObject->hydrateFromNode($node);
 
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
     }
 
     /**
@@ -61,14 +61,14 @@ class TreenodeValueObjectUnorderedTest extends TestCase
         $array['nodeId'] = $this->nodeId;
         $array['parentId'] = $this->parentId;
         $array['treeId'] = $this->treeId;
-        $array['value'] = $this->value;
+        $array['payload'] = $this->payload;
 
         $this->valueObject->hydrateFromAssociativeArray($array);
 
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
     }
 
     /**
@@ -81,13 +81,13 @@ class TreenodeValueObjectUnorderedTest extends TestCase
         $array[] = $this->nodeId;
         $array[] = $this->parentId;
         $array[] = $this->treeId;
-        $array[] = $this->value;
+        $array[] = $this->payload;
 
         $this->valueObject->hydrateFromNumericArray($array);
 
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
     }
 }

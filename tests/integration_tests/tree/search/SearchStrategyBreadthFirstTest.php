@@ -10,7 +10,6 @@ namespace pvcTests\struct\integration_tests\tree\search;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
-use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\search\SearchFilterDefault;
 use pvc\struct\tree\search\SearchStrategyBreadthFirst;
@@ -119,25 +118,35 @@ class SearchStrategyBreadthFirstTest extends TestCase
 
     /**
      * testGetNextNodeFullTree
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNode
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::rewind
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::current
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNodeProtected
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
      */
     public function testGetNextNodeFullTree(): void
     {
         $expectedResult = $this->fixture->makeUnorderedBreadthFirstArrayOfAllNodeIds();
-        $nodes = [];
-        while ($node = $this->strategy->getNextNode()) {
-            $nodes[] = $node;
+
+        $actualResult = [];
+        foreach ($this->strategy as $node) {
+            $actualResult[] = $node->getNodeId();
         }
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
+        self::assertEquals($expectedResult, $actualResult);
+
+        /**
+         * test rewind machinery by running the test again
+         */
+        $actualResult = [];
+        foreach ($this->strategy as $node) {
+            $actualResult[] = $node->getNodeId();
+        }
+        self::assertEquals($expectedResult, $actualResult);
     }
 
     /**
      * getNextNodeWithMaxLevels
      * @throws BadSearchLevelsException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNode
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::current
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNodeProtected
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
      */
@@ -145,37 +154,10 @@ class SearchStrategyBreadthFirstTest extends TestCase
     {
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayTwoLevelsStartingAtRoot();
         $this->strategy->setMaxLevels(2);
-        $nodes = [];
-        while ($node = $this->strategy->getNextNode()) {
-            $nodes[] = $node;
+        $actualResult = [];
+        foreach ($this->strategy as $node) {
+            $actualResult[] = $node->getNodeId();
         }
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
-    }
-
-    /**
-     * testResetSearch
-     * @throws StartNodeUnsetException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::resetSearch
-     */
-    public function testResetSearch(): void
-    {
-        $expectedResult = $this->fixture->makeUnorderedBreadthFirstArrayOfAllNodeIds();
-        $nodes = [];
-        while ($node = $this->strategy->getNextNode()) {
-            $nodes[] = $node;
-        }
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
-
-        self::assertNull($this->strategy->getNextNode());
-
-        $this->strategy->resetSearch();
-        $nodes = [];
-        while ($node = $this->strategy->getNextNode()) {
-            $nodes[] = $node;
-        }
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
         self::assertEqualsCanonicalizing($expectedResult, $actualResult);
     }
 }

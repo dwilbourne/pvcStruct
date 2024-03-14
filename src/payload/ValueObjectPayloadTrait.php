@@ -9,19 +9,13 @@ declare(strict_types=1);
 namespace pvc\struct\payload;
 
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\struct\tree\err\InvalidValueException;
 
 /**
- * Class PayloadTrait
+ * Class ValueObjectPayloadTrait
  * @template PayloadType of HasPayloadInterface
  */
-trait PayloadTrait
+trait ValueObjectPayloadTrait
 {
-    /**
-     * @use PayloadValidatorTrait<PayloadType>
-     */
-    use PayloadValidatorTrait;
-
     /**
      * @var PayloadType|null
      */
@@ -33,19 +27,15 @@ trait PayloadTrait
      */
     public function getPayload()
     {
-        return $this->payload ?? null;
+        return $this->payload;
     }
 
     /**
      * setPayload
      * @param PayloadType|null $payload
-     * @throws InvalidValueException
      */
     public function setPayload($payload): void
     {
-        if ($this->getPayloadValidator() && !$this->getPayloadValidator()->validate($payload)) {
-            throw new InvalidValueException();
-        }
         $this->payload = $payload;
     }
 }

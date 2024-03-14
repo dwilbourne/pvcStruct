@@ -7,15 +7,22 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
+use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
+use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
- * @extends SearchStrategyAbstract<NodeType>
- * @implements SearchStrategyInterface<NodeType>
+ * @template TreeType of TreeAbstractInterface
+ * @template CollectionType of CollectionAbstractInterface
+ * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType>
+ * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType>
  */
 class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements SearchStrategyInterface
 {
@@ -27,22 +34,19 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
      * the start node, not inclusive of the start node.
      */
     protected int $maxLevels = PHP_INT_MAX;
+
     /**
-     * @var NodeType[]
+     * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
+     *
      * array of nodes in the "current level" of the tree
      */
     private array $currentLevelNodes;
+
     /**
      * @var int
      * index into $currentLevelNodes used to retrieve the next node
      */
     private int $currentIndex;
-
-    /**
-     * @param NodeType $startNode
-     * @param int $maxLevels
-     * @throws BadSearchLevelsException
-     */
 
     /**
      * getMaxLevels
@@ -68,20 +72,24 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
     }
 
     /**
-     * resetSearch
+     * rewind
+     * @throws StartNodeUnsetException
      */
-    public function resetSearch(): void
+    public function rewind(): void
     {
-        $this->clearVisitCounts();
-        /** @var array<NodeType> $currentLevelNodes */
-        $currentLevelNodes = [$this->getStartNode()];
-        $this->currentLevelNodes = $currentLevelNodes;
-        $this->currentIndex = 0;
+        $this->currentLevelNodes = [$this->getStartNode()];
+        $this->currentNode = $this->getStartNode();
+        /**
+         * at the beginning of the iteration, the current node is returned without next() being called first. So there
+         * is nothing that advances the currentIndex pointer when the startnode is returned as the first element in the
+         * iteration.  So really, the currentIndex should be 1, not 0
+         */
+        $this->currentIndex = 1;
     }
 
     /**
-     * getNextNode
-     * @return NodeType|null
+     * current
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
      */
     protected function getNextNodeProtected(): TreenodeAbstractInterface|null
     {
@@ -116,24 +124,24 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
              */
             $this->currentLevelNodes = $this->getNextLevelOfNodes();
             /**
-             * resetSearch max levels and current index and go get another node
+             * decrement max levels, rewind the current index and go get another node
              */
             $this->maxLevels--;
             $this->currentIndex = 0;
-            return $this->getNextNode();
+            return $this->getNextNodeProtected();
         }
     }
 
     /**
      * getNextLevelOfNodes
-     * @return array<NodeType>
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
      */
     protected function getNextLevelOfNodes(): array
     {
         $getChildrenCallback = function (TreenodeAbstractInterface $node): array {
             return $node->getChildren()->getElements();
         };
-        /** @var array<NodeType> $result */
+        /** @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>> $result */
         $result = call_user_func_array('array_merge', array_map($getChildrenCallback, $this->currentLevelNodes));
         return $result;
     }
@@ -141,7 +149,7 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
 
     /**
      * getNodesProtected
-     * @return array<NodeType>
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
      */
     protected function getNodesProtected(): array
     {
@@ -154,8 +162,8 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
 
     /**
      * getNodesRecurse
-     * @param array<NodeType> $nodes
-     * @return array<NodeType>
+     * @param array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>> $nodes
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
      */
     protected function getNodesRecurse(array $nodes): array
     {

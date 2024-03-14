@@ -8,20 +8,21 @@ declare(strict_types=1);
 namespace pvc\struct\collection;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
 
 /**
  * Class collectionAbstract
- * @template ElementType
+ * @template PayloadType of HasPayloadInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements CollectionAbstractInterface<ElementType, CollectionType>
+ * @implements CollectionAbstractInterface<PayloadType, CollectionType>
  */
 abstract class CollectionAbstract implements CollectionAbstractInterface
 {
     /**
-     * @var array<non-negative-int, ElementType> $elements ;
+     * @var array<non-negative-int, PayloadType> $elements ;
      */
     protected array $elements = [];
 
@@ -36,7 +37,7 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
 
     /**
      * current
-     * @return ElementType
+     * @return PayloadType
      */
     public function current(): mixed
     {
@@ -102,7 +103,7 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
     /**
      * getElement
      * @param non-negative-int $key
-     * @return ElementType
+     * @return PayloadType
      */
     public function getElement(int $key): mixed
     {
@@ -147,7 +148,7 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
 
     /**
      * @function getElements
-     * @return array<ElementType>
+     * @return array<PayloadType>
      */
     public function getElements(): array
     {
@@ -156,13 +157,13 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
 
     /**
      * @function getKey
-     * @param ElementType $listElement
+     * @param PayloadType $element
      * @param bool $strict
      * @return non-negative-int|null
      */
-    public function getKey($listElement, bool $strict = true): ?int
+    public function getKey($element, bool $strict = true): ?int
     {
-        $key = array_search($listElement, $this->elements, $strict);
+        $key = array_search($element, $this->elements, $strict);
         return ($key === false) ? null : $key;
     }
 
@@ -177,19 +178,19 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
      */
 
     /**
-     * getKeys returns all the keys in the collection where the corresponding element equals $listElement.
+     * getKeys returns all the keys in the collection where the corresponding element equals $element.
      *
      * The implementation is a little painful.  The array_keys verb does the job, but the return type does not match
      * the restriction in this class that keys are non-negative integers.
      *
-     * @param ElementType $listElement
+     * @param PayloadType $element
      * @param bool $strict
      * @return array<non-negative-int>
      */
-    public function getKeys($listElement, bool $strict = true): array
+    public function getKeys($element, bool $strict = true): array
     {
         /** @var array<non-negative-int> $keys */
-        $keys = array_keys($this->elements, $listElement, $strict);
+        $keys = array_keys($this->elements, $element, $strict);
         return $keys;
     }
 
@@ -199,14 +200,14 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
      * This is the default behavior (e.g. unordered collection).  It is overridden in CollectionOrdered
      *
      * @param non-negative-int $key
-     * @param ElementType $value
+     * @param PayloadType $payload
      * @throws DuplicateKeyException
      * @throws InvalidKeyException
      */
-    public function add(int $key, $value): void
+    public function add(int $key, $payload): void
     {
         $this->validateNewKey($key);
-        $this->elements[$key] = $value;
+        $this->elements[$key] = $payload;
     }
 
     /**
@@ -234,14 +235,14 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
     /**
      * update assigns a new element to the entry with index $key
      * @param non-negative-int $key
-     * @param ElementType $value
+     * @param PayloadType $payload
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
-    public function update(int $key, $value): void
+    public function update(int $key, $payload): void
     {
         $this->validateExistingKey($key);
-        $this->elements[$key] = $value;
+        $this->elements[$key] = $payload;
     }
 
     /**
@@ -262,10 +263,10 @@ abstract class CollectionAbstract implements CollectionAbstractInterface
 
     /**
      * push adds an element to the end of the collection
-     * @param ElementType $value
+     * @param PayloadType $payload
      */
-    public function push(mixed $value): void
+    public function push(mixed $payload): void
     {
-        $this->elements[] = $value;
+        $this->elements[] = $payload;
     }
 }

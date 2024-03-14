@@ -210,7 +210,7 @@ class CollectionAbstractTest extends TestCase
     {
         $this->addElements(3);
         $this->expectException(InvalidKeyException::class);
-        $this->collectionAbstract->add($this->badkey, 'some value');
+        $this->collectionAbstract->add($this->badkey, 'some payload');
     }
 
     /**
@@ -252,7 +252,7 @@ class CollectionAbstractTest extends TestCase
     public function testUpdateThrowsExceptionWithInvalidKey(): void
     {
         $this->expectException(InvalidKeyException::class);
-        $this->collectionAbstract->update($this->badkey, 'some value');
+        $this->collectionAbstract->update($this->badkey, 'some payload');
     }
 
     /**
@@ -262,7 +262,7 @@ class CollectionAbstractTest extends TestCase
     public function testUpdateThrowsExceptionWithNonExistentKey(): void
     {
         $this->expectException(NonExistentKeyException::class);
-        $this->collectionAbstract->update(4, 'some value');
+        $this->collectionAbstract->update(4, 'some payload');
     }
 
     /**
@@ -287,7 +287,7 @@ class CollectionAbstractTest extends TestCase
     public function testDeleteThrowsExceptionWithInvalidKey(): void
     {
         $this->expectException(InvalidKeyException::class);
-        $this->collectionAbstract->delete($this->badkey, 'some value');
+        $this->collectionAbstract->delete($this->badkey, 'some payload');
     }
 
     /**
@@ -310,7 +310,7 @@ class CollectionAbstractTest extends TestCase
 
         $this->collectionAbstract->delete(1);
         self::assertEquals(2, count($this->collectionAbstract));
-        // keys are not reindexed - there is no key with value == 1 now
+        // keys are not reindexed - there is no key with payload == 1 now
         self::expectException(NonExistentKeyException::class);
         $foo = $this->collectionAbstract->getElement(1);
     }

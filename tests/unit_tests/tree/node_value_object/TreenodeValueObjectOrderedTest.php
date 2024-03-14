@@ -21,7 +21,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
 
     protected int $treeId = 7;
 
-    protected string $value = 'foo';
+    protected string $payload = 'foo';
 
     protected int $index = 0;
 
@@ -42,7 +42,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         $node->method('getNodeId')->willReturn($this->nodeId);
         $node->method('getParentId')->willReturn($this->parentId);
         $node->method('getTreeId')->willReturn($this->treeId);
-        $node->method('getValue')->willReturn($this->value);
+        $node->method('getPayload')->willReturn($this->payload);
         $node->method('getIndex')->willReturn($this->index);
 
         $this->valueObject->hydrateFromNode($node);
@@ -50,7 +50,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
         self::assertEquals($this->index, $this->valueObject->getIndex());
     }
 
@@ -68,7 +68,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         $array['nodeId'] = $this->nodeId;
         $array['parentId'] = $this->parentId;
         $array['treeId'] = $this->treeId;
-        $array['value'] = $this->value;
+        $array['payload'] = $this->payload;
         $array['index'] = $this->index;
 
         $this->valueObject->hydrateFromAssociativeArray($array);
@@ -76,7 +76,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
         self::assertEquals($this->index, $this->valueObject->getIndex());
     }
 
@@ -91,7 +91,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         $array[] = $this->nodeId;
         $array[] = $this->parentId;
         $array[] = $this->treeId;
-        $array[] = $this->value;
+        $array[] = $this->payload;
         $array[] = $this->index;
 
         $this->valueObject->hydrateFromNumericArray($array);
@@ -99,7 +99,7 @@ class TreenodeValueObjectOrderedTest extends TestCase
         self::assertEquals($this->nodeId, $this->valueObject->getNodeId());
         self::assertEquals($this->parentId, $this->valueObject->getParentId());
         self::assertEquals($this->treeId, $this->valueObject->getTreeId());
-        self::assertEquals($this->value, $this->valueObject->getValue());
+        self::assertEquals($this->payload, $this->valueObject->getPayload());
         self::assertEquals($this->index, $this->valueObject->getIndex());
     }
 }

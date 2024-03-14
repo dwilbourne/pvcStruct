@@ -39,17 +39,17 @@ class CollectionOrdered extends CollectionAbstract implements CollectionOrderedI
     /**
      * add
      * @param non-negative-int $key
-     * @param ElementType $value
+     * @param ElementType $payload
      * @throws InvalidKeyException
      */
-    public function add(int $key, $value): void
+    public function add(int $key, $payload): void
     {
         $this->validateKey($key);
 
         /**
-         * push the value onto the end of the collection
+         * push the payload onto the end of the collection
          */
-        $this->push($value);
+        $this->push($payload);
 
         /**
          * get existing key of what we just pushed on the end of the collection and set its index to the correct
@@ -116,7 +116,7 @@ class CollectionOrdered extends CollectionAbstract implements CollectionOrderedI
         }
 
         /**
-         * put the value into the new index
+         * put the payload into the new index
          */
         $this->elements[$newIndex] = $value;
     }

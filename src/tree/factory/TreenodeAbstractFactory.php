@@ -9,57 +9,64 @@ namespace pvc\struct\tree\factory;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\payload\HasPayloadValidatorInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\factory\NodeTypeFactoryInterface;
 use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
-use pvc\interfaces\validator\ValidatorInterface;
+use pvc\struct\payload\PayloadValidatorTrait;
 
 /**
  * Class TreenodeAbstractFactory
- * @template ValueType
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType>
+ * @implements TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType>
  */
 class TreenodeAbstractFactory implements TreenodeFactoryInterface
 {
+    /**
+     * @use PayloadValidatorTrait<PayloadType>
+     */
+    use PayloadValidatorTrait;
+
     /**
      * @var CollectionFactoryInterface<CollectionType> $collectionFactory
      */
     protected CollectionFactoryInterface $collectionFactory;
 
     /**
-     * @var NodeTypeFactoryInterface<ValueType, NodeType, TreeType, CollectionType>
+     * @var NodeTypeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     protected NodeTypeFactoryInterface $nodeTypeFactory;
 
     /**
-     * @var ValidatorInterface<ValueType> $validator
+     * @var HasPayloadValidatorInterface<PayloadType> $validator
      */
-    protected ValidatorInterface $validator;
 
     /**
-     * @var TreeType
+     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     protected TreeAbstractInterface $tree;
 
     /**
-     * @param NodeTypeFactoryInterface<ValueType, NodeType, TreeType, CollectionType> $nodeTypeFactory
+     * @param NodeTypeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType> $nodeTypeFactory
      * @param CollectionFactoryInterface<CollectionType> $collectionFactory
-     * @param ValidatorInterface<ValueType>|null $validator
+     * @param ValidatorPayloadInterface<PayloadType>|null $validator
      */
     public function __construct(
         NodeTypeFactoryInterface $nodeTypeFactory,
         CollectionFactoryInterface $collectionFactory,
-        ValidatorInterface $validator = null
+        ValidatorPayloadInterface $validator = null
     ) {
-        $this->nodeTypeFactory = $nodeTypeFactory;
-        $this->collectionFactory = $collectionFactory;
+        $this->setNodeTypeFactory($nodeTypeFactory);
+        $this->setCollectionFactory($collectionFactory);
         if ($validator) {
-            $this->validator = $validator;
+            $this->setPayloadValidator($validator);
         }
     }
 
@@ -72,8 +79,17 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     }
 
     /**
+     * setCollectionFactory
+     * @param CollectionFactoryInterface<CollectionType> $collectionFactory
+     */
+    public function setCollectionFactory(CollectionFactoryInterface $collectionFactory): void
+    {
+        $this->collectionFactory = $collectionFactory;
+    }
+
+    /**
      * getTree
-     * @return TreeType
+     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     public function getTree(): TreeAbstractInterface
     {
@@ -82,7 +98,7 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
 
     /**
      * setTree
-     * @param TreeType $tree
+     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $tree
      */
     public function setTree(TreeAbstractInterface $tree): void
     {
@@ -90,35 +106,7 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * makeNode
-     * @param TreenodeValueObjectInterface<ValueType> $valueObject
-     * @return NodeType
-     */
-    public function makeNode(TreenodeValueObjectInterface $valueObject): TreenodeAbstractInterface
-    {
-        /** @var CollectionType $collection */
-        $collection = $this->collectionFactory->makeCollection();
-
-        /** @var NodeType $node */
-        $node = $this->getNodeTypeFactory()->makeNodeType($valueObject, $this->tree, $collection);
-        if ($this->getValueValidator()) {
-            $node->setValueValidator($this->getValueValidator());
-        }
-        $node->setValue($valueObject->getValue());
-        return $node;
-    }
-
-    /**
-     * makeCollection
-     * @return CollectionType<NodeType>
-     */
-    public function makeCollection(): CollectionAbstractInterface
-    {
-        return $this->collectionFactory->makeCollection();
-    }
-
-    /**
-     * @return NodeTypeFactoryInterface<ValueType, NodeType, TreeType, CollectionType>
+     * @return NodeTypeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     public function getNodeTypeFactory(): NodeTypeFactoryInterface
     {
@@ -126,10 +114,39 @@ class TreenodeAbstractFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return ValidatorInterface<ValueType>|null
+     * setNodeTypeFactory
+     * @param NodeTypeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType> $nodeTypeFactory
      */
-    public function getValueValidator(): ?ValidatorInterface
+    public function setNodeTypeFactory(NodeTypeFactoryInterface $nodeTypeFactory): void
     {
-        return $this->validator ?? null;
+        $this->nodeTypeFactory = $nodeTypeFactory;
+    }
+
+    /**
+     * makeCollection
+     * @return CollectionAbstractInterface<PayloadType, NodeType>
+     */
+    public function makeCollection(): CollectionAbstractInterface
+    {
+        return $this->collectionFactory->makeCollection();
+    }
+
+    /**
+     * makeNode
+     * @param TreenodeValueObjectInterface<PayloadType> $valueObject
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
+     */
+    public function makeNode(TreenodeValueObjectInterface $valueObject): TreenodeAbstractInterface
+    {
+        /** @var CollectionType $collection */
+        $collection = $this->collectionFactory->makeCollection();
+
+        /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $node */
+        $node = $this->getNodeTypeFactory()->makeNodeType($valueObject, $this->tree, $collection);
+        if ($this->getPayloadValidator()) {
+            $node->setPayloadValidator($this->getPayloadValidator());
+        }
+        $node->setPayload($valueObject->getPayload());
+        return $node;
     }
 }

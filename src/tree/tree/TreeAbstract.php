@@ -9,6 +9,7 @@ declare (strict_types=1);
 namespace pvc\struct\tree\tree;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
@@ -24,12 +25,12 @@ use pvc\struct\tree\err\TreeNotEmptyHydrationException;
 
 /**
  * @class TreeAbstract
- * @template ValueType
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template NodeValueObjectType of TreenodeValueObjectInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreeAbstractInterface<ValueType, NodeType, TreeType, CollectionType>
+ * @implements TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
  */
 abstract class TreeAbstract implements TreeAbstractInterface
 {
@@ -39,12 +40,12 @@ abstract class TreeAbstract implements TreeAbstractInterface
     protected int $treeid;
 
     /**
-     * @var TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @var TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
      */
     protected TreenodeFactoryInterface $treenodeFactory;
 
     /**
-     * @var TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType>
+     * @var TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     protected TreeAbstractEventHandlerInterface $eventHandler;
 
@@ -60,8 +61,8 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * @param int $treeid
-     * @param TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType> $treenodeFactory
-     * @param TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType> $handler
+     * @param TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType> $handler
      * @throws InvalidTreeidException
      * @throws SetTreeIdException
      */
@@ -123,7 +124,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
 
     /**
-     * @return TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType>
+     * @return TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType>
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {
@@ -131,7 +132,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
     }
 
     /**
-     * @param TreenodeFactoryInterface<ValueType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @param TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
      */
     public function setTreenodeFactory(TreenodeFactoryInterface $treenodeFactory): void
     {
@@ -143,7 +144,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * setEventHandler
-     * @param TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType> $handler
+     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType> $handler
      */
     public function setEventHandler(TreeAbstractEventHandlerInterface $handler): void
     {
@@ -152,7 +153,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * getEventHandler
-     * @return TreeAbstractEventHandlerInterface<ValueType, NodeType, TreeType, CollectionType>
+     * @return TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     public function getEventHandler(): TreeAbstractEventHandlerInterface
     {
@@ -162,7 +163,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
     /**
      * rootTest
      * encapsulate logic for testing whether something is or can be the root
-     * @param NodeType|TreenodeValueObjectInterface<ValueType> $nodeItem
+     * @param NodeType|TreenodeValueObjectInterface<PayloadType> $nodeItem
      * @return bool
      */
     public function rootTest(TreenodeAbstractInterface|TreenodeValueObjectInterface $nodeItem): bool
@@ -246,7 +247,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * addNode
-     * @param TreenodeValueObjectInterface<ValueType> $valueObject
+     * @param TreenodeValueObjectInterface<PayloadType> $valueObject
      */
     public function addNode(TreenodeValueObjectInterface $valueObject): void
     {
@@ -416,7 +417,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * makeCollection
-     * @return CollectionType<NodeType>
+     * @return CollectionAbstractInterface<PayloadType, NodeType>
      */
     public function makeCollection(): CollectionAbstractInterface
     {

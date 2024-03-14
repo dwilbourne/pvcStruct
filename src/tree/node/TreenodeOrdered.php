@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionOrderedInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\struct\tree\err\InvalidNodeIdException;
@@ -16,9 +17,9 @@ use pvc\struct\tree\err\InvalidNodeIdException;
 /**
  * Class TreenodeOrdered
  *
- * @template ValueType
- * @extends TreenodeAbstract<ValueType, TreenodeOrderedInterface, TreeOrderedInterface, CollectionOrderedInterface>
- * @implements TreenodeOrderedInterface<ValueType>
+ * @template PayloadType of HasPayloadInterface
+ * @extends TreenodeAbstract<PayloadType, TreenodeOrderedInterface, TreeOrderedInterface, CollectionOrderedInterface>
+ * @implements TreenodeOrderedInterface<PayloadType>
  */
 class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterface
 {
@@ -27,8 +28,8 @@ class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterfa
      * @param non-negative-int|null $parentId
      * @param non-negative-int $treeId
      * @param non-negative-int $index
-     * @param TreeOrderedInterface<ValueType> $tree
-     * @param CollectionOrderedInterface<TreenodeOrderedInterface<ValueType>> $collectionOrdered
+     * @param TreeOrderedInterface<PayloadType> $tree
+     * @param CollectionOrderedInterface<TreenodeOrderedInterface<PayloadType>> $collectionOrdered
      * @throws InvalidNodeIdException
      */
     public function __construct(
@@ -49,7 +50,7 @@ class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterfa
      */
     public function getIndex(): int
     {
-        /** @var CollectionOrderedInterface<TreenodeOrderedInterface<ValueType>> $siblings */
+        /** @var CollectionOrderedInterface<TreenodeOrderedInterface<PayloadType>> $siblings */
         $siblings = $this->getSiblings();
         /** @var non-negative-int $key */
         $key = $siblings->getKey($this);
@@ -64,7 +65,7 @@ class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterfa
      */
     public function setIndex(int $index): void
     {
-        /** @var CollectionOrderedInterface<TreenodeOrderedInterface<ValueType>> $siblings */
+        /** @var CollectionOrderedInterface<TreenodeOrderedInterface<PayloadType>> $siblings */
         $siblings = $this->getSiblings();
         /** @var non-negative-int $key */
         $key = $siblings->getKey($this);

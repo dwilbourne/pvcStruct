@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionUnorderedInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeUnorderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
 use pvc\struct\tree\err\InvalidNodeIdException;
 
 /**
  * class TreenodeUnordered
- * @template ValueType
- * @extends TreenodeAbstract<ValueType, TreenodeUnorderedInterface, TreeUnorderedInterface,
- *     CollectionUnorderedInterface>
- * @implements TreenodeUnorderedInterface<ValueType>
+ * @template PayloadType of HasPayloadInterface
+ * @phpcs:ignore -- generics must be all on the same line in order to be processed correctly by phpstan
+ * @extends TreenodeAbstract<PayloadType, TreenodeUnorderedInterface, TreeUnorderedInterface, CollectionUnorderedInterface>
+ * @implements TreenodeUnorderedInterface<PayloadType>
  */
 class TreenodeUnordered extends TreenodeAbstract implements TreenodeUnorderedInterface
 {
@@ -22,8 +23,8 @@ class TreenodeUnordered extends TreenodeAbstract implements TreenodeUnorderedInt
      * @param non-negative-int $nodeId
      * @param non-negative-int|null $parentId
      * @param non-negative-int $treeId
-     * @param TreeUnorderedInterface<ValueType> $tree
-     * @param CollectionUnorderedInterface<TreenodeUnorderedInterface<ValueType>> $collectionUnordered
+     * @param TreeUnorderedInterface<PayloadType> $tree
+     * @param CollectionUnorderedInterface<TreenodeUnorderedInterface<PayloadType>> $collectionUnordered
      * @throws InvalidNodeIdException
      */
     public function __construct(

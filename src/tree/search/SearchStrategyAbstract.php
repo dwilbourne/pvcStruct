@@ -7,30 +7,40 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
+use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\search\SearchFilterInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
-use pvc\struct\tree\err\StartNodeUnsetException;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 
 /**
  * Class SearchStrategyAbstract
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
- * @implements SearchStrategyInterface<NodeType>
+ * @template TreeType of TreeAbstractInterface
+ * @template CollectionType of CollectionAbstractInterface
+ * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType>
  */
 abstract class SearchStrategyAbstract implements SearchStrategyInterface
 {
     /**
-     * @var NodeType
-     */
-    protected TreenodeAbstractInterface $startNode;
-
-    /**
-     * @var SearchFilterInterface<NodeType>
+     * @var SearchFilterInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
     protected SearchFilterInterface $filter;
 
     /**
-     * @param SearchFilterInterface<NodeType> $filter
+     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
+     */
+    protected TreenodeAbstractInterface $startNode;
+
+    /**
+     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
+     */
+    protected TreenodeAbstractInterface|null $currentNode;
+
+    /**
+     * @param SearchFilterInterface<PayloadType, NodeType, TreeType, CollectionType> $filter
      */
     public function __construct(SearchFilterInterface $filter)
     {
@@ -38,28 +48,8 @@ abstract class SearchStrategyAbstract implements SearchStrategyInterface
     }
 
     /**
-     * setSearchFilter
-     * @param SearchFilterInterface<NodeType> $filter
-     */
-    public function setSearchFilter(SearchFilterInterface $filter): void
-    {
-        $this->filter = $filter;
-    }
-
-    /**
-     * clearVisitCounts
-     */
-    public function clearVisitCounts(): void
-    {
-        if (!$this->getStartNode()) {
-            throw new StartNodeUnsetException();
-        }
-        $this->clearVisitCountsRecurse($this->startNode);
-    }
-
-    /**
      * getStartNode
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
      */
     public function getStartNode(): TreenodeAbstractInterface|null
     {
@@ -68,47 +58,94 @@ abstract class SearchStrategyAbstract implements SearchStrategyInterface
 
     /**
      * setStartNode
-     * @param NodeType $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $node
      */
     public function setStartNode(TreenodeAbstractInterface $node): void
     {
         $this->startNode = $node;
-        $this->resetSearch();
+        $this->rewind();
     }
 
     /**
-     * resetSearch
+     * setSearchFilter
+     * @param SearchFilterInterface<PayloadType, NodeType, TreeType, CollectionType> $filter
      */
-    abstract public function resetSearch(): void;
+    public function setSearchFilter(SearchFilterInterface $filter): void
+    {
+        $this->filter = $filter;
+    }
 
     /**
-     * clearVisitCountsRecurse
-     * @param NodeType $node
+     * getSearchFilter
+     * @return SearchFilterInterface<PayloadType, NodeType, TreeType, CollectionType>
      */
-    protected function clearVisitCountsRecurse(TreenodeAbstractInterface $node): void
+    public function getSearchFilter(): SearchFilterInterface
     {
-        $node->clearVisitCount();
-        /** @var NodeType $child */
-        foreach ($node->getChildren() as $child) {
-            $this->clearVisitCountsRecurse($child);
+        return $this->filter;
+    }
+
+    /**
+     * getNodes
+     * gets all the nodes at once
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
+     */
+    public function getNodes(): array
+    {
+        return array_filter($this->getNodesProtected(), [$this->getSearchFilter(), 'testNode']);
+    }
+
+    /**
+     * getNodesProtected
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
+     */
+    abstract protected function getNodesProtected(): array;
+
+    /**
+     * current
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
+     */
+    public function current(): TreenodeAbstractInterface|null
+    {
+        return $this->currentNode ?? null;
+    }
+
+    /**
+     * key
+     * @return int|null
+     */
+    public function key(): ?int
+    {
+        return $this->currentNode?->getNodeId();
+    }
+
+    /**
+     * next
+     * advances current to the next node if possible
+     */
+    public function next(): void
+    {
+        /**
+         * because of the filtering, it is possible that there are no more nodes in the tree that will pass through
+         * the filter, even if there are more nodes in the tree.  This implementation sets $this->current to be null
+         * when there are no more nodes to traverse.
+         */
+        $this->currentNode = $this->getNextNodeProtected();
+        while ($this->currentNode && !$this->filter->testNode($this->currentNode)) {
+            $this->currentNode = $this->getNextNodeProtected();
         }
     }
 
     /**
-     * getNextNode
-     * gets nodes one at a time
-     * @return NodeType|null
+     * rewind is implemented in the child classes
      */
-    public function getNextNode(): TreenodeAbstractInterface|null
+
+    /**
+     * valid
+     * @return bool
+     */
+    public function valid(): bool
     {
-        if (!$this->getStartNode()) {
-            throw new StartNodeUnsetException();
-        }
-        $nextNode = $this->getNextNodeProtected();
-        while ($nextNode && !$this->filter->testNode($nextNode)) {
-            $nextNode = $this->getNextNodeProtected();
-        }
-        return $nextNode;
+        return (!is_null($this->currentNode));
     }
 
     /**
@@ -116,32 +153,4 @@ abstract class SearchStrategyAbstract implements SearchStrategyInterface
      * @return NodeType|null
      */
     abstract protected function getNextNodeProtected(): TreenodeAbstractInterface|null;
-
-    /**
-     * getNodes
-     * gets all the nodes at once
-     * @return array<NodeType>
-     */
-    public function getNodes(): array
-    {
-        if (!$this->getStartNode()) {
-            throw new StartNodeUnsetException();
-        }
-        return array_filter($this->getNodesProtected(), [$this->getSearchFilter(), 'testNode']);
-    }
-
-    /**
-     * getNodesProtected
-     * @return array<NodeType>
-     */
-    abstract protected function getNodesProtected(): array;
-
-    /**
-     * getSearchFilter
-     * @return SearchFilterInterface<NodeType>
-     */
-    public function getSearchFilter(): SearchFilterInterface
-    {
-        return $this->filter;
-    }
 }

@@ -3,18 +3,20 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+
 declare(strict_types=1);
 
 namespace pvc\struct\tree\node_value_object;
 
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectOrderedInterface;
 
 /**
  * Class TreenodeValueObjectOrdered
- * @template ValueType
- * @extends TreenodeValueObjectAbstract<ValueType>
- * @implements TreenodeValueObjectOrderedInterface<ValueType>
+ * @template PayloadType of HasPayloadInterface
+ * @extends TreenodeValueObjectAbstract<PayloadType>
+ * @implements TreenodeValueObjectOrderedInterface<PayloadType>
  */
 class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements TreenodeValueObjectOrderedInterface
 {
@@ -25,14 +27,14 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
 
     /**
      * hydrateFromNode
-     * @param TreenodeOrderedInterface<ValueType> $node
+     * @param TreenodeOrderedInterface<PayloadType> $node
      */
     public function hydrateFromNode(TreenodeOrderedInterface $node): void
     {
         $this->setNodeId($node->getNodeId());
         $this->setParentId($node->getParentId());
         $this->setTreeId($node->getTreeId());
-        $this->setValue($node->getValue());
+        $this->setPayload($node->getPayload());
         $this->setIndex($node->getIndex());
     }
 
@@ -60,17 +62,16 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
      *     'nodeId': non-negative-int,
      *     'parentId': non-negative-int|null,
      *     'treeId': non-negative-int,
-     *     'value': ValueType,
+     *     'payload': PayloadType,
      *     'index': non-negative-int
      * } $nodeData
-     *
-     * phpstan does not like the fact that the shape of the argument in the parent class is a subset of the shape of
-     * the argument in this class.....
-     * @phpstan-ignore argument.type
      */
     public function hydrateFromAssociativeArray(array $nodeData): void
     {
-        parent::hydrateFromAssociativeArray($nodeData);
+        $this->setNodeId($nodeData['nodeId']);
+        $this->setParentId($nodeData['parentId']);
+        $this->setTreeId($nodeData['treeId']);
+        $this->setPayload($nodeData['payload']);
         $this->setIndex($nodeData['index']);
     }
 
@@ -80,17 +81,16 @@ class TreenodeValueObjectOrdered extends TreenodeValueObjectAbstract implements 
      *        0: non-negative-int,
      *        1: non-negative-int|null,
      *        2: non-negative-int,
-     *        3: ValueType,
+     *        3: PayloadType,
      *        4: non-negative-int,
      *    } $nodeData
-     *
-     *  phpstan does not like the fact that the shape of the argument in the parent class is a subset of the shape of
-     *  the argument in this class.....
-     * @phpstan-ignore argument.type
      */
     public function hydrateFromNumericArray(array $nodeData): void
     {
-        parent::hydrateFromNumericArray($nodeData);
+        $this->setNodeId($nodeData[0]);
+        $this->setParentId($nodeData[1]);
+        $this->setTreeId($nodeData[2]);
+        $this->setPayload($nodeData[3]);
         $this->setIndex($nodeData[4]);
     }
 }

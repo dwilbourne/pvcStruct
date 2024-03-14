@@ -3,19 +3,26 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+
 declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
+use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
 
 /**
  * Class SearchStrategyDepthFirst
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
- * @extends SearchStrategyAbstract<NodeType>
- * @implements SearchStrategyInterface<NodeType>
+ * @template TreeType of TreeAbstractInterface
+ * @template CollectionType of CollectionAbstractInterface
+ * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType>
+ * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType>
  */
 class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchStrategyInterface
 {
@@ -38,11 +45,6 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
      * @var array|int[]
      */
     private array $validOrders = [self::PREORDER, self::POSTORDER];
-
-    /**
-     * @var NodeType|null
-     */
-    private ?TreenodeAbstractInterface $currentNode;
 
 
     public function getOrdering(): int
@@ -73,81 +75,113 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
     }
 
     /**
-     * resetSearch
+     * clearVisitCounts
      */
-    public function resetSearch(): void
+    protected function clearVisitCounts(): void
     {
-        $this->clearVisitCounts();
-        $this->currentNode = $this->getStartNode();
+        if ($this->getStartNode()) {
+            $this->clearVisitCountsRecurse($this->startNode);
+        }
+    }
+
+    /**
+     * clearVisitCountsRecurse
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $node
+     */
+    protected function clearVisitCountsRecurse(TreenodeAbstractInterface $node): void
+    {
+        $node->clearVisitCount();
+        /** @var NodeType $child */
+        foreach ($node->getChildren() as $child) {
+            $this->clearVisitCountsRecurse($child);
+        }
+    }
+
+    /**
+     * rewind
+     */
+    public function rewind(): void
+    {
+        if ($this->currentNode = $this->getStartNode()) {
+            $this->clearVisitCounts();
+            /**
+             * there's an initialization step of calling getNextNodeProtected.  This sets the current node properly
+             * because the current node should be the start node if we are preorder mode.  If we are post order mode,
+             * we want to recurse to the bottom of the tree so that the first node returned is at the bottom of the tree.
+             */
+            $this->currentNode = $this->getNextNodeProtected();
+        }
     }
 
     /**
      * getNextNodeProtected
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
+     *
+     * preorder mode means that you return the node the first time you visit it.
+     * postorder mode means you return the node the last time you visit it.
+     *
+     * so the algorithm is that you add 1 to the visit count the first time you visit the node.  You add one more to
+     * the visit count when all the children have been visited twice.
      */
     protected function getNextNodeProtected(): TreenodeAbstractInterface|null
     {
-        /**
-         * if current node is null then all nodes below have been visited twice - we are all done
-         */
-        if (is_null($this->currentNode)) {
+        if (!$this->valid()) {
             return null;
         }
+        /**
+         * assert helps the static analysis type checker
+         */
+        assert($this->currentNode instanceof TreenodeAbstractInterface);
 
         /**
-         * visit count == 0 means we have never visited this node.  Bump the visit count and return the node if we
-         * are in preorder.
+         * visit count == 0 means this is the first time we have visited this node.
          */
         if ($this->currentNode->getVisitCount() == 0) {
             $this->currentNode->addVisit();
-            if ($this->ordering == self::PREORDER) {
+            /**
+             * if we are in preorder mode, then return this node
+             */
+            if ($this->getOrdering() == self::PREORDER) {
                 return $this->currentNode;
+            } /**
+             * otherwise we are in post order mode.  Recursively visit all the children of this node, getting us
+             * to the bottom of the tree in this branch before returning any nodes.
+             */
+            else {
+                /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $child */
+                foreach ($this->currentNode->getChildren() as $child) {
+                    $this->currentNode = $child;
+                    return $this->getNextNodeProtected();
+                }
             }
         }
 
-
-        /**
-         * visit count == 1 means we have been here once before.  Check and see if all the children have been fully
-         * visited. If not, find the first one that has not been fully visited, set that to be the current node and
-         * recurse down the tree.  If all the children have been fully visited, then bump the visit count on the
-         * current node.
-         */
-        if (($this->currentNode->getVisitCount() == 1)) {
-            $children = $this->currentNode->getChildren();
-            /** @var NodeType $child */
-            foreach ($children as $child) {
+        if ($this->currentNode->getVisitCount() == 1) {
+            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $child */
+            foreach ($this->currentNode->getChildren() as $child) {
                 if ($child->getVisitCount() < 2) {
                     $this->currentNode = $child;
-                    return $this->getNextNode();
+                    return $this->getNextNodeProtected();
                 }
             }
             /**
-             * no child nodes left to visit
+             * if we got here then either the current node has no children or they all have been visited twice and
+             * returned.  Bump the visit count on this node.  If we are in post order mode, return this node.
+             * Otherwise, set the node to be the parent if possible and recurse
              */
             $this->currentNode->addVisit();
-        }
-
-        /**
-         * visit count == 2 means all the children of current node have been visited twice and so has the current
-         * node.
-         */
-        if ($this->currentNode->getVisitCount() == 2) {
-            /** @var NodeType $parent */
-            $parent = $this->currentNode->getParent();
-            if ($this->ordering == self::POSTORDER) {
-                /**
-                 * we want to return this node as the result, but we need to set the current node to be the parent
-                 * first.  So we have to save the current node in the $resuit variable first.
-                 */
-                $result = $this->currentNode;
-                $this->currentNode = $parent;
-                return $result;
+            if ($this->getOrdering() == self::POSTORDER) {
+                return $this->currentNode;
             } else {
-                $this->currentNode = $parent;
+                $this->currentNode = $this->currentNode->getParent();
+                return $this->getNextNodeProtected();
             }
         }
-
-        return $this->getNextNode();
+        /**
+         * visit count == 2
+         */
+        $this->currentNode = $this->currentNode->getParent();
+        return $this->getNextNodeProtected();
     }
 
     /**
@@ -155,25 +189,27 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
      *
      * getNodesDepthFirst recursively returns an array of nodes via a depth first search starting at $node.
      *
-     * @return array<NodeType>
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
      */
     protected function getNodesProtected(): array
     {
-        /** @var NodeType $startNode */
         $startNode = $this->getStartNode();
-        /** @var array<NodeType> $result */
         $result = $this->getNodesRecurse($startNode);
         return $result;
     }
 
     /**
      * getNodesRecurse
-     * @param NodeType $node
-     * @return array<NodeType>
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null $node
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
      */
-    protected function getNodesRecurse(TreenodeAbstractInterface $node): array
+    protected function getNodesRecurse(TreenodeAbstractInterface|null $node): array
     {
         $result = [];
+
+        if (!$node) {
+            return $result;
+        }
 
         if ($this->ordering == self::PREORDER) {
             $result[] = $node;

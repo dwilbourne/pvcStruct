@@ -58,7 +58,7 @@ class TreenodeConfigurationsFixture
         $result[2] = $this->treeId;
 
         /**
-         * use the nodeId as the value
+         * use the nodeId as the payload
          */
         $result[3] = $row[0];
 

@@ -10,9 +10,9 @@ namespace pvcTests\struct\unit_tests\tree\node;
 
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
-use pvc\interfaces\validator\ValidatorInterface;
 use pvc\struct\collection\CollectionAbstract;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
@@ -308,21 +308,21 @@ class TreenodeAbstractTest extends TestCase
 
     /**
      * testSetGetValueValidator
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValueValidator
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getValueValidator
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayloadValidator
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getPayloadValidator
      */
     public function testSetGetValueValidator(): void
     {
         $this->createTree();
-        $validator = $this->createStub(ValidatorInterface::class);
+        $validator = $this->createStub(ValidatorPayloadInterface::class);
 
-        $this->getRoot()->setValueValidator($validator);
-        self::assertEquals($validator, $this->getRoot()->getValueValidator());
+        $this->getRoot()->setPayloadValidator($validator);
+        self::assertEquals($validator, $this->getRoot()->getPayloadValidator());
     }
 
     /**
      * testSetValueFailsWhenValidatorDeterminesInvalidValue
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayload
      * @throws InvalidNodeIdException
      * @throws InvalidValueException
      */
@@ -330,26 +330,26 @@ class TreenodeAbstractTest extends TestCase
     {
         $this->createTree();
 
-        $validator = $this->createStub(ValidatorInterface::class);
+        $validator = $this->createStub(ValidatorPayloadInterface::class);
         $validator->method('validate')->willReturn(false);
-        $this->getRoot()->setValueValidator($validator);
+        $this->getRoot()->setPayloadValidator($validator);
 
         self::expectException(InvalidValueException::class);
-        $this->getRoot()->setValue('foo');
+        $this->getRoot()->setPayload('foo');
     }
 
     /**
      * testSetGetValue
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setValue
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getValue
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayload
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getPayload
      *
      */
     public function testSetGetValue(): void
     {
         $this->createTree();
         $value = 'foobar';
-        $this->getRoot()->setValue($value);
-        self::assertEquals($value, $this->getRoot()->getValue());
+        $this->getRoot()->setPayload($value);
+        self::assertEquals($value, $this->getRoot()->getPayload());
     }
 
     /**

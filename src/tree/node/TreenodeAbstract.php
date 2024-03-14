@@ -8,6 +8,7 @@ declare (strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\payload\PayloadTrait;
@@ -20,16 +21,16 @@ use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
 
 /**
- * @template ValueType
+ * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreenodeAbstractInterface<ValueType, NodeType, TreeType, CollectionType>
+ * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
  */
 class TreenodeAbstract implements TreenodeAbstractInterface
 {
     /**
-     * @use PayloadTrait<ValueType>
+     * @use PayloadTrait<PayloadType>
      */
     use PayloadTrait;
 

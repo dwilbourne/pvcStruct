@@ -13,7 +13,7 @@ use pvc\interfaces\struct\range\RangeInterface;
 /**
  * @class Range
  *
- * The class provides methods for creating a range, getting a range as an array, checking if a value is in the range.
+ * The class provides methods for creating a range, getting a range as an array, checking if a payload is in the range.
  *
  * @template RangeElementDataType
  * @implements RangeInterface<RangeElementDataType>

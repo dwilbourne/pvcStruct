@@ -11,11 +11,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\factory\NodeTypeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
-use pvc\interfaces\validator\ValidatorInterface;
 use pvc\struct\tree\factory\TreenodeAbstractFactory;
 
 class TreenodeAbstractFactoryTest extends TestCase
@@ -32,9 +32,9 @@ class TreenodeAbstractFactoryTest extends TestCase
     protected CollectionFactoryInterface|MockObject $collectionFactory;
 
     /**
-     * @var ValidatorInterface|MockObject
+     * @var ValidatorPayloadInterface|MockObject
      */
-    protected ValidatorInterface $validator;
+    protected ValidatorPayloadInterface $validator;
 
     /**
      * @var TreeAbstractInterface|MockObject
@@ -47,9 +47,9 @@ class TreenodeAbstractFactoryTest extends TestCase
     protected int $treeId;
 
     /**
-     * @var \pvc\struct\tree\factory\TreenodeAbstractFactory
+     * @var TreenodeAbstractFactory
      */
-    protected \pvc\struct\tree\factory\TreenodeAbstractFactory $treenodeAbstractFactory;
+    protected TreenodeAbstractFactory $treenodeAbstractFactory;
 
     public function setUp(): void
     {
@@ -59,7 +59,7 @@ class TreenodeAbstractFactoryTest extends TestCase
 
         $this->nodeTypeFactory = $this->createMock(NodeTypeFactoryInterface::class);
         $this->collectionFactory = $this->createMock(CollectionFactoryInterface::class);
-        $this->validator = $this->createMock(ValidatorInterface::class);
+        $this->validator = $this->createMock(ValidatorPayloadInterface::class);
 
 
         $this->treenodeAbstractFactory = new TreenodeAbstractFactory(
@@ -81,6 +81,7 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testGetCollectionFactory
+     * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::setCollectionFactory
      * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::getCollectionFactory
      */
     public function testGetCollectionFactory(): void
@@ -90,6 +91,7 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testGetNodeTypeFactory
+     * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::setNodeTypeFactory
      * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::getNodeTypeFactory
      */
     public function testGetNodeTypeFactory(): void
@@ -99,11 +101,11 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testGetValueValidator
-     * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::GetValueValidator
+     * @covers \pvc\struct\tree\factory\TreenodeAbstractFactory::getPayloadValidator
      */
     public function testGetValueValidator(): void
     {
-        self::assertEquals($this->validator, $this->treenodeAbstractFactory->GetValueValidator());
+        self::assertEquals($this->validator, $this->treenodeAbstractFactory->getPayloadValidator());
     }
 
     /**
@@ -133,7 +135,7 @@ class TreenodeAbstractFactoryTest extends TestCase
         $mockCollection = $this->createMock(CollectionAbstractInterface::class);
 
         $mockValueObject = $this->createMock(TreenodeValueObjectInterface::class);
-        $mockValueObject->method('getValue')->willReturn($mockNodeValue);
+        $mockValueObject->method('getPayload')->willReturn($mockNodeValue);
 
         $this->collectionFactory->expects($this->once())->method('makeCollection')->willReturn($mockCollection);
 
@@ -145,8 +147,8 @@ class TreenodeAbstractFactoryTest extends TestCase
             $mockNode
         );
 
-        $mockNode->expects($this->once())->method('setValueValidator')->with($this->validator);
-        $mockNode->expects($this->once())->method('setValue')->with($mockNodeValue);
+        $mockNode->expects($this->once())->method('setPayloadValidator')->with($this->validator);
+        $mockNode->expects($this->once())->method('setPayload')->with($mockNodeValue);
 
         self::assertEquals($mockNode, $this->treenodeAbstractFactory->makeNode($mockValueObject));
     }
