@@ -3,11 +3,13 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+
 declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
 use pvc\interfaces\struct\collection\CollectionOrderedInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\struct\collection\err\InvalidKeyException;
 
 /**
@@ -16,9 +18,9 @@ use pvc\struct\collection\err\InvalidKeyException;
  * Keys of the collection are also the ordinal indices.  When collection elements are added, subtracted, moved,
  * the keys get shuffled to make sure they are all sequential integers.
  *
- * @template ElementType
- * @extends CollectionAbstract<ElementType, CollectionOrderedInterface>
- * @implements CollectionOrderedInterface<ElementType>
+ * @template PayloadType of HasPayloadInterface
+ * @extends CollectionAbstract<PayloadType, CollectionOrderedInterface>
+ * @implements CollectionOrderedInterface<PayloadType>
  */
 class CollectionOrdered extends CollectionAbstract implements CollectionOrderedInterface
 {
@@ -39,7 +41,7 @@ class CollectionOrdered extends CollectionAbstract implements CollectionOrderedI
     /**
      * add
      * @param non-negative-int $key
-     * @param ElementType $payload
+     * @param PayloadType $payload
      * @throws InvalidKeyException
      */
     public function add(int $key, $payload): void

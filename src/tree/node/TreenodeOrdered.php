@@ -11,37 +11,30 @@ namespace pvc\struct\tree\node;
 use pvc\interfaces\struct\collection\CollectionOrderedInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectOrderedInterface;
+use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
-use pvc\struct\tree\err\InvalidNodeIdException;
 
 /**
  * Class TreenodeOrdered
  *
  * @template PayloadType of HasPayloadInterface
- * @extends TreenodeAbstract<PayloadType, TreenodeOrderedInterface, TreeOrderedInterface, CollectionOrderedInterface>
+ * @phpcs:ignore
+ * @extends TreenodeAbstract<PayloadType, TreenodeOrderedInterface, TreeOrderedInterface, CollectionOrderedInterface, TreenodeValueObjectOrderedInterface>
  * @implements TreenodeOrderedInterface<PayloadType>
  */
 class TreenodeOrdered extends TreenodeAbstract implements TreenodeOrderedInterface
 {
     /**
-     * @param non-negative-int $nodeId
-     * @param non-negative-int|null $parentId
-     * @param non-negative-int $treeId
-     * @param non-negative-int $index
+     * hydrate
+     * @param TreenodeValueObjectOrderedInterface<PayloadType> $valueObject
      * @param TreeOrderedInterface<PayloadType> $tree
-     * @param CollectionOrderedInterface<TreenodeOrderedInterface<PayloadType>> $collectionOrdered
-     * @throws InvalidNodeIdException
      */
-    public function __construct(
-        int $nodeId,
-        ?int $parentId,
-        int $treeId,
-        int $index,
-        TreeOrderedInterface $tree,
-        CollectionOrderedInterface $collectionOrdered
-    ) {
-        parent::__construct($nodeId, $parentId, $treeId, $tree, $collectionOrdered);
-        $this->setIndex($index);
+    public function hydrate(TreenodeValueObjectInterface $valueObject, TreeAbstractInterface $tree): void
+    {
+        parent::hydrate($valueObject, $tree);
+        $this->setIndex($valueObject->getIndex());
     }
 
     /**

@@ -35,6 +35,8 @@ class _TreeXData extends XDataAbstract
             SetTreeIdException::class => 1015,
             StartNodeUnsetException::class => 1016,
             TreeNotEmptyHydrationException::class => 1017,
+            InvalidVisitStatusException::class => 1018,
+            NodeNotEmptyHydrationException::class => 1019,
         ];
     }
 
@@ -56,8 +58,10 @@ class _TreeXData extends XDataAbstract
             NoRootFoundException::class => 'no root node found in tree node payload object array.',
             RootCannotBeMovedException::class => 'The root node cannot be moved to another place in the tree.',
             SetTreeIdException::class => 'cannot set the treeid on a tree which is not empty.',
-            StartNodeUnsetException::class => 'start node must be set before serarching or resetting the search.',
+            StartNodeUnsetException::class => 'start node must be set before searching or resetting the search.',
             TreeNotEmptyHydrationException::class => 'cannot hydrate a non empty tree.',
+            InvalidVisitStatusException::class => 'invalid visit status supplied - use one of the TreenodeAbstract class constants.',
+            NodeNotEmptyHydrationException::class => 'cannot hydrate a non-empty node - nodeid ${nodeId} is already set.',
         ];
     }
 }

@@ -13,15 +13,15 @@ use pvc\interfaces\struct\tree\search\SearchFilterInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\interfaces\validator\ValidatorInterface;
-use pvc\struct\tree\factory\TreenodeAbstractFactory;
+use pvc\struct\collection\factory\CollectionOrderedFactory;
+use pvc\struct\tree\node\factory\TreenodeAbstractFactory;
+use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
+use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectOrderedFactory;
 use pvc\struct\tree\search\SearchFilterDefault;
 use pvc\struct\tree\search\SearchStrategyDepthFirst;
 use pvc\struct\tree\tree\TreeOrdered;
-use pvcTests\struct\integration_tests\tree\fixture\CollectionOrderedFactory;
-use pvcTests\struct\integration_tests\tree\fixture\NodeTypeOrderedFactory;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeValueObjectOrderedFactory;
 
 use function DI\create;
 use function DI\get;
@@ -32,7 +32,7 @@ return [
      * stuff to create a tree node factory
      */
     CollectionFactoryInterface::class => create(CollectionOrderedFactory::class),
-    NodeTypeFactoryInterface::class => create(NodeTypeOrderedFactory::class),
+    NodeTypeFactoryInterface::class => create(TreenodeOrderedFactory::class),
     ValidatorInterface::class => create(TreenodeValueValidatorDefault::class),
     TreenodeFactoryInterface::class => create(TreenodeAbstractFactory::class)
         ->constructor(

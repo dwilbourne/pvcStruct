@@ -10,8 +10,9 @@ namespace pvcTests\struct\unit_tests\payload;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
 use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
-use pvc\struct\payload\PayloadValidatorTrait;
+use pvc\struct\payload\PayloadTesterTrait;
 
 class PayloadValidatorTraitTest extends TestCase
 {
@@ -22,18 +23,18 @@ class PayloadValidatorTraitTest extends TestCase
 
     public function setUp(): void
     {
-        $this->mock = $this->getMockForTrait(PayloadValidatorTrait::class);
+        $this->mock = $this->getMockForTrait(PayloadTesterTrait::class);
     }
 
     /**
      * testSetGetPayloadValidator
-     * @covers pvc\struct\payload\PayloadValidatorTrait::getPayloadValidator
-     * @covers pvc\struct\payload\PayloadValidatorTrait::setPayloadValidator
+     * @covers pvc\struct\payload\PayloadTesterTrait::getPayloadTester
+     * @covers pvc\struct\payload\PayloadTesterTrait::setPayloadTester
      */
     public function testSetGetPayloadValidator(): void
     {
-        $mockValidator = $this->createMock(ValidatorPayloadInterface::class);
-        $this->mock->setPayloadValidator($mockValidator);
-        self::assertEquals($mockValidator, $this->mock->getPayloadValidator());
+        $mockTester = $this->createMock(PayloadTesterInterface::class);
+        $this->mock->setPayloadTester($mockTester);
+        self::assertEquals($mockTester, $this->mock->getPayloadTester());
     }
 }

@@ -15,7 +15,8 @@ use pvc\struct\payload\ValueObjectPayloadTrait;
 /**
  * Class TreenodeValueObjectAbstract
  * @template PayloadType of HasPayloadInterface
- * @implements TreenodeValueObjectInterface<PayloadType>
+ * @template ValueObjectType of TreenodeValueObjectInterface
+ * @implements TreenodeValueObjectInterface<PayloadType, ValueObjectType>
  */
 abstract class TreenodeValueObjectAbstract implements TreenodeValueObjectInterface
 {

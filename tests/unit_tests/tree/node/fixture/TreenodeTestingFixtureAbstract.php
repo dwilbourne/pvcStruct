@@ -10,7 +10,12 @@ namespace pvcTests\struct\unit_tests\tree\node\fixture;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\struct\tree\node\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\TreenodeAbstract;
 use pvc\testingutils\testingTraits\IteratorTrait;
 
@@ -41,8 +46,6 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
     protected $greatGrandChildren;
 
     protected $collectionFactory;
-
-    protected $nodeTypeFactory;
 
     public function getTreeId(): int
     {
@@ -128,13 +131,18 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
         $this->childNodeId = 1;
         $this->grandChildNodeid = 2;
 
-        $this->setUpTreeMock($treeTypeClassString);
+        $this->makeMockTree($treeTypeClassString);
         $this->createCollectionMocks($collectionClassString);
         $this->makeNodes();
         $this->makeChildCollectionMocksIterable();
     }
 
-    public function setUpTreeMock(string $treeTypeClassString): void
+    /**
+     * makeMockTree
+     * @param string $treeTypeClassString
+     * sets the tree property with a stub appropriate to run tests
+     */
+    public function makeMockTree(string $treeTypeClassString): void
     {
         $getNodeCallback = function (int $nodeId) {
             return match ($nodeId) {
@@ -184,41 +192,55 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
         $this->greatGrandChildren->method('isEmpty')->willReturnCallback($greatGrandChildrenIsEmptyCallback);
 
         /**
-         * the only time the tree is called upon to make a collection is in the course of a request from the root
+         * the only time the tree is called upon to get a collection factory is in the course of a request from the root
          * node when it tries to get its siblings.
          */
         $this->rootSiblingsCollection->method('count')->willReturn(1);
         $this->rootSiblingsCollection->method('current')->willReturnCallback([$this, 'getRoot']);
-        $this->mockTree->method('makeCollection')->willReturn($this->rootSiblingsCollection);
+
+        $mockCollectionFactory = $this->createStub(CollectionFactoryInterface::class);
+        $mockCollectionFactory->method('makeCollection')->willReturn($this->rootSiblingsCollection);
+
+        $mockTreenodeFactory = $this->createStub(TreenodeAbstractFactory::class);
+        $mockTreenodeFactory->method('getCollectionFactory')->willReturn($mockCollectionFactory);
+
+        $this->mockTree->method('getTreenodeFactory')->willReturn($mockTreenodeFactory);
     }
+
+    private function makeMockValueObject(int $nodeId, int|null $parentId)
+    {
+        $valueObject = $this->createStub(TreenodeValueObjectInterface::class);
+        $valueObject->method('getNodeId')->willReturn($nodeId);
+        $valueObject->method('getParentId')->willReturn($parentId);
+        $valueObject->method('getTreeId')->willReturn($this->treeId);
+        $valueObject->method('getPayload')->willReturn(null);
+        return $valueObject;
+    }
+
 
     public function makeNodes(): void
     {
-        /**
-         * make the nodes
-         */
-        $this->root = new TreenodeAbstract(
-            $this->rootNodeId,
-            null,
-            $this->treeId,
-            $this->mockTree,
-            $this->children
-        );
+        $tester = $this->createStub(PayloadTesterInterface::class);
+        $tester->method('testValue')->willReturn(true);
 
-        $this->child = new TreenodeAbstract(
-            $this->childNodeId,
-            $this->rootNodeId,
-            $this->treeId,
-            $this->mockTree,
-            $this->grandChildren
-        );
-        $this->grandChild = new TreenodeAbstract(
-            $this->grandChildNodeid,
-            $this->childNodeId,
-            $this->treeId,
-            $this->mockTree,
-            $this->greatGrandChildren
-        );
+        /**
+         * don't set the value of $this->root until after the node is hydrated or you generate a 'node already in the
+         * tree exception' because of the way the callback is structured for the mock tree getNode method.
+         */
+        $root = new TreenodeAbstract($this->children, $tester);
+        $valueObject = $this->makeMockValueObject($this->rootNodeId, null);
+        $root->hydrate($valueObject, $this->mockTree);
+        $this->root = $root;
+
+        $child = new TreenodeAbstract($this->grandChildren, $tester);
+        $valueObject = $this->makeMockValueObject($this->childNodeId, $this->rootNodeId);
+        $child->hydrate($valueObject, $this->mockTree);
+        $this->child = $child;
+
+        $grandChild = new TreenodeAbstract($this->greatGrandChildren, $tester);
+        $valueObject = $this->makeMockValueObject($this->grandChildNodeid, $this->childNodeId);
+        $grandChild->hydrate($valueObject, $this->mockTree);
+        $this->grandChild = $grandChild;
     }
 
     public function makeChildCollectionMocksIterable(): void

@@ -15,7 +15,7 @@ use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectUnorderedInt
 /**
  * Class TreenodeValueObjectUnordered
  * @template PayloadType of HasPayloadInterface
- * @extends TreenodeValueObjectAbstract<PayloadType>
+ * @extends TreenodeValueObjectAbstract<PayloadType, TreenodeValueObjectUnorderedInterface>
  * @implements TreenodeValueObjectUnorderedInterface<PayloadType>
  */
 class TreenodeValueObjectUnordered extends TreenodeValueObjectAbstract implements TreenodeValueObjectUnorderedInterface

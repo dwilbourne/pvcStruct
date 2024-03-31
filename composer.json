@@ -29,7 +29,6 @@
 		"squizlabs/php_codesniffer": "*",
 		"friendsofphp/php-cs-fixer": "*",
 		"phpstan/phpstan": "*",
-		"pvc/testing-traits": "*",
-		"php-di/php-di": "*"
+		"pvc/testing-traits": "*"
 	}
 }

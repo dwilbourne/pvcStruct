@@ -8,6 +8,7 @@ declare (strict_types=1);
 namespace pvcTests\struct\unit_tests\payload;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
 use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\InvalidValueException;
@@ -28,9 +29,9 @@ class PayloadTraitTest extends TestCase
      */
     public function testSetPayloadThrowsExceptionWhenValidatorFails(): void
     {
-        $validator = $this->createStub(ValidatorPayloadInterface::class);
-        $validator->method('validate')->willReturn(false);
-        $this->mockTrait->SetPayloadValidator($validator);
+        $validator = $this->createStub(PayloadTesterInterface::class);
+        $validator->method('testValue')->willReturn(false);
+        $this->mockTrait->setPayloadTester($validator);
 
         $testValue = 'foo';
         self::expectException(InvalidValueException::class);
@@ -45,9 +46,9 @@ class PayloadTraitTest extends TestCase
      */
     public function testSetGetPayload(): void
     {
-        $validator = $this->createStub(ValidatorPayloadInterface::class);
-        $validator->method('validate')->willReturn(true);
-        $this->mockTrait->SetPayloadValidator($validator);
+        $tester = $this->createStub(PayloadTesterInterface::class);
+        $tester->method('testValue')->willReturn(true);
+        $this->mockTrait->setPayloadTester($tester);
 
         $testValue = 'foo';
         $this->mockTrait->setPayload($testValue);

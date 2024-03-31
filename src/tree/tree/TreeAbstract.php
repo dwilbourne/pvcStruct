@@ -10,7 +10,7 @@ namespace pvc\struct\tree\tree;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
+use pvc\interfaces\struct\tree\node\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
@@ -28,9 +28,10 @@ use pvc\struct\tree\err\TreeNotEmptyHydrationException;
  * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
- * @template NodeValueObjectType of TreenodeValueObjectInterface
+ * @template ValueObjectType of TreenodeValueObjectInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
+ * @template ValueObjectType of TreenodeValueObjectInterface
+ * @implements TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
 abstract class TreeAbstract implements TreeAbstractInterface
 {
@@ -40,29 +41,31 @@ abstract class TreeAbstract implements TreeAbstractInterface
     protected int $treeid;
 
     /**
-     * @var TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @var TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $treenodeFactory
      */
     protected TreenodeFactoryInterface $treenodeFactory;
 
     /**
-     * @var TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType>
+     * @var TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
      */
     protected TreeAbstractEventHandlerInterface $eventHandler;
 
     /**
-     * @var NodeType|null
+     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     protected $root;
 
     /**
-     * @var array<NodeType>
+     * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
      */
     protected array $nodes = [];
 
     /**
      * @param int $treeid
-     * @param TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
-     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType> $handler
+     * @phpcs:ignore
+     * @param TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $treenodeFactory
+     * @phpcs:ignore
+     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $handler
      * @throws InvalidTreeidException
      * @throws SetTreeIdException
      */
@@ -124,7 +127,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
 
     /**
-     * @return TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType>
+     * @return TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {
@@ -132,19 +135,19 @@ abstract class TreeAbstract implements TreeAbstractInterface
     }
 
     /**
-     * @param TreenodeFactoryInterface<PayloadType, NodeType, CollectionType, TreeType> $treenodeFactory
+     * @phpcs:ignore
+     * @param TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $treenodeFactory
      */
     public function setTreenodeFactory(TreenodeFactoryInterface $treenodeFactory): void
     {
+        $treenodeFactory->setTree($this);
         $this->treenodeFactory = $treenodeFactory;
-        /** @var TreeType $that */
-        $that = $this;
-        $this->treenodeFactory->setTree($that);
     }
 
     /**
      * setEventHandler
-     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType> $handler
+     * @phpcs:ignore
+     * @param TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $handler
      */
     public function setEventHandler(TreeAbstractEventHandlerInterface $handler): void
     {
@@ -153,7 +156,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * getEventHandler
-     * @return TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType>
+     * @return TreeAbstractEventHandlerInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
      */
     public function getEventHandler(): TreeAbstractEventHandlerInterface
     {
@@ -163,7 +166,8 @@ abstract class TreeAbstract implements TreeAbstractInterface
     /**
      * rootTest
      * encapsulate logic for testing whether something is or can be the root
-     * @param NodeType|TreenodeValueObjectInterface<PayloadType> $nodeItem
+     * @phpcs:ignore
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|TreenodeValueObjectInterface<PayloadType, ValueObjectType> $nodeItem
      * @return bool
      */
     public function rootTest(TreenodeAbstractInterface|TreenodeValueObjectInterface $nodeItem): bool
@@ -173,7 +177,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * @function getRoot
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     public function getRoot(): TreenodeAbstractInterface|null
     {
@@ -182,7 +186,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * @function setRoot sets a reference to the root node of the tree
-     * @param NodeType $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
      * @throws AlreadySetRootException
      */
     protected function setRoot($node): void
@@ -219,7 +223,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * @function getNodes
-     * @return array<NodeType>
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
      */
     public function getNodes(): array
     {
@@ -229,7 +233,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
     /**
      * @function getNode
      * @param non-negative-int|null $nodeId
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     public function getNode(?int $nodeId): ?TreenodeAbstractInterface
     {
@@ -247,11 +251,12 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * addNode
-     * @param TreenodeValueObjectInterface<PayloadType> $valueObject
+     * @param TreenodeValueObjectInterface<PayloadType, ValueObjectType> $valueObject
      */
     public function addNode(TreenodeValueObjectInterface $valueObject): void
     {
-        $node = $this->treenodeFactory->makeNode($valueObject);
+        $node = $this->treenodeFactory->makeNode();
+        $node->hydrate($valueObject, $this);
 
         $this->eventHandler->beforeAddNode($node);
 
@@ -266,18 +271,21 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * hydrate
-     * @param array<NodeValueObjectType> $nodeValueObjectArray
+     * @param array<TreenodeValueObjectInterface<PayloadType, ValueObjectType>> $valueObjects
      */
-    public function hydrate(array $nodeValueObjectArray): void
+    public function hydrate(array $valueObjects): void
     {
         /**
-         * nothing to do.  Need to check for this because the insertNodeRecurse method assumes a non-empty array to
-         * work on
+         * Check for this because the insertNodeRecurse method assumes a non-empty array to
+         * work on.  If empty, just return - nothing to do.
          */
-        if (empty($nodeValueObjectArray)) {
+        if (empty($valueObjects)) {
             return;
         }
 
+        /**
+         * cannot hydrate a tree which is not empty
+         */
         if (!$this->isEmpty()) {
             throw new TreeNotEmptyHydrationException();
         }
@@ -285,7 +293,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
         /**
          * if the root is not set, find the (hopefully first and only) root node and set it
          */
-        foreach ($nodeValueObjectArray as $key => $nodeValueObject) {
+        foreach ($valueObjects as $key => $nodeValueObject) {
             if ($this->rootTest($nodeValueObject)) {
                 $rootNodeKey = $key;
                 /**
@@ -297,37 +305,41 @@ abstract class TreeAbstract implements TreeAbstractInterface
         if (!isset($rootNodeKey)) {
             throw new NoRootFoundException();
         } else {
-            $this->insertNodeRecurse($rootNodeKey, $nodeValueObjectArray);
+            $this->insertNodeRecurse($rootNodeKey, $valueObjects);
         }
     }
 
     /**
      * insertNodeRecurse recursively inserts nodes into the tree using a depth first algorithm
      * @param int $startNodeKey
-     * @param non-empty-array<NodeValueObjectType> $nodeValueObjectArray
+     * @param array<TreenodeValueObjectInterface<PayloadType, ValueObjectType>> $valueObjects
      * @return void
      */
-    protected function insertNodeRecurse(int $startNodeKey, array $nodeValueObjectArray): void
+    protected function insertNodeRecurse(int $startNodeKey, array $valueObjects): void
     {
-        $nodeValueObjectToAdd = $nodeValueObjectArray[$startNodeKey];
+        $valueObject = $valueObjects[$startNodeKey];
 
-        $this->addNode($nodeValueObjectToAdd);
+        $this->addNode($valueObject);
 
         $childValueObjects = [];
-        foreach ($nodeValueObjectArray as $key => $nodeValueObject) {
+        foreach ($valueObjects as $key => $nodeValueObject) {
             /**
              * need identity, not equals, because 0 == null.  For example, if the root node has nodeId of 0, then it
              * gets inserted into the tree properly the first time.  When searching the array for children whose
              * parentId equals 0, the nodeValueObject for the root returns a parentId of null and if 0 == null, then
              * we try to add the root a second time as a child of itself.....
              */
-            if ($nodeValueObjectToAdd->getNodeId() === $nodeValueObject->getParentId()) {
+            if ($valueObject->getNodeId() === $nodeValueObject->getParentId()) {
                 $childValueObjects[$key] = $nodeValueObject;
             }
         }
 
         /**
-         * sort the children (in place sort) if necessary
+         * sort the children (in place sort) - necessary only for ordered trees / nodes.  The implementation in the
+         * unordered tree does nothing.  In the case or ordered trees / nodes, this step is critical because
+         * you must add the nodes in order.  Adding nodes with indices of, say, [1, 5, 3, 4, 2] in the order
+         * presented would result in scrambled children because indices get adjusted on their way into the tree if
+         * the index is larger than the number of children in the tree.
          */
         $this->sortChildValueObjects($childValueObjects);
 
@@ -335,13 +347,13 @@ abstract class TreeAbstract implements TreeAbstractInterface
          * recurse down through the children to hydrate the tree
          */
         foreach ($childValueObjects as $key => $nodeValueObject) {
-            $this->insertNodeRecurse($key, $nodeValueObjectArray);
+            $this->insertNodeRecurse($key, $valueObjects);
         }
     }
 
     /**
      * sortChildValueObjects
-     * @param array<TreenodeValueObjectInterface<NodeType>> $childValueObjects
+     * @param array<TreenodeValueObjectInterface<PayloadType, ValueObjectType>> $childValueObjects
      * @return bool
      */
     abstract protected function sortChildValueObjects(array &$childValueObjects): bool;
@@ -388,7 +400,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
     /**
      * @function deleteNodeRecurse does the actual work of deleting the node / branch
-     * @param NodeType $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
      * @param bool $deleteBranch
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
@@ -413,14 +425,5 @@ abstract class TreeAbstract implements TreeAbstractInterface
         unset($this->nodes[$node->getNodeId()]);
 
         $this->eventHandler->afterDeleteNode($node);
-    }
-
-    /**
-     * makeCollection
-     * @return CollectionAbstractInterface<PayloadType, NodeType>
-     */
-    public function makeCollection(): CollectionAbstractInterface
-    {
-        return $this->treenodeFactory->makeCollection();
     }
 }

@@ -18,9 +18,9 @@ use pvc\struct\tree\err\InvalidValueException;
 trait PayloadTrait
 {
     /**
-     * @use PayloadValidatorTrait<PayloadType>
+     * @use PayloadTesterTrait<PayloadType>
      */
-    use PayloadValidatorTrait;
+    use PayloadTesterTrait;
 
     /**
      * @var PayloadType|null
@@ -41,9 +41,9 @@ trait PayloadTrait
      * @param PayloadType|null $payload
      * @throws InvalidValueException
      */
-    public function setPayload($payload): void
+    public function setPayload(mixed $payload): void
     {
-        if ($this->getPayloadValidator() && !$this->getPayloadValidator()->validate($payload)) {
+        if ($this->getPayloadTester() && !$this->getPayloadTester()->testValue($payload)) {
             throw new InvalidValueException();
         }
         $this->payload = $payload;

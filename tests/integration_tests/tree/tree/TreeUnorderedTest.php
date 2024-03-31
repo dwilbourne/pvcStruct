@@ -8,19 +8,20 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\tree;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
+use pvc\struct\collection\factory\CollectionUnorderedFactory;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
-use pvc\struct\tree\factory\TreenodeAbstractFactory;
+use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
+use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectUnorderedFactory;
+use pvc\struct\tree\search\NodeDepthMap;
 use pvc\struct\tree\tree\TreeUnordered;
-use pvcTests\struct\integration_tests\tree\fixture\CollectionUnorderedFactory;
-use pvcTests\struct\integration_tests\tree\fixture\NodeTypeUnorderedFactory;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeValueObjectUnorderedFactory;
 
 class TreeUnorderedTest extends TestCase
 {
-
     protected TreeUnordered $tree;
 
     protected TreenodeConfigurationsFixture $fixture;
@@ -29,15 +30,15 @@ class TreeUnorderedTest extends TestCase
 
     public function setUp(): void
     {
+        $depthMap = $this->createMock(NodeDepthMap::class);
+        $payloadTester = $this->createStub(PayloadTesterInterface::class);
+        $payloadTester->method('testValue')->willReturn(true);
+
         $factory = new TreenodeValueObjectUnorderedFactory();
-        $this->fixture = new TreenodeConfigurationsFixture($factory);
+        $this->fixture = new TreenodeConfigurationsFixture($factory, $depthMap);
 
         $collectionFactory = new CollectionUnorderedFactory();
-        $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $treenodeFactory = new TreenodeAbstractFactory(
-            $nodeTypeFactory,
-            $collectionFactory
-        );
+        $treenodeFactory = new TreenodeUnorderedFactory($collectionFactory, $payloadTester);
         $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
 
         $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory, $handler);

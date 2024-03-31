@@ -8,45 +8,57 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
+use pvc\struct\collection\factory\CollectionOrderedFactory;
 use pvc\struct\tree\err\BadSearchLevelsException;
-use pvc\struct\tree\factory\TreenodeAbstractFactory;
-use pvc\struct\tree\search\SearchFilterDefault;
+use pvc\struct\tree\err\StartNodeUnsetException;
+use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
+use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectOrderedFactory;
+use pvc\struct\tree\search\NodeDepthMap;
 use pvc\struct\tree\search\SearchStrategyBreadthFirst;
+use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\tree\TreeUnordered;
-use pvcTests\struct\integration_tests\tree\fixture\CollectionUnorderedFactory;
-use pvcTests\struct\integration_tests\tree\fixture\NodeTypeUnorderedFactory;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeValueObjectUnorderedFactory;
 
 class SearchStrategyBreadthFirstTest extends TestCase
 {
+    /**
+     * @var SearchStrategyBreadthFirst
+     */
     protected SearchStrategyBreadthFirst $strategy;
 
-    protected TreeUnordered $tree;
+    /**
+     * @var NodeDepthMap
+     */
+    protected NodeDepthMap $depthMap;
 
+    /**
+     * @var TreeUnordered
+     */
+    protected TreeOrdered $tree;
+
+    /**
+     * @var TreenodeConfigurationsFixture
+     */
     protected TreenodeConfigurationsFixture $fixture;
 
     public function setUp(): void
     {
-        $factory = new TreenodeValueObjectUnorderedFactory();
-        $this->fixture = new TreenodeConfigurationsFixture($factory);
+        $this->depthMap = new NodeDepthMap();
+        $factory = new TreenodeValueObjectOrderedFactory();
+        $this->fixture = new TreenodeConfigurationsFixture($factory, $this->depthMap);
 
-        $collectionFactory = new CollectionUnorderedFactory();
-        $nodeTypeFactory = new NodeTypeUnorderedFactory();
-        $treenodeFactory = new TreenodeAbstractFactory(
-            $nodeTypeFactory,
-            $collectionFactory
-        );
+        /** @var CollectionFactoryInterface $collectionFactory */
+        $collectionFactory = new CollectionOrderedFactory();
+        $treenodeFactory = new TreenodeOrderedFactory($collectionFactory);
         $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
-        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory, $handler);
+        $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory, $handler);
 
         $this->valueObjectArray = $this->fixture->makeValueObjectArray();
         $this->tree->hydrate($this->valueObjectArray);
 
-        $filter = new SearchFilterDefault();
-        $this->strategy = new SearchStrategyBreadthFirst($filter);
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->strategy = new SearchStrategyBreadthFirst($this->depthMap);
     }
 
     /**
@@ -85,79 +97,85 @@ class SearchStrategyBreadthFirstTest extends TestCase
     }
 
     /**
-     * testGetNodes
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodes
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodesProtected
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodesRecurse
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
-     */
-    public function testGetNodesFullTree(): void
-    {
-        $expectedResult = $this->fixture->makeUnorderedBreadthFirstArrayOfAllNodeIds();
-        $nodes = $this->strategy->getNodes();
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
-    }
-
-    /**
-     * testGetNodesWithMaxLevels
-     * @throws BadSearchLevelsException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodes
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodesProtected
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNodesRecurse
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
-     */
-    public function testGetNodesWithMaxLevels(): void
-    {
-        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayTwoLevelsStartingAtRoot();
-        $this->strategy->setMaxLevels(2);
-        $nodes = $this->strategy->getNodes();
-        $actualResult = $this->fixture->makeArrayOfNodeIdsFromArrayOfNodes($nodes);
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
-    }
-
-    /**
-     * testGetNextNodeFullTree
+     * testGetNodesThrowsExceptionIfStartNodeNotSet
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::rewind
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::current
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNodeProtected
+     */
+    public function testGetNodesThrowsExceptionIfStartNodeNotSet(): void
+    {
+        self::expectException(StartNodeUnsetException::class);
+        $this->getNodes();
+    }
+
+
+    /**
+     * getNodes
+     * @return array
+     */
+    protected function getNodes(): array
+    {
+        $nodes = [];
+        foreach ($this->strategy as $node) {
+            $nodes[] = $node->getNodeId();
+        }
+        return $nodes;
+    }
+
+    /**
+     * testGetFullTree
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::rewind
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::next
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
      */
-    public function testGetNextNodeFullTree(): void
+    public function testGetFullTree(): void
     {
-        $expectedResult = $this->fixture->makeUnorderedBreadthFirstArrayOfAllNodeIds();
-
-        $actualResult = [];
-        foreach ($this->strategy as $node) {
-            $actualResult[] = $node->getNodeId();
-        }
+        $this->strategy->setStartNode($this->tree->getRoot());
+        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayOfAllNodeIds();
+        $actualResult = $this->getNodes();
+        /**
+         * ordered search so not canonicalize the results
+         */
         self::assertEquals($expectedResult, $actualResult);
 
         /**
-         * test rewind machinery by running the test again
+         * verify the nodeDepthMap works correctly in preorder mode
          */
-        $actualResult = [];
-        foreach ($this->strategy as $node) {
-            $actualResult[] = $node->getNodeId();
+        $this->fixture->makeNodeDepthMap();
+        $expectedResult = $this->fixture->getDepthMap();
+        $actualResult = $this->strategy->getNodeDepthMap();
+
+        foreach ($expectedResult->getIterator() as $item => $value) {
+            self::assertEquals($value, $actualResult->getNodeDepth($item));
         }
-        self::assertEquals($expectedResult, $actualResult);
     }
 
     /**
-     * getNextNodeWithMaxLevels
+     * testMaxLevels
      * @throws BadSearchLevelsException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::current
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextNodeProtected
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::rewind
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::next
      * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getNextLevelOfNodes
+     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::exceededMaxLevels
      */
-    public function testGetNextNodeWithMaxLevels(): void
+    public function testMaxLevels(): void
     {
-        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayTwoLevelsStartingAtRoot();
-        $this->strategy->setMaxLevels(2);
-        $actualResult = [];
-        foreach ($this->strategy as $node) {
-            $actualResult[] = $node->getNodeId();
+        $this->strategy->setStartNode($this->tree->getRoot());
+        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot();
+        $this->strategy->setMaxLevels(3);
+        $actualResult = $this->getNodes();
+        /**
+         * ordered search so not canonicalize the results
+         */
+        self::assertEquals($expectedResult, $actualResult);
+
+        /**
+         * verify the nodeDepthMap works correctly in postorder mode
+         */
+        $this->fixture->makeNodeDepthMap();
+        $expectedResult = $this->fixture->getDepthMap();
+        $actualResult = $this->strategy->getNodeDepthMap();
+
+        foreach ($expectedResult->getIterator() as $item => $value) {
+            self::assertEquals($value, $actualResult->getNodeDepth($item));
         }
-        self::assertEqualsCanonicalizing($expectedResult, $actualResult);
     }
 }

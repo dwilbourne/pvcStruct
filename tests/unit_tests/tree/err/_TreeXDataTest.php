@@ -28,6 +28,8 @@ class _TreeXDataTest extends XDataTestMaster
      * @covers \pvc\struct\tree\err\InvalidTreeidException::__construct
      * @covers \pvc\struct\tree\err\NodeNotInTreeException::__construct
      * @covers \pvc\struct\tree\err\SetTreeIdException::__construct
+     * @covers \pvc\struct\tree\err\InvalidVisitStatusException::__construct
+     * @covers \pvc\struct\tree\err\NodeNotEmptyHydrationException::__construct
      */
     public function testTreeExceptionLibrary(): void
     {

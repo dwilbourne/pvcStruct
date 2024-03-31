@@ -8,10 +8,13 @@ declare(strict_types=1);
 
 namespace pvcTests\struct\unit_tests\tree\node;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
 use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\collection\CollectionAbstract;
 use pvc\struct\tree\err\AlreadySetNodeidException;
@@ -19,7 +22,8 @@ use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\err\InvalidValueException;
+use pvc\struct\tree\err\InvalidVisitStatusException;
+use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
 use pvc\struct\tree\node\TreenodeAbstract;
@@ -33,137 +37,180 @@ class TreenodeAbstractTest extends TestCase
 
     protected TreenodeTestingFixtureAbstract $fixture;
 
+    /**
+     * @var CollectionAbstractInterface|MockObject
+     */
+    protected CollectionAbstractInterface $collection;
+
+    /**
+     * @var PayloadTesterInterface|MockObject
+     */
+    protected PayloadTesterInterface $tester;
+
+    /**
+     * @var TreenodeValueObjectInterface|MockObject
+     */
+    protected TreenodeValueObjectInterface $valueObject;
+
+    /**
+     * @var TreeAbstractInterface|MockObject
+     */
+    protected TreeAbstractInterface $tree;
+
+    /**
+     * @var TreenodeAbstract|MockObject
+     */
+    protected TreenodeAbstract $node;
+
     public function setUp(): void
     {
         $this->fixture = $this->getMockForAbstractClass(TreenodeTestingFixtureAbstract::class);
+        $this->collection = $this->createMock(CollectionAbstractInterface::class);
+        $this->tester = $this->createMock(PayloadTesterInterface::class);
+        $this->valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $this->tree = $this->createMock(TreeAbstractInterface::class);
     }
 
     /**
-     * testConstructFailsWithInvalidNodeid
-     * @throws InvalidNodeIdException
+     * testConstruct
      * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
      */
-    public function testConstructFailsWithInvalidNodeid(): void
+    public function testConstruct(): void
     {
-        $treeId = 0;
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+        self::assertInstanceOf(TreenodeAbstractInterface::class, $this->node);
+    }
+
+    /**
+     * testConstructFailsWhenCollectionIsNotEmpty
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
+     */
+    public function testConstructFailsWhenCollectionIsNotEmpty(): void
+    {
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(false);
+        self::expectException(ChildCollectionException::class);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+    }
+
+    /**
+     * testHydrateFailsWithInvalidNodeid
+     * @throws InvalidNodeIdException
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hydrate
+     */
+    public function testHydrateFailsWithInvalidNodeid(): void
+    {
         $nodeId = -2;
-        $parentId = null;
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
         self::expectException(InvalidNodeIdException::class);
-
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
-     * testConstructFailsWhenNodeWithSameNodeidAlreadyExistsInTree
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
+     * testHydrateFailsWhenNodeWithSameNodeidAlreadyExistsInTree
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hydrate
      * @throws InvalidNodeIdException
      */
-    public function testConstructFailsWhenNodeWithSameNodeidAlreadyExistsInTree(): void
+    public function testHydrateFailsWhenNodeWithSameNodeidAlreadyExistsInTree(): void
     {
-        $treeId = 0;
-        $nodeId = 0;
-        $parentId = null;
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
+        $nodeId = 1;
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
         $mockDuplicate = $this->createMock(TreenodeAbstractInterface::class);
-        $mockTree->method('getNode')->with($nodeId)->willReturn($mockDuplicate);
-
+        $this->tree->expects($this->once())->method('getNode')->with($nodeId)->willReturn($mockDuplicate);
         self::expectException(AlreadySetNodeidException::class);
-
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
-        unset($node);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
-     * testConstructFailsWhenTreeIdDoesNotMatchTreeIdOfContainingTree
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
-     * @throws InvalidNodeIdException
+     * testHydrateFailsWhenTreeIdDoesNotMatchTreeIdOfContainingTree
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hydrate
      */
-    public function testConstructFailsWhenTreeIdDoesNotMatchTreeIdOfContainingTree(): void
+    public function testHydrateFailsWhenTreeIdDoesNotMatchTreeIdOfContainingTree(): void
     {
-        $treeId = 0;
-        $nodeId = 0;
-        $parentId = null;
-        $nonMatchingTreeId = 1;
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
+        $nodeId = 1;
+        $valueObjectTreeId = 0;
+        $treeId = 3;
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getTreeId')->willReturn($valueObjectTreeId);
+
+        $this->tree->expects($this->once())->method('getNode')->with($nodeId)->willReturn(null);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
 
         self::expectException(SetTreeIdException::class);
 
-        $node = new TreenodeAbstract($nodeId, $parentId, $nonMatchingTreeId, $mockTree, $mockCollection);
-        unset($node);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
-     * testConstructFailsWhenChildCollectionIsNotEmpty
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
-     * @throws InvalidNodeIdException
-     */
-    public function testConstructFailsWhenChildCollectionIsNotEmpty(): void
-    {
-        $treeId = 0;
-        $nodeId = 0;
-        $parentId = null;
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        $mockTree->method('getNode')->with($nodeId)->willReturn(null);
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(false);
-
-        self::expectException(ChildCollectionException::class);
-
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
-        unset($node);
-    }
-
-    /**
-     * testConstructSucceeds
-     * @throws InvalidNodeIdException
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::__construct
-     */
-    public function testConstructSucceeds(): void
-    {
-        $treeId = 0;
-        $nodeId = 0;
-        $parentId = null;
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        $mockTree->method('getNode')->with($nodeId)->willReturn(null);
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
-        self::assertInstanceOf(TreenodeAbstractInterface::class, $node);
-    }
-
-    /**
-     * testSetParentFailsWithBadNonNullParentId
+     * testSetParentFailsWithNonExistentNonNullParentId
      * @covers \pvc\struct\tree\node\TreenodeAbstract::setParent
-     * @throws InvalidNodeIdException
      */
-    public function testSetParentFailsWithBadNonNullParentId(): void
+    public function testSetParentFailsWithNonExistentNonNullParentId(): void
     {
+        $nodeId = 1;
+        $parentId = 0;
         $treeId = 0;
-        $nodeId = 0;
-        $badParentId = 10;
 
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        /**
-         * no node in the tree with node id or with bad parent id
-         */
-        $mockTree->method('getNode')->willReturn(null);
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
 
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getParentId')->willReturn($parentId);
+        $this->valueObject->method('getTreeId')->willReturn($treeId);
+
+        $this->tree->expects($this->exactly(2))->method('getNode')->willReturn(null);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
 
         self::expectException(InvalidParentNodeException::class);
 
-        $node = new TreenodeAbstract($nodeId, $badParentId, $treeId, $mockTree, $mockCollection);
-        unset($node);
+        $this->node->hydrate($this->valueObject, $this->tree);
+    }
+
+    /**
+     * testSetParentSetsNullParent
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setParent
+     */
+    public function testSetParentSetsNullParent(): void
+    {
+        $nodeId = 0;
+        $parentId = null;
+        $treeId = 0;
+
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->tester->method('testValue')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getParentId')->willReturn($parentId);
+        $this->valueObject->method('getTreeId')->willReturn($treeId);
+        $this->valueObject->method('getPayload')->willReturn(null);
+
+        $this->tree->expects($this->exactly(1))->method('getNode')->willReturn(null);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getRoot')->willReturn(null);
+
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
@@ -172,31 +219,36 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentFailsWhenCircularGraphCreated(): void
     {
+        $nodeId = 1;
+        $parentId = 0;
         $treeId = 0;
-        $nodeId = 0;
-        $parentId = 1;
 
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
 
-        $mockParent = $this->createMock(TreenodeAbstractInterface::class);
-        $mockParent->method('isDescendantOf')->willReturn(true);
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getParentId')->willReturn($parentId);
+        $this->valueObject->method('getTreeId')->willReturn($treeId);
 
-        $getNodeCallback = function ($arg) use ($nodeId, $parentId, $mockParent) {
+        $parentNode = $this->createMock(TreenodeAbstractInterface::class);
+        $parentNode->method('getNodeId')->willReturn($parentId);
+        $parentNode->method('isDescendantOf')->with($this->node)->willReturn(true);
+
+        $getNodeCallback = function ($arg) use ($nodeId, $parentId, $parentNode) {
             return match ($arg) {
                 $nodeId => null,
-                $parentId => $mockParent,
+                $parentId => $parentNode,
             };
         };
 
-        $mockTree->method('getNode')->willReturnCallback($getNodeCallback);
-
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
+        $this->tree->expects($this->exactly(2))->method('getNode')->willReturnCallback($getNodeCallback);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
 
         self::expectException(CircularGraphException::class);
 
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
@@ -205,42 +257,48 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentFailsIfNodeIsAlreadySetAsRoot(): void
     {
+        $nodeId = 1;
+        $parentId = 0;
         $treeId = 0;
-        $nodeId = 0;
-        $parentId = 1;
 
-        $mockParent = $this->createMock(TreenodeAbstractInterface::class);
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
 
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getParentId')->willReturn($parentId);
+        $this->valueObject->method('getTreeId')->willReturn($treeId);
 
-        $mockRoot = $this->createMock(TreenodeAbstractInterface::class);
-        $mockRoot->method('getNodeId')->willReturn($nodeId);
+        $parentNode = $this->createMock(TreenodeAbstractInterface::class);
+        $parentNode->method('getNodeId')->willReturn($parentId);
+        $parentNode->method('isDescendantOf')->with($this->node)->willReturn(false);
 
-        $getNodeCallback = function ($arg) use ($nodeId, $parentId, $mockParent) {
+        $getNodeCallback = function ($arg) use ($nodeId, $parentId, $parentNode) {
             return match ($arg) {
                 $nodeId => null,
-                $parentId => $mockParent,
+                $parentId => $parentNode,
             };
         };
 
-        $mockTree->method('getRoot')->willReturn($mockRoot);
-        $mockTree->method('getNode')->willReturnCallback($getNodeCallback);
-
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
+        $this->tree->expects($this->exactly(2))->method('getNode')->willReturnCallback($getNodeCallback);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getRoot')->willReturn($this->node);
 
         self::expectException(RootCannotBeMovedException::class);
 
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
     /**
      * testSetParentAddsNodeToParentsChildrenIfParentIsNotNull
      * @covers \pvc\struct\tree\node\TreenodeAbstract::setParent
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hydrate
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::isEmpty
      */
     public function testSetParentAddsNodeToParentsChildrenIfParentIsNotNull(): void
     {
+
         $treeId = 0;
         $parentId = 0;
         $nodeId = 1;
@@ -259,39 +317,34 @@ class TreenodeAbstractTest extends TestCase
             };
         };
 
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        $mockTree->method('getRoot')->willReturn($mockRoot);
-        $mockTree->method('getNode')->willReturnCallback($getNodeCallback);
+        $this->tree->method('getTreeId')->willReturn($treeId);
+        $this->tree->method('getRoot')->willReturn($mockRoot);
+        $this->tree->method('getNode')->willReturnCallback($getNodeCallback);
 
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
+        $this->collection->method('isEmpty')->willReturn(true);
 
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
-        self::assertEquals($mockRoot, $node->getParent());
+        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->valueObject->method('getParentId')->willReturn($parentId);
+        $this->valueObject->method('getTreeId')->willReturn($treeId);
+        $this->valueObject->method('getPayload')->willReturn(null);
+
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+        $this->tester->method('testValue')->willReturn(true);
+
+        self::assertTrue($this->node->isEmpty());
+        $this->node->hydrate($this->valueObject, $this->tree);
+        self::assertFalse($this->node->isEmpty());
+        self::assertEquals($mockRoot, $this->node->getParent());
+
+        /**
+         * verify that you cannot hydrate a node which is not empty
+         */
+        self::expectException(NodeNotEmptyHydrationException::class);
+        $this->node->hydrate($this->valueObject, $this->tree);
     }
 
-    /**
-     * testConstructSetsNullParent
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setParent
-     */
-    public function testSetParentSetsNullParent(): void
-    {
-        $treeId = 0;
-        $nodeId = 0;
-        $parentId = null;
-
-        $mockTree = $this->createMock(TreeAbstractInterface::class);
-        $mockTree->method('getTreeId')->willReturn($treeId);
-        $mockTree->method('getNode')->with($nodeId)->willReturn(null);
-
-        $mockCollection = $this->getMockForAbstractClass(CollectionAbstractInterface::class);
-        $mockCollection->method('isEmpty')->willReturn(true);
-
-        $node = new TreenodeAbstract($nodeId, $parentId, $treeId, $mockTree, $mockCollection);
-
-        self::assertNull($node->getParent());
-    }
 
     protected function createTree(): void
     {
@@ -306,51 +359,6 @@ class TreenodeAbstractTest extends TestCase
         return $this->fixture->getRoot();
     }
 
-    /**
-     * testSetGetValueValidator
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayloadValidator
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getPayloadValidator
-     */
-    public function testSetGetValueValidator(): void
-    {
-        $this->createTree();
-        $validator = $this->createStub(ValidatorPayloadInterface::class);
-
-        $this->getRoot()->setPayloadValidator($validator);
-        self::assertEquals($validator, $this->getRoot()->getPayloadValidator());
-    }
-
-    /**
-     * testSetValueFailsWhenValidatorDeterminesInvalidValue
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayload
-     * @throws InvalidNodeIdException
-     * @throws InvalidValueException
-     */
-    public function testSetValueFailsWhenValidatorDeterminesInvalidValue(): void
-    {
-        $this->createTree();
-
-        $validator = $this->createStub(ValidatorPayloadInterface::class);
-        $validator->method('validate')->willReturn(false);
-        $this->getRoot()->setPayloadValidator($validator);
-
-        self::expectException(InvalidValueException::class);
-        $this->getRoot()->setPayload('foo');
-    }
-
-    /**
-     * testSetGetValue
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setPayload
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getPayload
-     *
-     */
-    public function testSetGetValue(): void
-    {
-        $this->createTree();
-        $value = 'foobar';
-        $this->getRoot()->setPayload($value);
-        self::assertEquals($value, $this->getRoot()->getPayload());
-    }
 
     /**
      * testConstructSetsCorePropertiesCorrectly
@@ -501,19 +509,27 @@ class TreenodeAbstractTest extends TestCase
 
     /**
      * testAddGetClearVisitCount
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getVisitCount
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::addVisit
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::clearVisitCount
-     *
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getVisitStatus
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setVisitStatus
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::isValidVisitStatus
      */
-    public function testAddGetClearVisitCount(): void
+    public function testSetGetVisitStatus(): void
     {
         $this->createTree();
+        self::assertEquals(TreenodeAbstract::NEVER_VISITED, $this->getRoot()->getVisitStatus());
+        $this->getRoot()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+        self::assertEquals(TreenodeAbstract::FULLY_VISITED, $this->getRoot()->getVisitStatus());
+    }
 
-        self::assertEquals(0, $this->getRoot()->getVisitCount());
-        $this->getRoot()->addVisit();
-        self::assertEquals(1, $this->getRoot()->getVisitCount());
-        $this->getRoot()->clearVisitCount();
-        self::assertEquals(0, $this->getRoot()->getVisitCount());
+    /**
+     * testSetVisitStatusThrowsExceptionWithBadArgument
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::setVisitStatus
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::isValidVisitStatus
+     */
+    public function testSetVisitStatusThrowsExceptionWithBadArgument(): void
+    {
+        $this->createTree();
+        self::expectException(InvalidVisitStatusException::class);
+        $this->getRoot()->setVisitStatus(9);
     }
 }

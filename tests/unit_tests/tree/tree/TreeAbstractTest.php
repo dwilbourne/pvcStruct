@@ -12,7 +12,7 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
-use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
+use pvc\interfaces\struct\tree\node\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
@@ -24,7 +24,6 @@ use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\NoRootFoundException;
 use pvc\struct\tree\err\SetTreeIdException;
 use pvc\struct\tree\err\TreeNotEmptyHydrationException;
-use pvc\struct\tree\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\tree\TreeAbstract;
 
 /**
@@ -37,7 +36,10 @@ class TreeAbstractTest extends TestCase
      */
     protected int $treeId;
 
-    protected TreeAbstractEventHandlerInterface|MockObject $handler;
+    /**
+     * @var TreeAbstractEventHandlerInterface|MockObject
+     */
+    protected TreeAbstractEventHandlerInterface $handler;
 
     /**
      * @var TreeAbstractInterface|MockObject
@@ -50,6 +52,7 @@ class TreeAbstractTest extends TestCase
     public function setUp() : void
     {
         $this->treeId = 0;
+        /** @var TreenodeFactoryInterface $factory */
         $factory = $this->createMock(TreenodeFactoryInterface::class);
         $this->handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
         $this->tree = $this->getMockBuilder(TreeAbstract::class)
@@ -110,13 +113,13 @@ class TreeAbstractTest extends TestCase
     }
 
     /**
-     * testSetGetTreenodeAbstractFactory
+     * testSetGetTreenodeFactoryInterface
      * @covers \pvc\struct\tree\tree\TreeAbstract::setTreenodeFactory
      * @covers \pvc\struct\tree\tree\TreeAbstract::getTreenodeFactory
      */
-    public function testSetGetTreenodeAbstractFactory(): void
+    public function testSetGetTreenodeFactoryInterface(): void
     {
-        $factory = $this->createMock(TreenodeAbstractFactory::class);
+        $factory = $this->createMock(TreenodeFactoryInterface::class);
         $this->tree->setTreenodeFactory($factory);
         self::assertEquals($factory, $this->tree->getTreenodeFactory());
     }
@@ -131,21 +134,6 @@ class TreeAbstractTest extends TestCase
         $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
         $this->tree->setEventHandler($handler);
         self::assertEquals($handler, $this->tree->getEventHandler());
-    }
-
-    /**
-     * testMakeCollectionReturnsCollectionFromFactory
-     * @covers \pvc\struct\tree\tree\TreeAbstract::makeCollection()
-     */
-    public function testMakeCollectionReturnsCollectionFromFactory(): void
-    {
-        $expectedCollection = $this->createMock(CollectionAbstractInterface::class);
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
-        $nodeFactory->method('makeCollection')->willReturn($expectedCollection);
-        $this->tree->setTreenodeFactory($nodeFactory);
-
-        $actualCollection = $this->tree->makeCollection();
-        self::assertEquals($expectedCollection, $actualCollection);
     }
 
     /**
@@ -222,10 +210,9 @@ class TreeAbstractTest extends TestCase
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
 
@@ -256,10 +243,9 @@ class TreeAbstractTest extends TestCase
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturnOnConsecutiveCalls($root, $secondRoot);
         $this->tree->setTreenodeFactory($nodeFactory);
 
@@ -286,9 +272,8 @@ class TreeAbstractTest extends TestCase
         $root = $this->createMockRoot($rootId);
         $node = $this->createMockNodeWithRootAsParent($nodeId, $rootId);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturnOnConsecutiveCalls($root, $node);
         $this->tree->setTreenodeFactory($nodeFactory);
 
@@ -327,10 +312,9 @@ class TreeAbstractTest extends TestCase
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
 
@@ -381,10 +365,9 @@ class TreeAbstractTest extends TestCase
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
 
@@ -418,10 +401,9 @@ class TreeAbstractTest extends TestCase
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
-        $nodeFactory = $this->createMock(TreenodeAbstractFactory::class);
+        $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
-                    ->with($valueObject)
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
         $this->handler->expects($this->once())->method('beforeAddNode')->with($root);

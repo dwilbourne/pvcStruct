@@ -19,7 +19,7 @@ trait ValueObjectPayloadTrait
     /**
      * @var PayloadType|null
      */
-    protected $payload;
+    protected mixed $payload;
 
     /**
      * getPayload
@@ -27,7 +27,7 @@ trait ValueObjectPayloadTrait
      */
     public function getPayload()
     {
-        return $this->payload;
+        return $this->payload ?? null;
     }
 
     /**

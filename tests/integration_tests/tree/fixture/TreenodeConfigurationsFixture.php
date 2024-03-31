@@ -8,8 +8,9 @@ declare(strict_types=1);
 
 namespace pvcTests\struct\integration_tests\tree\fixture;
 
-use pvc\interfaces\struct\tree\factory\TreenodeValueObjectFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\factory\TreenodeValueObjectFactoryInterface;
+use pvc\interfaces\struct\tree\search\NodeDepthMapInterface;
 
 /**
  * Class TreeTestFixture
@@ -23,10 +24,15 @@ class TreenodeConfigurationsFixture
      */
     protected TreenodeValueObjectFactoryInterface $valueObjectFactory;
 
-    public function __construct(TreenodeValueObjectFactoryInterface $valueObjectFactory)
-    {
+    protected NodeDepthMapInterface $depthMap;
+
+    public function __construct(
+        TreenodeValueObjectFactoryInterface $valueObjectFactory,
+        NodeDepthMapInterface $depthMap
+    ) {
         $this->treeId = 0;
         $this->valueObjectFactory = $valueObjectFactory;
+        $this->depthMap = $depthMap;
     }
 
     /**
@@ -36,6 +42,11 @@ class TreenodeConfigurationsFixture
     public function getTreeId(): int
     {
         return $this->treeId;
+    }
+
+    public function getDepthMap(): NodeDepthMapInterface
+    {
+        return $this->depthMap;
     }
 
     protected function transformNumericNodeData(array $row): array
@@ -122,10 +133,8 @@ class TreenodeConfigurationsFixture
         $a = [];
         $a[] = [0, null, 0];
 
-        $a[] = [9, 5, 3];
-        $a[] = [10, 5, 2];
-        $a[] = [11, 5, 1];
-        $a[] = [12, 5, 0];
+        $a[] = [1, 0, 1];
+        $a[] = [2, 0, 0];
 
         $a[] = [3, 1, 1];
         $a[] = [4, 1, 2];
@@ -134,13 +143,36 @@ class TreenodeConfigurationsFixture
         $a[] = [6, 2, 0];
         $a[] = [7, 2, 1];
 
-        $a[] = [1, 0, 1];
-        $a[] = [2, 0, 0];
-
         $a[] = [8, 3, 0];
 
+        $a[] = [9, 5, 3];
+        $a[] = [10, 5, 2];
+        $a[] = [11, 5, 1];
+        $a[] = [12, 5, 0];
 
         return $a;
+    }
+
+    public function makeNodeDepthMap(): void
+    {
+        $this->depthMap->setNodeDepth(0, 0);
+
+        $this->depthMap->setNodeDepth(1, 1);
+        $this->depthMap->setNodeDepth(2, 1);
+
+        $this->depthMap->setNodeDepth(3, 2);
+        $this->depthMap->setNodeDepth(4, 2);
+        $this->depthMap->setNodeDepth(5, 2);
+
+        $this->depthMap->setNodeDepth(6, 2);
+        $this->depthMap->setNodeDepth(7, 2);
+
+        $this->depthMap->setNodeDepth(8, 3);
+
+        $this->depthMap->setNodeDepth(9, 3);
+        $this->depthMap->setNodeDepth(10, 3);
+        $this->depthMap->setNodeDepth(11, 3);
+        $this->depthMap->setNodeDepth(12, 3);
     }
 
     public function makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively(): array
@@ -226,7 +258,7 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makeOrderedBreadthFirstArrayTwoLevelsStartingAtRoot(): array
+    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot(): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;

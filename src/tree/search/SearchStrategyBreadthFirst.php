@@ -3,6 +3,7 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
+
 declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
@@ -10,6 +11,8 @@ namespace pvc\struct\tree\search;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\interfaces\struct\tree\search\NodeDepthMapInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
@@ -21,22 +24,31 @@ use pvc\struct\tree\err\StartNodeUnsetException;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType>
- * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType>
+ * @template ValueObjectType of TreenodeValueObjectInterface
+ * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements SearchStrategyInterface
+class SearchStrategyBreadthFirst implements SearchStrategyInterface
 {
+    /**
+     * @use SearchStrategyTrait<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     */
+    use SearchStrategyTrait;
 
     /**
      * @var int
      *
-     * maximum depth to which we are allowed to traverse the tree.  The interpretation is number of levels *below*
-     * the start node, not inclusive of the start node.
+     * maximum depth to which we are allowed to traverse the tree.
      */
     protected int $maxLevels = PHP_INT_MAX;
 
     /**
-     * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
+     * @var non-negative-int
+     * the start node is on level 0
+     */
+    private int $currentLevel = 0;
+
+    /**
+     * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
      *
      * array of nodes in the "current level" of the tree
      */
@@ -47,6 +59,14 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
      * index into $currentLevelNodes used to retrieve the next node
      */
     private int $currentIndex;
+
+    /**
+     * @param NodeDepthMapInterface $nodeDepthMap
+     */
+    public function __construct(NodeDepthMapInterface $nodeDepthMap)
+    {
+        $this->setNodeDepthMap($nodeDepthMap);
+    }
 
     /**
      * getMaxLevels
@@ -73,48 +93,58 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
 
     /**
      * rewind
-     * @throws StartNodeUnsetException
      */
     public function rewind(): void
     {
-        $this->currentLevelNodes = [$this->getStartNode()];
+        if (!$this->startNodeIsSet()) {
+            throw new StartNodeUnsetException();
+        }
+        $this->valid = true;
+        $this->currentLevel = 0;
+        $this->nodeDepthMap->initialize();
+        $this->currentLevelNodes[] = $this->getStartNode();
         $this->currentNode = $this->getStartNode();
         /**
-         * at the beginning of the iteration, the current node is returned without next() being called first. So there
-         * is nothing that advances the currentIndex pointer when the startnode is returned as the first element in the
-         * iteration.  So really, the currentIndex should be 1, not 0
+         * at the beginning of the iteration, the current node is returned without next() being called first. So
+         * there is nothing that advances the currentIndex pointer when the start node is returned as the first
+         * element in the iteration.  So really, the currentIndex should be 1, not 0
          */
         $this->currentIndex = 1;
     }
 
     /**
-     * current
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
+     * exceededMaxLevels
+     * @return bool
+     * as an example, max levels of 2 means the first level (containing the start node) is at level 0 and the level
+     * below that is on level 1.  So if the current level goes to level 2 then we have exceeded the max-levels
+     * threshold.
      */
-    protected function getNextNodeProtected(): TreenodeAbstractInterface|null
+    protected function exceededMaxLevels(): bool
+    {
+        return ($this->currentLevel == $this->maxLevels);
+    }
+
+    /**
+     * next
+     */
+    public function next(): void
     {
         /**
-         * max levels is decremented by one each time we move to the next level of nodes in the tree.  Because the
-         * interpretation of max levels is the number of levels *below* the start node, test that max levels is less
-         * than 0, not <= 0
+         * If we have exceeded the max levels or there are no nodes left to process, set valid to false
+         * and return
          */
-        if ($this->maxLevels < 0) {
-            return null;
+        if (($this->exceededMaxLevels()) || empty($this->currentLevelNodes)) {
+            $this->valid = false;
+            return;
         }
 
         /**
-         * return if there are no nodes left to process
-         */
-        if (empty($this->currentLevelNodes)) {
-            return null;
-        }
-
-        /**
-         * if we still have more nodes in the current level left, return the next one.
+         * if we still have more nodes in the current level left, set the current node, increment the index,
+         * and add the node to the nodeDepthMap.
          */
         if (isset($this->currentLevelNodes[$this->currentIndex])) {
-            $this->currentIndex++;
-            return $this->currentLevelNodes[$this->currentIndex - 1];
+            $this->currentNode = $this->currentLevelNodes[$this->currentIndex++];
+            $this->nodeDepthMap->setNodeDepth($this->currentNode->getNodeId(), $this->currentLevel);
         } /**
          * otherwise populate $currentLevelNodes with the next level of nodes
          */
@@ -123,64 +153,26 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements Searc
              * get the nodes on the next level of the tree
              */
             $this->currentLevelNodes = $this->getNextLevelOfNodes();
+            $this->currentLevel++;
             /**
-             * decrement max levels, rewind the current index and go get another node
+             * rewind the current index and keep going
              */
-            $this->maxLevels--;
             $this->currentIndex = 0;
-            return $this->getNextNodeProtected();
+            $this->next();
         }
     }
 
     /**
      * getNextLevelOfNodes
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
+     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
      */
     protected function getNextLevelOfNodes(): array
     {
         $getChildrenCallback = function (TreenodeAbstractInterface $node): array {
             return $node->getChildren()->getElements();
         };
-        /** @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>> $result */
+        /** @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>> $result */
         $result = call_user_func_array('array_merge', array_map($getChildrenCallback, $this->currentLevelNodes));
         return $result;
-    }
-
-
-    /**
-     * getNodesProtected
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
-     */
-    protected function getNodesProtected(): array
-    {
-        /** @var array<NodeType> $startNodeArray */
-        $startNodeArray = [$this->getStartNode()];
-        /** @var array<NodeType> $result */
-        $result = $this->getNodesRecurse($startNodeArray);
-        return $result;
-    }
-
-    /**
-     * getNodesRecurse
-     * @param array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>> $nodes
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
-     */
-    protected function getNodesRecurse(array $nodes): array
-    {
-        if ($this->maxLevels-- === 0) {
-            return $nodes;
-        }
-
-        $this->currentLevelNodes = $this->getNextLevelOfNodes();
-
-        /**
-         * if there are children, recurse on them and merge into the current result set.  If there are no remaining
-         * children, just return the current result set.
-         */
-        if (!empty($this->currentLevelNodes)) {
-            return array_merge($nodes, $this->getNodesRecurse($this->currentLevelNodes));
-        } else {
-            return $nodes;
-        }
     }
 }

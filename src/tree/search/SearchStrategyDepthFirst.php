@@ -11,9 +11,12 @@ namespace pvc\struct\tree\search;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
+use pvc\struct\tree\err\StartNodeUnsetException;
+use pvc\struct\tree\node\TreenodeAbstract;
 
 /**
  * Class SearchStrategyDepthFirst
@@ -21,20 +24,23 @@ use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType>
- * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType>
+ * @template ValueObjectType of TreenodeValueObjectInterface
+ * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchStrategyInterface
+class SearchStrategyDepthFirst implements SearchStrategyInterface
 {
+    /**
+     * @use SearchStrategyTrait<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     */
+    use SearchStrategyTrait;
 
     /**
      * preorder means that a node is added to the result set upon its initial visitation, whereas post order is when
-     * the node is added to the resultset upon its second (last) visitation.
+     * the node is added to the result set upon its second (last) visitation.
      */
     public const PREORDER = 0;
 
     public const POSTORDER = 1;
-
 
     /**
      * @var int
@@ -46,6 +52,10 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
      */
     private array $validOrders = [self::PREORDER, self::POSTORDER];
 
+    public function __construct(NodeDepthMap $nodeDepthMap)
+    {
+        $this->setNodeDepthMap($nodeDepthMap);
+    }
 
     public function getOrdering(): int
     {
@@ -75,25 +85,15 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
     }
 
     /**
-     * clearVisitCounts
+     * clearVisitStatusRecurse
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
      */
-    protected function clearVisitCounts(): void
+    protected function clearVisitStatusRecurse(TreenodeAbstractInterface $node): void
     {
-        if ($this->getStartNode()) {
-            $this->clearVisitCountsRecurse($this->startNode);
-        }
-    }
-
-    /**
-     * clearVisitCountsRecurse
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $node
-     */
-    protected function clearVisitCountsRecurse(TreenodeAbstractInterface $node): void
-    {
-        $node->clearVisitCount();
-        /** @var NodeType $child */
+        $node->setVisitStatus(TreenodeAbstract::NEVER_VISITED);
+        /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
         foreach ($node->getChildren() as $child) {
-            $this->clearVisitCountsRecurse($child);
+            $this->clearVisitStatusRecurse($child);
         }
     }
 
@@ -102,132 +102,146 @@ class SearchStrategyDepthFirst extends SearchStrategyAbstract implements SearchS
      */
     public function rewind(): void
     {
-        if ($this->currentNode = $this->getStartNode()) {
-            $this->clearVisitCounts();
-            /**
-             * there's an initialization step of calling getNextNodeProtected.  This sets the current node properly
-             * because the current node should be the start node if we are preorder mode.  If we are post order mode,
-             * we want to recurse to the bottom of the tree so that the first node returned is at the bottom of the tree.
-             */
-            $this->currentNode = $this->getNextNodeProtected();
+        if (!$this->startNodeIsSet()) {
+            throw new StartNodeUnsetException();
+        }
+        $this->valid = true;
+        $this->nodeDepthMap->initialize();
+        $this->setCurrentNode($this->getStartNode());
+        $this->getNodeDepthMap()->setNodeDepth($this->getStartNode()->getNodeId(), 0);
+        $this->clearVisitStatusRecurse($this->getStartNode());
+        /**
+         * there's an initialization step of calling next().  This sets the current node properly
+         * because the current node should be the start node only if we are preorder mode.  If we are post order
+         * mode, we want to recurse to the bottom of the tree so that the first node returned is at the bottom of
+         * the tree.
+         */
+        $this->next();
+    }
+
+    /**
+     * next
+     */
+    public function next(): void
+    {
+        if ($this->getOrdering() == self::PREORDER) {
+            $this->nextPreorder();
+        } else {
+            $this->nextPostorder();
         }
     }
 
     /**
-     * getNextNodeProtected
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null
-     *
-     * preorder mode means that you return the node the first time you visit it.
-     * postorder mode means you return the node the last time you visit it.
-     *
-     * so the algorithm is that you add 1 to the visit count the first time you visit the node.  You add one more to
-     * the visit count when all the children have been visited twice.
+     * addChildOfCurrentToDepthNodeMap
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child
      */
-    protected function getNextNodeProtected(): TreenodeAbstractInterface|null
+    protected function addChildOfCurrentToDepthNodeMap(TreenodeAbstractInterface $child): void
     {
-        if (!$this->valid()) {
-            return null;
-        }
-        /**
-         * assert helps the static analysis type checker
-         */
-        assert($this->currentNode instanceof TreenodeAbstractInterface);
+        $parentDepth = $this->getNodeDepthMap()->getNodeDepth($this->getCurrentNode()->getNodeId());
+        $this->getNodeDepthMap()->setNodeDepth($child->getNodeId(), $parentDepth + 1);
+    }
 
-        /**
-         * visit count == 0 means this is the first time we have visited this node.
-         */
-        if ($this->currentNode->getVisitCount() == 0) {
-            $this->currentNode->addVisit();
+    /**
+     * nextPostorder
+     *
+     * postorder mode means you stop (return) just after the node is fully visited.
+     */
+    protected function nextPostorder(): void
+    {
+        if ($this->currentNode->getVisitStatus() == TreenodeAbstract::NEVER_VISITED) {
             /**
-             * if we are in preorder mode, then return this node
+             * set the status to partially visited and drop through to the next logic block which deals with
+             * partially visited nodes.
              */
-            if ($this->getOrdering() == self::PREORDER) {
-                return $this->currentNode;
-            } /**
-             * otherwise we are in post order mode.  Recursively visit all the children of this node, getting us
-             * to the bottom of the tree in this branch before returning any nodes.
-             */
-            else {
-                /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $child */
-                foreach ($this->currentNode->getChildren() as $child) {
-                    $this->currentNode = $child;
-                    return $this->getNextNodeProtected();
-                }
-            }
+            $this->currentNode->setVisitStatus(TreenodeAbstract::PARTIALLY_VISITED);
         }
 
-        if ($this->currentNode->getVisitCount() == 1) {
-            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType> $child */
+        if ($this->currentNode->getVisitStatus() == TreenodeAbstract::PARTIALLY_VISITED) {
+            /**
+             * since we are in postorder mode, we have not yet found the "next" node.  If this node has any children
+             * which are not yet fully visited, then the next node is one of this node's descendants.
+             */
+
+            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
             foreach ($this->currentNode->getChildren() as $child) {
-                if ($child->getVisitCount() < 2) {
-                    $this->currentNode = $child;
-                    return $this->getNextNodeProtected();
+                /**
+                 * add the child to the nodeDepthMap
+                 */
+                $this->addChildOfCurrentToDepthNodeMap($child);
+
+                if ($child->getVisitStatus() < 2) {
+                    $this->setCurrentNode($child);
+                    $this->next();
+                    /**
+                     * make sure we do not loop through the rest of the children
+                     */
+                    return;
                 }
             }
             /**
-             * if we got here then either the current node has no children or they all have been visited twice and
-             * returned.  Bump the visit count on this node.  If we are in post order mode, return this node.
-             * Otherwise, set the node to be the parent if possible and recurse
+             * if we got here, then either this node has no children or all of its children have been fully visited.
+             * This is the node we want to keep as the current node.  Set the status and return.
              */
-            $this->currentNode->addVisit();
-            if ($this->getOrdering() == self::POSTORDER) {
-                return $this->currentNode;
+            $this->getCurrentNode()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+            return;
+        }
+
+        /**
+         * If this node has been fully visited then so have all its children.  Go up one level in the tree if possible
+         * and recurse.
+         */
+        $parent = $this->getCurrentNode()->getParent();
+        if ($parent) {
+            $this->setCurrentNode($parent);
+            $this->next();
+        } else {
+            $this->valid = false;
+        }
+    }
+
+    /**
+     * nextPreorder
+     * preorder mode means that you return the node the first time you visit it.
+     */
+    protected function nextPreorder(): void
+    {
+        if ($this->getCurrentNode()->getVisitStatus() == TreenodeAbstract::NEVER_VISITED) {
+            /**
+             * set the status to partially visited and stop (e.g. return)
+             */
+            $this->currentNode->setVisitStatus(TreenodeAbstract::PARTIALLY_VISITED);
+            return;
+        }
+
+        if ($this->getCurrentNode()->getVisitStatus() == 1) {
+            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
+            foreach ($this->getCurrentNode()->getChildren() as $child) {
+                /**
+                 * add child to depth node map
+                 */
+                $this->addChildOfCurrentToDepthNodeMap($child);
+
+                if ($child->getVisitStatus() < 2) {
+                    $this->setCurrentNode($child);
+                    $this->next();
+                    return;
+                }
+            }
+
+            /**
+             * if we got here then either the current node has no children or they all have been fully visited and
+             * returned.  Set the status on this node to fully visited, set the current node to be the parent (if
+             * possible) and recurse on the parent
+             */
+            $this->getCurrentNode()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+
+            $parent = $this->getCurrentNode()->getParent();
+            if ($parent) {
+                $this->setCurrentNode($parent);
+                $this->next();
             } else {
-                $this->currentNode = $this->currentNode->getParent();
-                return $this->getNextNodeProtected();
+                $this->valid = false;
             }
         }
-        /**
-         * visit count == 2
-         */
-        $this->currentNode = $this->currentNode->getParent();
-        return $this->getNextNodeProtected();
-    }
-
-    /**
-     * @function getNodesProtected
-     *
-     * getNodesDepthFirst recursively returns an array of nodes via a depth first search starting at $node.
-     *
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
-     */
-    protected function getNodesProtected(): array
-    {
-        $startNode = $this->getStartNode();
-        $result = $this->getNodesRecurse($startNode);
-        return $result;
-    }
-
-    /**
-     * getNodesRecurse
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>|null $node
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>>
-     */
-    protected function getNodesRecurse(TreenodeAbstractInterface|null $node): array
-    {
-        $result = [];
-
-        if (!$node) {
-            return $result;
-        }
-
-        if ($this->ordering == self::PREORDER) {
-            $result[] = $node;
-        }
-
-        /**
-         * get the list of children and recurse on each child, merging the result set arrays back together and
-         * returning the merged result set.
-         * @var NodeType $child
-         */
-        foreach ($node->getChildren()->getElements() as $child) {
-            $result = array_merge($result, $this->getNodesRecurse($child));
-        }
-
-        if ($this->ordering == self::POSTORDER) {
-            $result[] = $node;
-        }
-
-        return $result;
     }
 }

@@ -9,7 +9,10 @@ namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\payload\PayloadTesterInterface;
+use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
@@ -17,6 +20,8 @@ use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
+use pvc\struct\tree\err\InvalidVisitStatusException;
+use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
 
@@ -25,7 +30,8 @@ use pvc\struct\tree\err\SetTreeIdException;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType>
+ * @template ValueObjectType of TreenodeValueObjectInterface
+ * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
 class TreenodeAbstract implements TreenodeAbstractInterface
 {
@@ -42,55 +48,104 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * reference to parent
-     * @var NodeType|null
+     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     protected ?TreenodeAbstractInterface $parent;
 
     /**
      * reference to containing tree
-     * @var TreeType
+     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
      */
     protected TreeAbstractInterface $tree;
 
     /**
-     * @var CollectionType $children
+     * @var CollectionAbstractInterface<PayloadType, CollectionType> $children
      */
     protected CollectionAbstractInterface $children;
 
     /**
      * @var non-negative-int
      */
-    protected int $visitCount = 0;
+    protected int $visitStatus = self::NEVER_VISITED;
 
     /**
-     * @param int $nodeid
-     * @param ?non-negative-int $parentId
-     * @param int $treeId
-     * @param TreeType $tree
-     * @param CollectionType $collection
-     * @throws InvalidNodeIdException
+     * partially visited means that the node has been visited once but not all of its children have been fully visited.
      */
-    public function __construct(
-        int $nodeid,
-        ?int $parentId,
-        int $treeId,
-        TreeAbstractInterface $tree,
-        CollectionAbstractInterface $collection
-    ) {
+    public const NEVER_VISITED = 0;
+
+    public const PARTIALLY_VISITED = 1;
+
+    public const FULLY_VISITED = 2;
+
+    /**
+     * @param CollectionAbstractInterface<PayloadType, CollectionType> $collection
+     * @param PayloadTesterInterface<PayloadType> $tester
+     * @throws ChildCollectionException
+     */
+    public function __construct(CollectionAbstractInterface $collection, PayloadTesterInterface $tester = null)
+    {
+        /**
+         * set the child collection
+         */
+        if (!$collection->isEmpty()) {
+            throw new ChildCollectionException();
+        } else {
+            $this->children = $collection;
+        }
+
+        /**
+         * set the tester
+         */
+        $this->setPayloadTester($tester);
+    }
+
+    /**
+     * isEmpty
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return is_null($this->nodeid ?? null);
+    }
+
+    /**
+     * hydrate
+     * @param TreenodeValueObjectInterface<PayloadType, ValueObjectType> $valueObject
+     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $tree
+     * @throws AlreadySetNodeidException
+     * @throws CircularGraphException
+     * @throws InvalidNodeIdException
+     * @throws InvalidParentNodeException
+     * @throws RootCannotBeMovedException
+     * @throws SetTreeIdException
+     */
+    public function hydrate(TreenodeValueObjectInterface $valueObject, TreeAbstractInterface $tree): void
+    {
+        /**
+         * cannot hydrate a node if it already has been hydrated
+         */
+        if (!$this->isEmpty()) {
+            throw new NodeNotEmptyHydrationException($this->getNodeId());
+        }
+
+        $nodeId = $valueObject->getNodeId();
+        $parentId = $valueObject->getParentId();
+        $treeId = $valueObject->getTreeId();
+
         /**
          * nodeid must be non-negative.  phpstan will catch static problems but to be thorough, let's catch it anyway
          */
-        if ($nodeid < 0) {
-            throw new InvalidNodeIdException($nodeid);
+        if ($nodeId < 0) {
+            throw new InvalidNodeIdException($nodeId);
         }
 
         /**
          * node id cannot already exist in the tree
          */
-        if ($tree->getNode($nodeid)) {
-            throw new AlreadySetNodeidException($nodeid);
+        if ($tree->getNode($nodeId)) {
+            throw new AlreadySetNodeidException($nodeId);
         }
-        $this->nodeid = $nodeid;
+        $this->nodeid = $nodeId;
 
         /**
          * verify that the tree id in the arguments matches the tree id of the tree we are setting a reference to
@@ -106,29 +161,27 @@ class TreenodeAbstract implements TreenodeAbstractInterface
         $this->tree = $tree;
 
         /**
-         * set the child collection
-         */
-        if (!$collection->isEmpty()) {
-            throw new ChildCollectionException();
-        } else {
-            $this->children = $collection;
-        }
-
-        /**
          * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent
          */
         $this->setParent($parentId);
+
+        /**
+         * set the payload - the setPayload method validates the payload before setting it
+         */
+        $this->setPayload($valueObject->getPayload());
     }
 
     /**
      * @function setParent
-     *
      * @param non-negative-int|null $parentId
      */
     public function setParent(?int $parentId): void
     {
         if (!is_null($parentId)) {
-            /** @var NodeType|null $parent */
+            /**
+             * @phpcs:ignore
+             * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null $parent
+             */
             $parent = $this->getTree()->getNode($parentId);
             if (is_null($parent)) {
                 /**
@@ -192,7 +245,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * @function getParent
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     public function getParent(): ?TreenodeAbstractInterface
     {
@@ -201,7 +254,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * @function getTree
-     * @return TreeType
+     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
      */
     public function getTree(): TreeAbstractInterface
     {
@@ -219,7 +272,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * @function getChildren
-     * @return CollectionType
+     * @return CollectionAbstractInterface<PayloadType, CollectionType>
      */
     public function getChildren(): CollectionAbstractInterface
     {
@@ -247,7 +300,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     /**
      * @function getChild
      * @param non-negative-int $nodeid
-     * @return NodeType|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
      */
     public function getChild(int $nodeid): ?TreenodeAbstractInterface
     {
@@ -263,13 +316,19 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     /**
      * getSiblings returns a collection of this node's siblings
      *
-     * @return CollectionType
+     * @return CollectionAbstractInterface<PayloadType, CollectionType>
      */
     public function getSiblings(): CollectionAbstractInterface
     {
+        /**
+         * the root has no siblings of course.  It is easier to create a collection here than to deal with multiple
+         * data types down the road for whoever wants to get the siblings of root.  But we do have to go a long
+         * way to get to the collection factory......
+         */
         if ($this->getTree()->rootTest($this)) {
+            $collectionFactory = $this->getTree()->getTreenodeFactory()->getCollectionFactory();
             /** @var CollectionType $collection */
-            $collection = $this->tree->makeCollection();
+            $collection = $collectionFactory->makeCollection();
             $collection->push($this);
         } else {
             /** @var NodeType $parent */
@@ -282,7 +341,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * @function isAncestorOf
-     * @param NodeType $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
      * @return bool
      */
     public function isAncestorOf(TreenodeAbstractInterface $node): bool
@@ -292,7 +351,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * @function isDescendantOf
-     * @param NodeType $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
      * @return bool
      */
     public function isDescendantOf(TreenodeAbstractInterface $node): bool
@@ -308,27 +367,35 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     }
 
     /**
-     * getVisitCount
+     * getVisitStatus
      * @return non-negative-int
      */
-    public function getVisitCount(): int
+    public function getVisitStatus(): int
     {
-        return $this->visitCount;
+        return $this->visitStatus;
     }
 
     /**
-     * addVisit
+     * isValidVisitStatus
+     * @param non-negative-int $status
+     * @return bool
      */
-    public function addVisit(): void
+    protected function isValidVisitStatus(int $status): bool
     {
-        $this->visitCount++;
+        $validStatusArray = [self::NEVER_VISITED, self::PARTIALLY_VISITED, self::FULLY_VISITED];
+        return (in_array($status, $validStatusArray));
     }
 
     /**
-     * clearVisitCount
+     * setVisitStatus
+     * @param non-negative-int $status
+     * @throws InvalidVisitStatusException
      */
-    public function clearVisitCount(): void
+    public function setVisitStatus(int $status): void
     {
-        $this->visitCount = 0;
+        if (!$this->isValidVisitStatus($status)) {
+            throw new InvalidVisitStatusException();
+        }
+        $this->visitStatus = $status;
     }
 }
