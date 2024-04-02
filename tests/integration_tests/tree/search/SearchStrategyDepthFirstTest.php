@@ -10,8 +10,8 @@ namespace pvcTests\struct\integration_tests\tree\search;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\collection\factory\CollectionUnorderedFactory;
+use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
-use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
 use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectUnorderedFactory;
 use pvc\struct\tree\search\NodeDepthMap;
@@ -111,17 +111,33 @@ class SearchStrategyDepthFirstTest extends TestCase
     }
 
     /**
-     * testUnsetStartNodeThrowsException
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::rewind
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::next
+     * testMaxLevelsPreorder
+     * @throws BadSearchLevelsException
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::nextPreorder
      */
-    public function testUnsetStartNodeThrowsException(): void
+    public function testMaxLevelsPreorder(): void
     {
-        /**
-         * no start node set
-         */
-        self::expectException(StartNodeUnsetException::class);
-        $nodes = $this->getNodes();
-        unset($nodes);
+        $this->strategy->setStartNode($this->tree->getRoot());
+        $expectedResult = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
+        $this->strategy->setOrdering(SearchStrategyDepthFirst::PREORDER);
+        $this->strategy->setMaxLevels(3);
+        $actualResult = $this->getNodes();
+        self::assertEquals($expectedResult, $actualResult);
+    }
+
+    /**
+     * testMaxLevelsPostOrder
+     * @throws InvalidDepthFirstSearchOrderingException
+     * @throws BadSearchLevelsException
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::nextPostorder
+     */
+    public function testMaxLevelsPostOrder(): void
+    {
+        $this->strategy->setStartNode($this->tree->getRoot());
+        $expectedResult = $this->fixture->makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
+        $this->strategy->setOrdering(SearchStrategyDepthFirst::POSTORDER);
+        $this->strategy->setMaxLevels(3);
+        $actualResult = $this->getNodes();
+        self::assertEquals($expectedResult, $actualResult);
     }
 }

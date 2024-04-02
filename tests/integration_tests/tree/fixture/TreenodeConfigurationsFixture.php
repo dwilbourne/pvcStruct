@@ -272,6 +272,34 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
+    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 0;
+        $expectedResult[] = 1;
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
+        $expectedResult[] = 5;
+        $expectedResult[] = 2;
+        $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        return $expectedResult;
+    }
+
+    public function makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
+        $expectedResult[] = 5;
+        $expectedResult[] = 1;
+        $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        $expectedResult[] = 2;
+        $expectedResult[] = 0;
+        return $expectedResult;
+    }
+
 
     public function makeUnorderedDepthFirstArrayOfBranchAtNodeid2(): array
     {

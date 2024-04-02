@@ -9,21 +9,21 @@ namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\search\SearchFilterInterface;
-use pvc\struct\tree\search\SearchFilterDefault;
+use pvc\interfaces\struct\tree\search\NodeFilterInterface;
+use pvc\struct\tree\search\NodeFilterDefault;
 
-class SearchFilterDefaultTest extends TestCase
+class NodeFilterDefaultTest extends TestCase
 {
-    protected SearchFilterInterface $filter;
+    protected NodeFilterInterface $filter;
 
     public function setUp(): void
     {
-        $this->filter = new SearchFilterDefault();
+        $this->filter = new NodeFilterDefault();
     }
 
     /**
      * testFilterReturnsTrue
-     * @covers \pvc\struct\tree\search\SearchFilterDefault::testNode
+     * @covers \pvc\struct\tree\search\NodeFilterDefault::testNode
      */
     public function testFilterReturnsTrue(): void
     {

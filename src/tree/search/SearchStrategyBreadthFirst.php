@@ -12,11 +12,8 @@ use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\search\NodeDepthMapInterface;
-use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
-use pvc\struct\tree\err\BadSearchLevelsException;
-use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst
@@ -25,28 +22,11 @@ use pvc\struct\tree\err\StartNodeUnsetException;
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
  * @template ValueObjectType of TreenodeValueObjectInterface
- * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @implements NodeSearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class SearchStrategyBreadthFirst implements SearchStrategyInterface
+class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeSearchStrategyInterface
 {
-    /**
-     * @use SearchStrategyTrait<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
-     */
-    use SearchStrategyTrait;
-
-    /**
-     * @var int
-     *
-     * maximum depth to which we are allowed to traverse the tree.
-     */
-    protected int $maxLevels = PHP_INT_MAX;
-
-    /**
-     * @var non-negative-int
-     * the start node is on level 0
-     */
-    private int $currentLevel = 0;
-
     /**
      * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
      *
@@ -61,67 +41,18 @@ class SearchStrategyBreadthFirst implements SearchStrategyInterface
     private int $currentIndex;
 
     /**
-     * @param NodeDepthMapInterface $nodeDepthMap
-     */
-    public function __construct(NodeDepthMapInterface $nodeDepthMap)
-    {
-        $this->setNodeDepthMap($nodeDepthMap);
-    }
-
-    /**
-     * getMaxLevels
-     * @return int
-     */
-    public function getMaxLevels(): int
-    {
-        return $this->maxLevels;
-    }
-
-    /**
-     * setMaxLevels
-     * @param int $maxLevels
-     * @throws BadSearchLevelsException
-     */
-    public function setMaxLevels(int $maxLevels): void
-    {
-        if ($maxLevels < 1) {
-            throw new BadSearchLevelsException($maxLevels);
-        } else {
-            $this->maxLevels = $maxLevels;
-        }
-    }
-
-    /**
      * rewind
      */
     public function rewind(): void
     {
-        if (!$this->startNodeIsSet()) {
-            throw new StartNodeUnsetException();
-        }
-        $this->valid = true;
-        $this->currentLevel = 0;
-        $this->nodeDepthMap->initialize();
+        parent::rewind();
         $this->currentLevelNodes[] = $this->getStartNode();
-        $this->currentNode = $this->getStartNode();
         /**
          * at the beginning of the iteration, the current node is returned without next() being called first. So
          * there is nothing that advances the currentIndex pointer when the start node is returned as the first
          * element in the iteration.  So really, the currentIndex should be 1, not 0
          */
         $this->currentIndex = 1;
-    }
-
-    /**
-     * exceededMaxLevels
-     * @return bool
-     * as an example, max levels of 2 means the first level (containing the start node) is at level 0 and the level
-     * below that is on level 1.  So if the current level goes to level 2 then we have exceeded the max-levels
-     * threshold.
-     */
-    protected function exceededMaxLevels(): bool
-    {
-        return ($this->currentLevel == $this->maxLevels);
     }
 
     /**
@@ -134,7 +65,7 @@ class SearchStrategyBreadthFirst implements SearchStrategyInterface
          * and return
          */
         if (($this->exceededMaxLevels()) || empty($this->currentLevelNodes)) {
-            $this->valid = false;
+            $this->setValid(false);
             return;
         }
 
@@ -144,7 +75,7 @@ class SearchStrategyBreadthFirst implements SearchStrategyInterface
          */
         if (isset($this->currentLevelNodes[$this->currentIndex])) {
             $this->currentNode = $this->currentLevelNodes[$this->currentIndex++];
-            $this->nodeDepthMap->setNodeDepth($this->currentNode->getNodeId(), $this->currentLevel);
+            $this->nodeDepthMap->setNodeDepth($this->currentNode->getNodeId(), $this->getCurrentLevel());
         } /**
          * otherwise populate $currentLevelNodes with the next level of nodes
          */
@@ -153,7 +84,7 @@ class SearchStrategyBreadthFirst implements SearchStrategyInterface
              * get the nodes on the next level of the tree
              */
             $this->currentLevelNodes = $this->getNextLevelOfNodes();
-            $this->currentLevel++;
+            $this->incrementCurrentLevel();
             /**
              * rewind the current index and keep going
              */

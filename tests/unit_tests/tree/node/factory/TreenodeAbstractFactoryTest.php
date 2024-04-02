@@ -60,7 +60,7 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testConstruct
-     * @covers TreenodeAbstractFactory::__construct
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::__construct
      */
     public function testConstruct(): void
     {
@@ -69,8 +69,8 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testGetCollectionFactory
-     * @covers TreenodeAbstractFactory::setCollectionFactory
-     * @covers TreenodeAbstractFactory::getCollectionFactory
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::setCollectionFactory
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::getCollectionFactory
      */
     public function testGetCollectionFactory(): void
     {
@@ -79,7 +79,7 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testGetValueValidator
-     * @covers TreenodeAbstractFactory::getPayloadTester
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::getPayloadTester
      */
     public function testGetPayloadValidator(): void
     {
@@ -88,8 +88,8 @@ class TreenodeAbstractFactoryTest extends TestCase
 
     /**
      * testSetGetTree
-     * @covers TreenodeAbstractFactory::setTree
-     * @covers TreenodeAbstractFactory::getTree
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::setTree
+     * @covers \pvc\struct\tree\node\factory\TreenodeAbstractFactory::getTree
      */
     public function testSetGetTree(): void
     {

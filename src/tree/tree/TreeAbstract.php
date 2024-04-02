@@ -338,8 +338,8 @@ abstract class TreeAbstract implements TreeAbstractInterface
          * sort the children (in place sort) - necessary only for ordered trees / nodes.  The implementation in the
          * unordered tree does nothing.  In the case or ordered trees / nodes, this step is critical because
          * you must add the nodes in order.  Adding nodes with indices of, say, [1, 5, 3, 4, 2] in the order
-         * presented would result in scrambled children because indices get adjusted on their way into the tree if
-         * the index is larger than the number of children in the tree.
+         * presented would result in scrambled nodes.  Indices of nodes get adjusted on their way into the tree if
+         * the index is larger than the number of siblings of node already in the tree.
          */
         $this->sortChildValueObjects($childValueObjects);
 
@@ -362,7 +362,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
      * @function deleteNode deletes a node from the tree.
      *
      * If deleteBranchOK is true then node and all its descendants will be deleted as well.  If deleteBranchOK is false
-     * and $nose is an interior node, throw an exception.
+     * and $node is an interior node, throw an exception.
      *
      * @param non-negative-int $nodeId
      * @param bool $deleteBranchOK

@@ -12,7 +12,6 @@ use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\collection\factory\CollectionOrderedFactory;
 use pvc\struct\tree\err\BadSearchLevelsException;
-use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
 use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectOrderedFactory;
 use pvc\struct\tree\search\NodeDepthMap;
@@ -69,43 +68,6 @@ class SearchStrategyBreadthFirstTest extends TestCase
     {
         self::assertInstanceOf(SearchStrategyBreadthFirst::class, $this->strategy);
     }
-
-    /**
-     * testSetGetMaxLevels
-     * @throws BadSearchLevelsException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::setMaxLevels
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::getMaxLevels
-     */
-    public function testSetGetMaxLevels(): void
-    {
-        self::assertEquals(PHP_INT_MAX, $this->strategy->getMaxLevels());
-        $newMaxLevels = 3;
-        $this->strategy->setMaxLevels($newMaxLevels);
-        self::assertEquals($newMaxLevels, $this->strategy->getMaxLevels());
-    }
-
-    /**
-     * testSetMaxLevelsFailsWithBadParameter
-     * @throws BadSearchLevelsException
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::setMaxLevels
-     */
-    public function testSetMaxLevelsFailsWithBadParameter(): void
-    {
-        $badLevels = -2;
-        self::expectException(BadSearchLevelsException::class);
-        $this->strategy->setMaxLevels($badLevels);
-    }
-
-    /**
-     * testGetNodesThrowsExceptionIfStartNodeNotSet
-     * @covers \pvc\struct\tree\search\SearchStrategyBreadthFirst::rewind
-     */
-    public function testGetNodesThrowsExceptionIfStartNodeNotSet(): void
-    {
-        self::expectException(StartNodeUnsetException::class);
-        $this->getNodes();
-    }
-
 
     /**
      * getNodes

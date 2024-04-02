@@ -12,7 +12,7 @@ use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\search\SearchFilterInterface;
+use pvc\interfaces\struct\tree\search\NodeFilterInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 
 /**
@@ -22,9 +22,9 @@ use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
  * @template ValueObjectType of TreenodeValueObjectInterface
- * @implements SearchFilterInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @implements NodeFilterInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class SearchFilterDefault implements SearchFilterInterface
+class NodeFilterDefault implements NodeFilterInterface
 {
 
     /**

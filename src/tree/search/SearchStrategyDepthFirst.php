@@ -12,10 +12,9 @@ use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
-use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\node\TreenodeAbstract;
 
 /**
@@ -25,15 +24,11 @@ use pvc\struct\tree\node\TreenodeAbstract;
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
  * @template ValueObjectType of TreenodeValueObjectInterface
- * @implements SearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @implements NodeSearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class SearchStrategyDepthFirst implements SearchStrategyInterface
+class SearchStrategyDepthFirst extends SearchStrategyAbstract implements NodeSearchStrategyInterface
 {
-    /**
-     * @use SearchStrategyTrait<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
-     */
-    use SearchStrategyTrait;
-
     /**
      * preorder means that a node is added to the result set upon its initial visitation, whereas post order is when
      * the node is added to the result set upon its second (last) visitation.
@@ -51,11 +46,6 @@ class SearchStrategyDepthFirst implements SearchStrategyInterface
      * @var array|int[]
      */
     private array $validOrders = [self::PREORDER, self::POSTORDER];
-
-    public function __construct(NodeDepthMap $nodeDepthMap)
-    {
-        $this->setNodeDepthMap($nodeDepthMap);
-    }
 
     public function getOrdering(): int
     {
@@ -102,13 +92,7 @@ class SearchStrategyDepthFirst implements SearchStrategyInterface
      */
     public function rewind(): void
     {
-        if (!$this->startNodeIsSet()) {
-            throw new StartNodeUnsetException();
-        }
-        $this->valid = true;
-        $this->nodeDepthMap->initialize();
-        $this->setCurrentNode($this->getStartNode());
-        $this->getNodeDepthMap()->setNodeDepth($this->getStartNode()->getNodeId(), 0);
+        parent::rewind();
         $this->clearVisitStatusRecurse($this->getStartNode());
         /**
          * there's an initialization step of calling next().  This sets the current node properly
@@ -159,27 +143,31 @@ class SearchStrategyDepthFirst implements SearchStrategyInterface
         if ($this->currentNode->getVisitStatus() == TreenodeAbstract::PARTIALLY_VISITED) {
             /**
              * since we are in postorder mode, we have not yet found the "next" node.  If this node has any children
-             * which are not yet fully visited, then the next node is one of this node's descendants.
+             * which are not yet fully visited, then the next node is one of this node's descendants, provided that
+             * we are not at the max level permitted.
              */
-
-            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
-            foreach ($this->currentNode->getChildren() as $child) {
-                /**
-                 * add the child to the nodeDepthMap
-                 */
-                $this->addChildOfCurrentToDepthNodeMap($child);
-
-                if ($child->getVisitStatus() < 2) {
-                    $this->setCurrentNode($child);
-                    $this->next();
+            if (!$this->atMaxLevel()) {
+                /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
+                foreach ($this->currentNode->getChildren() as $child) {
                     /**
-                     * make sure we do not loop through the rest of the children
+                     * add the child to the nodeDepthMap
                      */
-                    return;
+                    $this->addChildOfCurrentToDepthNodeMap($child);
+
+                    if ($child->getVisitStatus() < TreenodeAbstract::FULLY_VISITED) {
+                        $this->setCurrentNode($child);
+                        $this->incrementCurrentLevel();
+                        $this->next();
+                        /**
+                         * make sure we do not loop through the rest of the children
+                         */
+                        return;
+                    }
                 }
             }
             /**
-             * if we got here, then either this node has no children or all of its children have been fully visited.
+             * if we got here, then either this node has no children, all of its children have been fully visited,
+             * or we are at the maximum permitted level in the tree.
              * This is the node we want to keep as the current node.  Set the status and return.
              */
             $this->getCurrentNode()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
@@ -191,6 +179,8 @@ class SearchStrategyDepthFirst implements SearchStrategyInterface
          * and recurse.
          */
         $parent = $this->getCurrentNode()->getParent();
+        $this->decrementCurrentLevel();
+
         if ($parent) {
             $this->setCurrentNode($parent);
             $this->next();
@@ -213,35 +203,40 @@ class SearchStrategyDepthFirst implements SearchStrategyInterface
             return;
         }
 
-        if ($this->getCurrentNode()->getVisitStatus() == 1) {
-            /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
-            foreach ($this->getCurrentNode()->getChildren() as $child) {
-                /**
-                 * add child to depth node map
-                 */
-                $this->addChildOfCurrentToDepthNodeMap($child);
+        if ($this->getCurrentNode()->getVisitStatus() == TreenodeAbstract::PARTIALLY_VISITED) {
+            if (!$this->atMaxLevel()) {
+                /** @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $child */
+                foreach ($this->getCurrentNode()->getChildren() as $child) {
+                    /**
+                     * add child to depth node map
+                     */
+                    $this->addChildOfCurrentToDepthNodeMap($child);
 
-                if ($child->getVisitStatus() < 2) {
-                    $this->setCurrentNode($child);
-                    $this->next();
-                    return;
+                    if ($child->getVisitStatus() < TreenodeAbstract::FULLY_VISITED) {
+                        $this->setCurrentNode($child);
+                        $this->incrementCurrentLevel();
+                        $this->next();
+                        return;
+                    }
                 }
             }
+        }
 
-            /**
-             * if we got here then either the current node has no children or they all have been fully visited and
-             * returned.  Set the status on this node to fully visited, set the current node to be the parent (if
-             * possible) and recurse on the parent
-             */
-            $this->getCurrentNode()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+        /**
+         * if we got here then either the current node has no children, or they all have been fully visited,
+         * or we are the maximum permitted level in the tree.
+         * Set the status on this node to fully visited, set the current node to be the parent (if
+         * possible) and recurse on the parent
+         */
+        $this->getCurrentNode()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+        $parent = $this->getCurrentNode()->getParent();
+        $this->decrementCurrentLevel();
 
-            $parent = $this->getCurrentNode()->getParent();
-            if ($parent) {
-                $this->setCurrentNode($parent);
-                $this->next();
-            } else {
-                $this->valid = false;
-            }
+        if ($parent) {
+            $this->setCurrentNode($parent);
+            $this->next();
+        } else {
+            $this->valid = false;
         }
     }
 }
