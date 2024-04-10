@@ -381,7 +381,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
         /**
          * if this is an interior node and deleteBranchOK parameter is false, throw an exception
          */
-        if (!$deleteBranchOK && $node->isInteriorNode()) {
+        if (!$deleteBranchOK && $node->hasChildren()) {
             throw new DeleteInteriorNodeException($nodeId);
         }
 

@@ -430,23 +430,23 @@ class TreenodeAbstractTest extends TestCase
     }
 
     /**
-     * testIsInteriorNodeOnNodeWithNoChildren
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::isInteriorNode
+     * testHasChildrenOnNodeWithNoChildren
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hasChildren
      */
-    public function testIsInteriorNodeOnNodeWithNoChildren(): void
+    public function testHasChildrenOnNodeWithNoChildren(): void
     {
         $this->createTree();
-        self::assertFalse($this->getGrandChild()->isInteriorNode());
+        self::assertFalse($this->getGrandChild()->hasChildren());
     }
 
     /**
-     * testIsInteriorNodeOnRootWithChildren
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::isInteriorNode
+     * testHasChildrenNodeOnNodeWithChildren
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::hasChildren
      */
-    public function testIsInteriorNodeOnNodeWithChildren(): void
+    public function testHasChildrenNodeOnNodeWithChildren(): void
     {
         $this->createTree();
-        self::assertTrue($this->getRoot()->isInteriorNode());
+        self::assertTrue($this->getRoot()->hasChildren());
     }
 
     /**

@@ -361,7 +361,7 @@ class TreeAbstractTest extends TestCase
     {
         $rootId = 0;
         $root = $this->createMockRoot($rootId);
-        $root->method('isInteriorNode')->willReturn(true);
+        $root->method('hasChildren')->willReturn(true);
 
         $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
 
@@ -393,7 +393,7 @@ class TreeAbstractTest extends TestCase
     {
         $rootId = 0;
         $root = $this->createMockRoot($rootId);
-        $root->method('isInteriorNode')->willReturn(false);
+        $root->method('hasChildren')->willReturn(false);
 
         $collection = $this->createMock(CollectionAbstractInterface::class);
         $collection->method('getElements')->willReturn([]);

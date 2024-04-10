@@ -289,10 +289,10 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     }
 
     /**
-     * @function isInteriorNode
+     * @function hasChildren
      * @return bool
      */
-    public function isInteriorNode(): bool
+    public function hasChildren(): bool
     {
         return (!$this->getChildren()->isEmpty());
     }
