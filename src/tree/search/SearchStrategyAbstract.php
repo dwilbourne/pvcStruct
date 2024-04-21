@@ -192,8 +192,12 @@ abstract class SearchStrategyAbstract
         $this->currentLevel++;
     }
 
+    /**
+     * decrementCurrentLevel
+     */
     public function decrementCurrentLevel(): void
     {
+        assert($this->currentLevel > 0);
         $this->currentLevel--;
     }
 
@@ -206,7 +210,7 @@ abstract class SearchStrategyAbstract
      */
     protected function exceededMaxLevels(): bool
     {
-        return ($this->currentLevel == $this->maxLevels);
+        return ($this->currentLevel >= $this->maxLevels);
     }
 
     /**

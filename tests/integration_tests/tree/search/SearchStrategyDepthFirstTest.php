@@ -77,7 +77,7 @@ class SearchStrategyDepthFirstTest extends TestCase
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::next
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::nextPreorder
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::clearVisitStatusRecurse
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::addChildOfCurrentToDepthNodeMap
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::addNodeToDepthMap
      */
     public function testIteratorPreorder(): void
     {
@@ -99,7 +99,7 @@ class SearchStrategyDepthFirstTest extends TestCase
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::rewind
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::next
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::nextPostorder
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::addChildOfCurrentToDepthNodeMap
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::addNodeToDepthMap
      */
     public function testIteratorPostOrder(): void
     {

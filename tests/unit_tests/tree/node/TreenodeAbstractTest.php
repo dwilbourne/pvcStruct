@@ -12,7 +12,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
@@ -532,4 +531,37 @@ class TreenodeAbstractTest extends TestCase
         self::expectException(InvalidVisitStatusException::class);
         $this->getRoot()->setVisitStatus(9);
     }
+
+    /**
+     * testVisitation
+     * @throws InvalidVisitStatusException
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::neverVisited
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::partiallyVisited
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::fullyVisited
+     */
+    public function testVisitation(): void
+    {
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
+                           ->setConstructorArgs([$this->collection, $this->tester])
+                           ->getMockForAbstractClass();
+
+        self::assertTrue($this->node->neverVisited());
+        self::assertFalse($this->node->partiallyVisited());
+        self::assertFalse($this->node->fullyVisited());
+
+        $this->node->setVisitStatus(TreenodeAbstract::PARTIALLY_VISITED);
+
+        self::assertFalse($this->node->neverVisited());
+        self::assertTrue($this->node->partiallyVisited());
+        self::assertFalse($this->node->fullyVisited());
+
+        $this->node->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
+
+        self::assertFalse($this->node->neverVisited());
+        self::assertFalse($this->node->partiallyVisited());
+        self::assertTrue($this->node->fullyVisited());
+    }
+
+
 }

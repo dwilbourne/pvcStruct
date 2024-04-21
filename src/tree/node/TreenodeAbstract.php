@@ -10,7 +10,6 @@ namespace pvc\struct\tree\node;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
 use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
@@ -373,6 +372,33 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     public function getVisitStatus(): int
     {
         return $this->visitStatus;
+    }
+
+    /**
+     * neverVisited
+     * @return bool
+     */
+    public function neverVisited(): bool
+    {
+        return ($this->visitStatus == self::NEVER_VISITED);
+    }
+
+    /**
+     * partiallyVisited
+     * @return bool
+     */
+    public function partiallyVisited(): bool
+    {
+        return ($this->visitStatus == self::PARTIALLY_VISITED);
+    }
+
+    /**
+     * fullyVisited
+     * @return bool
+     */
+    public function fullyVisited(): bool
+    {
+        return ($this->visitStatus == self::FULLY_VISITED);
     }
 
     /**
