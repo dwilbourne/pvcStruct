@@ -9,13 +9,15 @@ declare(strict_types=1);
 namespace pvc\struct\tree\dto\factory;
 
 use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\tree\dto\factory\TreenodeDTOOrderedFactoryInterface;
 use pvc\struct\tree\dto\TreenodeDTOOrdered;
 
 /**
  * Class TreenodeDTOOrderedFactory
  * @template PayloadType of HasPayloadInterface
+ * @implements TreenodeDTOOrderedFactoryInterface<PayloadType>
  */
-class TreenodeDTOOrderedFactory
+class TreenodeDTOOrderedFactory implements TreenodeDTOOrderedFactoryInterface
 {
     /**
      * makeDTO
