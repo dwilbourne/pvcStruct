@@ -21,11 +21,11 @@ use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 class TreeOrdered extends TreeAbstract implements TreeOrderedInterface
 {
     /**
-     * sortChildValueObjects
-     * @param array<TreenodeDTOOrderedInterface<PayloadType>> $childValueObjects
+     * sortChildDtos
+     * @param array<TreenodeDTOOrderedInterface<PayloadType>> $childDtos
      * @return bool
      */
-    protected function sortChildValueObjects(array &$childValueObjects): bool
+    protected function sortChildDtos(array &$childDtos): bool
     {
         /**
          * @param TreenodeDTOOrderedInterface<PayloadType> $a
@@ -35,7 +35,7 @@ class TreeOrdered extends TreeAbstract implements TreeOrderedInterface
         $callback = function (TreenodeDTOOrderedInterface $a, TreenodeDTOOrderedInterface $b): int {
             return ($a->index <=> $b->index);
         };
-        $result = uasort($childValueObjects, $callback);
+        $result = uasort($childDtos, $callback);
         return $result;
     }
 }

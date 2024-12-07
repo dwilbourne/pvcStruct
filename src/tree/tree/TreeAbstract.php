@@ -265,8 +265,8 @@ abstract class TreeAbstract implements TreeAbstractInterface
         /**
          * if the root is not set, find the (hopefully first and only) root node and set it
          */
-        foreach ($dtos as $key => $nodeValueObject) {
-            if ($this->rootTest($nodeValueObject)) {
+        foreach ($dtos as $key => $nodeDto) {
+            if ($this->rootTest($nodeDto)) {
                 $rootNodeKey = $key;
                 /**
                  * break the loop if we found the root
@@ -293,16 +293,16 @@ abstract class TreeAbstract implements TreeAbstractInterface
 
         $this->addNode($dto);
 
-        $childValueObjects = [];
-        foreach ($dtos as $key => $nodeValueObject) {
+        $childDtos = [];
+        foreach ($dtos as $key => $nodeDto) {
             /**
              * need identity, not equals, because 0 == null.  For example, if the root node has nodeId of 0, then it
              * gets inserted into the tree properly the first time.  When searching the array for children whose
-             * parentId equals 0, the nodeValueObject for the root returns a parentId of null and if 0 == null, then
+             * parentId equals 0, the nodeDto for the root returns a parentId of null and if 0 == null, then
              * we try to add the root a second time as a child of itself.....
              */
-            if ($dto->nodeId === $nodeValueObject->parentId) {
-                $childValueObjects[$key] = $nodeValueObject;
+            if ($dto->nodeId === $nodeDto->parentId) {
+                $childDtos[$key] = $nodeDto;
             }
         }
 
@@ -313,22 +313,22 @@ abstract class TreeAbstract implements TreeAbstractInterface
          * presented would result in scrambled nodes.  Indices of nodes get adjusted on their way into the tree if
          * the index is larger than the number of siblings of node already in the tree.
          */
-        $this->sortChildValueObjects($childValueObjects);
+        $this->sortChildDtos($childDtos);
 
         /**
          * recurse down through the children to hydrate the tree
          */
-        foreach ($childValueObjects as $key => $nodeValueObject) {
+        foreach ($childDtos as $key => $nodeDto) {
             $this->insertNodeRecurse($key, $dtos);
         }
     }
 
     /**
-     * sortChildValueObjects
-     * @param array<TreenodeDTOInterface<PayloadType, DtoType>> $childValueObjects
+     * sortChildDtos
+     * @param array<TreenodeDTOInterface<PayloadType, DtoType>> $childDtos
      * @return bool
      */
-    abstract protected function sortChildValueObjects(array &$childValueObjects): bool;
+    abstract protected function sortChildDtos(array &$childDtos): bool;
 
     /**
      * @function deleteNode deletes a node from the tree.

@@ -11,7 +11,7 @@ namespace pvc\struct\payload;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 
 /**
- * Class ValueObjectPayloadTrait
+ * Class DtoPayloadTrait
  * @template PayloadType of HasPayloadInterface
  */
 trait DtoPayloadTrait

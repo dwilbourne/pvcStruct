@@ -30,8 +30,8 @@ use pvc\struct\tree\search\VisitationTrait;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeDTOInterface
- * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @template DtoType of TreenodeDTOInterface
+ * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
  */
 class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterface
 {
@@ -49,13 +49,13 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * reference to parent
-     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
+     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>|null
      */
     protected ?TreenodeAbstractInterface $parent;
 
     /**
      * reference to containing tree
-     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
      */
     protected TreeAbstractInterface $tree;
 
@@ -98,8 +98,8 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * hydrate
-     * @param TreenodeDTOInterface<PayloadType, ValueObjectType> $dto
-     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $tree
+     * @param TreenodeDTOInterface<PayloadType, DtoType> $dto
+     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType> $tree
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
      * @throws InvalidNodeIdException
@@ -168,7 +168,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
         if (!is_null($parentId)) {
             /**
              * @phpcs:ignore
-             * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null $parent
+             * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>|null $parent
              */
             $parent = $this->getTree()->getNode($parentId);
             if (is_null($parent)) {
@@ -233,7 +233,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * @function getParent
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>|null
      */
     public function getParent(): ?TreenodeAbstractInterface
     {
@@ -242,7 +242,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * @function getTree
-     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
      */
     public function getTree(): TreeAbstractInterface
     {
@@ -297,7 +297,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
     /**
      * @function getChild
      * @param non-negative-int $nodeid
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>|null
+     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>|null
      */
     public function getChild(int $nodeid): ?TreenodeAbstractInterface
     {
@@ -338,7 +338,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * @function isAncestorOf
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType> $node
      * @return bool
      */
     public function isAncestorOf(TreenodeAbstractInterface $node): bool
@@ -348,7 +348,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
 
     /**
      * @function isDescendantOf
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $node
+     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType> $node
      * @return bool
      */
     public function isDescendantOf(TreenodeAbstractInterface $node): bool

@@ -25,8 +25,8 @@ use pvc\struct\tree\node\TreenodeAbstract;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeDTOInterface
- * @implements TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @template DtoType of TreenodeDTOInterface
+ * @implements TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
  */
 abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface
 {
@@ -41,7 +41,7 @@ abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface
     protected CollectionFactoryInterface $collectionFactory;
 
     /**
-     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @var TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
      */
     protected TreeAbstractInterface $tree;
 
@@ -76,7 +76,7 @@ abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface
 
     /**
      * getTree
-     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @return TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>
      */
     public function getTree(): TreeAbstractInterface
     {
@@ -85,7 +85,7 @@ abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface
 
     /**
      * setTree
-     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $tree
+     * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType> $tree
      */
     public function setTree(TreeAbstractInterface $tree): void
     {
@@ -94,7 +94,7 @@ abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface
 
     /**
      * makeNode
-     * @return TreenodeAbstract<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @return TreenodeAbstract<PayloadType, NodeType, TreeType, CollectionType, DtoType>
      */
     abstract public function makeNode(): TreenodeAbstract;
 }

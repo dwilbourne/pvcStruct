@@ -25,11 +25,11 @@ use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
 class TreeUnordered extends TreeAbstract implements TreeUnorderedInterface
 {
     /**
-     * sortChildValueObjects
-     * @param array<TreenodeDTOUnorderedInterface<PayloadType>> $childValueObjects
+     * sortChildDtos
+     * @param array<TreenodeDTOUnorderedInterface<PayloadType>> $childDtos
      * @return bool
      */
-    protected function sortChildValueObjects(array &$childValueObjects): bool
+    protected function sortChildDtos(array &$childDtos): bool
     {
         return true;
     }

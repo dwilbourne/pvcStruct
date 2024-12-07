@@ -10,9 +10,9 @@ namespace pvc\struct\tree\node\factory;
 
 use pvc\interfaces\struct\collection\CollectionUnorderedInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDTOUnorderedInterface;
 use pvc\interfaces\struct\tree\node\factory\TreenodeUnorderedFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeUnorderedInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectUnorderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\node\TreenodeAbstract;
@@ -22,7 +22,7 @@ use pvc\struct\tree\node\TreenodeUnordered;
  * Class TreenodeUnorderedFactory
  * @template PayloadType of HasPayloadInterface
  * @phpcs:ignore
- * @extends TreenodeAbstractFactory<PayloadType, TreenodeUnorderedInterface, TreeUnorderedInterface, CollectionUnorderedInterface, TreenodeValueObjectUnorderedInterface>
+ * @extends TreenodeAbstractFactory<PayloadType, TreenodeUnorderedInterface, TreeUnorderedInterface, CollectionUnorderedInterface, TreenodeDTOUnorderedInterface>
  * @implements TreenodeUnorderedFactoryInterface<PayloadType>
  */
 class TreenodeUnorderedFactory extends TreenodeAbstractFactory implements TreenodeUnorderedFactoryInterface
