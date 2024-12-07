@@ -14,7 +14,7 @@ use pvc\interfaces\struct\payload\HasPayloadInterface;
  * Class ValueObjectPayloadTrait
  * @template PayloadType of HasPayloadInterface
  */
-trait ValueObjectPayloadTrait
+trait DtoPayloadTrait
 {
     /**
      * @var PayloadType|null

@@ -9,8 +9,8 @@ namespace pvcTests\struct\unit_tests\tree\node\factory;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeUnorderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeUnorderedInterface;
 use pvc\struct\collection\CollectionUnordered;
@@ -19,17 +19,22 @@ use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
 
 class TreenodeUnorderedFactoryTest extends TestCase
 {
+    protected TreenodeUnorderedFactory $treenodeUnorderedFactory;
+
+    protected CollectionFactoryInterface $collectionFactory;
+
+
     public function setUp(): void
     {
-        $this->treeId = 0;
-        $this->tree = $this->createMock(TreeUnorderedInterface::class);
-        $this->tree->method('getTreeId')->willReturn($this->treeId);
+        $treeId = 0;
+        $tree = $this->createMock(TreeUnorderedInterface::class);
+        $tree->method('getTreeId')->willReturn($treeId);
         $this->collectionFactory = $this->createMock(CollectionUnorderedFactory::class);
-        $this->validator = $this->createMock(PayloadTesterInterface::class);
+        $validator = $this->createMock(PayloadTesterInterface::class);
 
 
-        $this->treenodeOrderedFactory = new TreenodeUnorderedFactory($this->collectionFactory, $this->validator);
-        $this->treenodeOrderedFactory->setTree($this->tree);
+        $this->treenodeUnorderedFactory = new TreenodeUnorderedFactory($this->collectionFactory, $validator);
+        $this->treenodeUnorderedFactory->setTree($tree);
     }
 
     /**
@@ -42,7 +47,7 @@ class TreenodeUnorderedFactoryTest extends TestCase
         $mockCollection = $this->createMock(CollectionUnordered::class);
         $mockCollection->method('isEmpty')->willReturn(true);
         $this->collectionFactory->expects($this->once())->method('makeCollection')->willReturn($mockCollection);
-        self::assertInstanceOf(TreenodeUnorderedInterface::class, $this->treenodeOrderedFactory->makeNode());
+        self::assertInstanceOf(TreenodeUnorderedInterface::class, $this->treenodeUnorderedFactory->makeNode());
     }
 
 

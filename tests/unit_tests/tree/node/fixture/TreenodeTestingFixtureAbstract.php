@@ -12,9 +12,8 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\struct\tree\dto\TreenodeDTOUnordered;
 use pvc\struct\tree\node\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\TreenodeAbstract;
 use pvc\testingutils\testingTraits\IteratorTrait;
@@ -207,14 +206,12 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
         $this->mockTree->method('getTreenodeFactory')->willReturn($mockTreenodeFactory);
     }
 
-    private function makeMockValueObject(int $nodeId, int|null $parentId)
+    private function makeDTO(int $nodeId, int|null $parentId)
     {
-        $valueObject = $this->createStub(TreenodeValueObjectInterface::class);
-        $valueObject->method('getNodeId')->willReturn($nodeId);
-        $valueObject->method('getParentId')->willReturn($parentId);
-        $valueObject->method('getTreeId')->willReturn($this->treeId);
-        $valueObject->method('getPayload')->willReturn(null);
-        return $valueObject;
+        $dto = new TreenodeDTOUnordered();
+        $dtoArray = ['nodeId' => $nodeId, 'parentId' => $parentId, 'treeId' => $this->treeId, 'payload' => null];
+        $dto->hydrateFromArray($dtoArray);
+        return $dto;
     }
 
 
@@ -228,17 +225,17 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
          * tree exception' because of the way the callback is structured for the mock tree getNode method.
          */
         $root = new TreenodeAbstract($this->children, $tester);
-        $valueObject = $this->makeMockValueObject($this->rootNodeId, null);
+        $valueObject = $this->makeDTO($this->rootNodeId, null);
         $root->hydrate($valueObject, $this->mockTree);
         $this->root = $root;
 
         $child = new TreenodeAbstract($this->grandChildren, $tester);
-        $valueObject = $this->makeMockValueObject($this->childNodeId, $this->rootNodeId);
+        $valueObject = $this->makeDTO($this->childNodeId, $this->rootNodeId);
         $child->hydrate($valueObject, $this->mockTree);
         $this->child = $child;
 
         $grandChild = new TreenodeAbstract($this->greatGrandChildren, $tester);
-        $valueObject = $this->makeMockValueObject($this->grandChildNodeid, $this->childNodeId);
+        $valueObject = $this->makeDTO($this->grandChildNodeid, $this->childNodeId);
         $grandChild->hydrate($valueObject, $this->mockTree);
         $this->grandChild = $grandChild;
     }

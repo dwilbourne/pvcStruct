@@ -9,14 +9,11 @@ namespace pvcTests\struct\integration_tests\tree\tree;
 
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
-use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\collection\factory\CollectionUnorderedFactory;
+use pvc\struct\tree\dto\factory\TreenodeDTOUnorderedFactory;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
-use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectUnorderedFactory;
-use pvc\struct\tree\search\NodeDepthMap;
 use pvc\struct\tree\tree\TreeUnordered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
@@ -30,20 +27,17 @@ class TreeUnorderedTest extends TestCase
 
     public function setUp(): void
     {
-        $depthMap = $this->createMock(NodeDepthMap::class);
         $payloadTester = $this->createStub(PayloadTesterInterface::class);
         $payloadTester->method('testValue')->willReturn(true);
 
-        $factory = new TreenodeValueObjectUnorderedFactory();
-        $this->fixture = new TreenodeConfigurationsFixture($factory, $depthMap);
+        $factory = new TreenodeDTOUnorderedFactory();
+        $this->fixture = new TreenodeConfigurationsFixture($factory);
 
         $collectionFactory = new CollectionUnorderedFactory();
         $treenodeFactory = new TreenodeUnorderedFactory($collectionFactory, $payloadTester);
-        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
+        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory);
 
-        $this->tree = new TreeUnordered($this->fixture->getTreeId(), $treenodeFactory, $handler);
-
-        $this->valueObjectArray = $this->fixture->makeValueObjectArray();
+        $this->valueObjectArray = $this->fixture->makeDTOArray();
         $this->tree->hydrate($this->valueObjectArray);
     }
 

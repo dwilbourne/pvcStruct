@@ -9,6 +9,7 @@ namespace pvcTests\struct\unit_tests\tree\node\factory;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
@@ -18,17 +19,22 @@ use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
 
 class TreenodeOrderedFactoryTest extends TestCase
 {
+    protected TreenodeOrderedFactory $treenodeOrderedFactory;
+
+    protected CollectionFactoryInterface|MockObject $collectionFactory;
+
     public function setUp(): void
     {
-        $this->treeId = 0;
-        $this->tree = $this->createMock(TreeOrderedInterface::class);
-        $this->tree->method('getTreeId')->willReturn($this->treeId);
+        $treeId = 0;
+        $tree = $this->createMock(TreeOrderedInterface::class);
+        $tree->method('getTreeId')->willReturn($treeId);
+
         $this->collectionFactory = $this->createMock(CollectionOrderedFactory::class);
-        $this->validator = $this->createMock(PayloadTesterInterface::class);
+        $validator = $this->createMock(PayloadTesterInterface::class);
 
 
-        $this->treenodeOrderedFactory = new TreenodeOrderedFactory($this->collectionFactory, $this->validator);
-        $this->treenodeOrderedFactory->setTree($this->tree);
+        $this->treenodeOrderedFactory = new TreenodeOrderedFactory($this->collectionFactory, $validator);
+        $this->treenodeOrderedFactory->setTree($tree);
     }
 
     /**

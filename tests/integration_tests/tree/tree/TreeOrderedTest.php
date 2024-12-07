@@ -10,11 +10,9 @@ namespace pvcTests\struct\integration_tests\tree\tree;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\struct\collection\factory\CollectionOrderedFactory;
+use pvc\struct\tree\dto\factory\TreenodeDTOOrderedFactory;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
-use pvc\struct\tree\node_value_object\factory\TreenodeValueObjectOrderedFactory;
-use pvc\struct\tree\search\NodeDepthMap;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
@@ -29,21 +27,19 @@ class TreeOrderedTest extends TestCase
 
     public function setUp(): void
     {
-        $depthMap = $this->createMock(NodeDepthMap::class);
         $payloadTester = $this->createStub(PayloadTesterInterface::class);
         $payloadTester->method('testValue')->willReturn(true);
 
-        $factory = new TreenodeValueObjectOrderedFactory();
-        $this->fixture = new TreenodeConfigurationsFixture($factory, $depthMap);
+        $factory = new TreenodeDTOOrderedFactory();
+        $this->fixture = new TreenodeConfigurationsFixture($factory);
 
         /** @var CollectionFactoryInterface $collectionFactory */
         $collectionFactory = new CollectionOrderedFactory();
         $treenodeFactory = new TreenodeOrderedFactory($collectionFactory, $payloadTester);
-        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
 
-        $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory, $handler);
+        $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory);
 
-        $this->valueObjectArray = $this->fixture->makeValueObjectArray();
+        $this->valueObjectArray = $this->fixture->makeDTOArray();
         $this->tree->hydrate($this->valueObjectArray);
     }
 

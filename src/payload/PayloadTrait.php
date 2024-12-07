@@ -43,7 +43,7 @@ trait PayloadTrait
      */
     public function setPayload(mixed $payload): void
     {
-        if ($this->getPayloadTester() && !$this->getPayloadTester()->testValue($payload)) {
+        if ($this->getPayloadTester() && !is_null($payload) && !$this->getPayloadTester()->testValue($payload)) {
             throw new InvalidValueException();
         }
         $this->payload = $payload;

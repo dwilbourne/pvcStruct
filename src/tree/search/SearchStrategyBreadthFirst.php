@@ -8,29 +8,18 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
-use pvc\interfaces\struct\collection\CollectionAbstractInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\search\NodeSearchStrategyInterface;
-use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
+use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst
- * @template PayloadType of HasPayloadInterface
- * @template NodeType of TreenodeAbstractInterface
- * @template TreeType of TreeAbstractInterface
- * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeValueObjectInterface
- * @extends SearchStrategyAbstract<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
- * @implements NodeSearchStrategyInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+ * @extends SearchStrategyAbstract<NodeSearchableInterface>
  */
-class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeSearchStrategyInterface
+class SearchStrategyBreadthFirst extends SearchStrategyAbstract
 {
     /**
-     * @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
-     *
      * array of nodes in the "current level" of the tree
+     * @var array<NodeSearchableInterface>
      */
     private array $currentLevelNodes;
 
@@ -41,12 +30,27 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeS
     private int $currentIndex;
 
     /**
+     * exceededMaxLevels
+     * @return bool
+     * as an example, max levels of 2 means the first level (containing the start node) is at level 0 and the level
+     * below that is on level 1.  So if the current level goes to level 2 then we have exceeded the max-levels
+     * threshold.
+     */
+    protected function exceededMaxLevels(): bool
+    {
+        return ($this->currentLevel > $this->maxLevels - 1);
+    }
+
+    /**
      * rewind
+     * @throws StartNodeUnsetException
      */
     public function rewind(): void
     {
         parent::rewind();
+
         $this->currentLevelNodes[] = $this->getStartNode();
+
         /**
          * at the beginning of the iteration, the current node is returned without next() being called first. So
          * there is nothing that advances the currentIndex pointer when the start node is returned as the first
@@ -65,17 +69,18 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeS
          * and return
          */
         if (($this->exceededMaxLevels()) || empty($this->currentLevelNodes)) {
-            $this->setValid(false);
+            $this->valid = false;
             return;
         }
 
         /**
-         * if we still have more nodes in the current level left, set the current node, increment the index,
-         * and add the node to the nodeDepthMap.
+         * if we still have more nodes in the current level left, set the current node, increment the index
          */
         if (isset($this->currentLevelNodes[$this->currentIndex])) {
             $this->currentNode = $this->currentLevelNodes[$this->currentIndex++];
-            $this->nodeDepthMap->setNodeDepth($this->currentNode->getNodeId(), $this->getCurrentLevel());
+            if (!call_user_func($this->getNodeFilter(), $this->currentNode)) {
+                $this->next();
+            }
         } /**
          * otherwise populate $currentLevelNodes with the next level of nodes
          */
@@ -84,7 +89,7 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeS
              * get the nodes on the next level of the tree
              */
             $this->currentLevelNodes = $this->getNextLevelOfNodes();
-            $this->incrementCurrentLevel();
+            $this->currentLevel++;
             /**
              * rewind the current index and keep going
              */
@@ -95,15 +100,21 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract implements NodeS
 
     /**
      * getNextLevelOfNodes
-     * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>>
+     * @return array<NodeSearchableInterface>
+     * you cannot type hint the callback.  Not sure why the compiler is
+     * complaining when you type hint the argument as NodeSearchableInterface, but it kicks out a type error when
+     * you test it with a real object other than a mock of NnodeSearchableInterface
      */
     protected function getNextLevelOfNodes(): array
     {
-        $getChildrenCallback = function (TreenodeAbstractInterface $node): array {
-            return $node->getChildren()->getElements();
+        $getChildrenCallback = function ($node): array {
+            /** @var NodeSearchableInterface $node */
+            return $node->getChildrenAsArray();
         };
-        /** @var array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>> $result */
-        $result = call_user_func_array('array_merge', array_map($getChildrenCallback, $this->currentLevelNodes));
-        return $result;
+        $childArrays = array_map($getChildrenCallback, $this->currentLevelNodes);
+        /**
+         * note the splat operator is required to unpack the outer array
+         */
+        return array_merge(...$childArrays);
     }
 }

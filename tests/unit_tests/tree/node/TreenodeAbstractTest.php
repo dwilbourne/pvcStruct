@@ -13,15 +13,14 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\collection\CollectionAbstract;
+use pvc\struct\tree\dto\TreenodeDTOUnordered;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\err\InvalidVisitStatusException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
@@ -47,9 +46,14 @@ class TreenodeAbstractTest extends TestCase
     protected PayloadTesterInterface $tester;
 
     /**
-     * @var TreenodeValueObjectInterface|MockObject
+     * @var array
+     * DTOs are readonly objects with public properties, so you cannot mock a getter for a DTO.  The best we can do is
+     * set up an array with some defaults, adjust those defaults for each test and then hydrate a real DTO to be used in
+     * hydrating the node
      */
-    protected TreenodeValueObjectInterface $valueObject;
+    protected array $dtoArray;
+
+    protected TreenodeDTOUnordered $dto;
 
     /**
      * @var TreeAbstractInterface|MockObject
@@ -66,7 +70,8 @@ class TreenodeAbstractTest extends TestCase
         $this->fixture = $this->getMockForAbstractClass(TreenodeTestingFixtureAbstract::class);
         $this->collection = $this->createMock(CollectionAbstractInterface::class);
         $this->tester = $this->createMock(PayloadTesterInterface::class);
-        $this->valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $this->dtoArray = ['nodeId' => 1, 'parentId' => 0, 'treeId' => 1, 'payload' => 5];
+        $this->dto = new TreenodeDTOUnordered();
         $this->tree = $this->createMock(TreeAbstractInterface::class);
     }
 
@@ -103,14 +108,14 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testHydrateFailsWithInvalidNodeid(): void
     {
-        $nodeId = -2;
+        $this->dtoArray['nodeId'] = -2;
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->dto->hydrateFromArray($this->dtoArray);
         self::expectException(InvalidNodeIdException::class);
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -121,15 +126,16 @@ class TreenodeAbstractTest extends TestCase
     public function testHydrateFailsWhenNodeWithSameNodeidAlreadyExistsInTree(): void
     {
         $nodeId = 1;
+        $this->dtoArray['nodeId'] = $nodeId;
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
+        $this->dto->hydrateFromArray($this->dtoArray);
         $mockDuplicate = $this->createMock(TreenodeAbstractInterface::class);
         $this->tree->expects($this->once())->method('getNode')->with($nodeId)->willReturn($mockDuplicate);
         self::expectException(AlreadySetNodeidException::class);
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -138,23 +144,22 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testHydrateFailsWhenTreeIdDoesNotMatchTreeIdOfContainingTree(): void
     {
-        $nodeId = 1;
-        $valueObjectTreeId = 0;
+        /**
+         * the value of the treeId property of $this->dtoArray is 1
+         */
         $treeId = 3;
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
+        $this->dto->hydrateFromArray($this->dtoArray);
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getTreeId')->willReturn($valueObjectTreeId);
-
-        $this->tree->expects($this->once())->method('getNode')->with($nodeId)->willReturn(null);
+        $this->tree->expects($this->once())->method('getNode')->with($this->dtoArray['nodeId'])->willReturn(null);
         $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
 
         self::expectException(SetTreeIdException::class);
 
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -163,25 +168,18 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentFailsWithNonExistentNonNullParentId(): void
     {
-        $nodeId = 1;
-        $parentId = 0;
-        $treeId = 0;
-
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getParentId')->willReturn($parentId);
-        $this->valueObject->method('getTreeId')->willReturn($treeId);
-
+        $this->dto->hydrateFromArray($this->dtoArray);
         $this->tree->expects($this->exactly(2))->method('getNode')->willReturn(null);
-        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($this->dtoArray['treeId']);
 
         self::expectException(InvalidParentNodeException::class);
 
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -190,9 +188,7 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentSetsNullParent(): void
     {
-        $nodeId = 0;
-        $parentId = null;
-        $treeId = 0;
+        $this->dtoArray['parentId'] = null;
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->tester->method('testValue')->willReturn(true);
@@ -200,16 +196,12 @@ class TreenodeAbstractTest extends TestCase
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getParentId')->willReturn($parentId);
-        $this->valueObject->method('getTreeId')->willReturn($treeId);
-        $this->valueObject->method('getPayload')->willReturn(null);
-
+        $this->dto->hydrateFromArray($this->dtoArray);
         $this->tree->expects($this->exactly(1))->method('getNode')->willReturn(null);
-        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($this->dtoArray['treeId']);
         $this->tree->expects($this->once())->method('getRoot')->willReturn(null);
 
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -218,18 +210,15 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentFailsWhenCircularGraphCreated(): void
     {
-        $nodeId = 1;
-        $parentId = 0;
-        $treeId = 0;
+        $nodeId = $this->dtoArray['nodeId'];
+        $parentId = $this->dtoArray['parentId'];
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getParentId')->willReturn($parentId);
-        $this->valueObject->method('getTreeId')->willReturn($treeId);
+        $this->dto->hydrateFromArray($this->dtoArray);
 
         $parentNode = $this->createMock(TreenodeAbstractInterface::class);
         $parentNode->method('getNodeId')->willReturn($parentId);
@@ -243,11 +232,11 @@ class TreenodeAbstractTest extends TestCase
         };
 
         $this->tree->expects($this->exactly(2))->method('getNode')->willReturnCallback($getNodeCallback);
-        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($this->dtoArray['treeId']);
 
         self::expectException(CircularGraphException::class);
 
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -256,18 +245,15 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentFailsIfNodeIsAlreadySetAsRoot(): void
     {
-        $nodeId = 1;
-        $parentId = 0;
-        $treeId = 0;
+        $nodeId = $this->dtoArray['nodeId'];
+        $parentId = $this->dtoArray['parentId'];
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
                            ->getMockForAbstractClass();
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getParentId')->willReturn($parentId);
-        $this->valueObject->method('getTreeId')->willReturn($treeId);
+        $this->dto->hydrateFromArray($this->dtoArray);
 
         $parentNode = $this->createMock(TreenodeAbstractInterface::class);
         $parentNode->method('getNodeId')->willReturn($parentId);
@@ -281,12 +267,12 @@ class TreenodeAbstractTest extends TestCase
         };
 
         $this->tree->expects($this->exactly(2))->method('getNode')->willReturnCallback($getNodeCallback);
-        $this->tree->expects($this->once())->method('getTreeId')->willReturn($treeId);
+        $this->tree->expects($this->once())->method('getTreeId')->willReturn($this->dtoArray['treeId']);
         $this->tree->expects($this->once())->method('getRoot')->willReturn($this->node);
 
         self::expectException(RootCannotBeMovedException::class);
 
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
     /**
@@ -297,10 +283,8 @@ class TreenodeAbstractTest extends TestCase
      */
     public function testSetParentAddsNodeToParentsChildrenIfParentIsNotNull(): void
     {
-
-        $treeId = 0;
-        $parentId = 0;
-        $nodeId = 1;
+        $nodeId = $this->dtoArray['nodeId'];
+        $parentId = $this->dtoArray['parentId'];
 
         $siblings = $this->createMock(CollectionAbstractInterface::class);
         $siblings->expects($this->once())->method('push');
@@ -316,16 +300,13 @@ class TreenodeAbstractTest extends TestCase
             };
         };
 
-        $this->tree->method('getTreeId')->willReturn($treeId);
+        $this->tree->method('getTreeId')->willReturn($this->dtoArray['treeId']);
         $this->tree->method('getRoot')->willReturn($mockRoot);
         $this->tree->method('getNode')->willReturnCallback($getNodeCallback);
 
         $this->collection->method('isEmpty')->willReturn(true);
 
-        $this->valueObject->method('getNodeId')->willReturn($nodeId);
-        $this->valueObject->method('getParentId')->willReturn($parentId);
-        $this->valueObject->method('getTreeId')->willReturn($treeId);
-        $this->valueObject->method('getPayload')->willReturn(null);
+        $this->dto->hydrateFromArray($this->dtoArray);
 
         $this->node = $this->getMockBuilder(TreenodeAbstract::class)
                            ->setConstructorArgs([$this->collection, $this->tester])
@@ -333,7 +314,7 @@ class TreenodeAbstractTest extends TestCase
         $this->tester->method('testValue')->willReturn(true);
 
         self::assertTrue($this->node->isEmpty());
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
         self::assertFalse($this->node->isEmpty());
         self::assertEquals($mockRoot, $this->node->getParent());
 
@@ -341,7 +322,7 @@ class TreenodeAbstractTest extends TestCase
          * verify that you cannot hydrate a node which is not empty
          */
         self::expectException(NodeNotEmptyHydrationException::class);
-        $this->node->hydrate($this->valueObject, $this->tree);
+        $this->node->hydrate($this->dto, $this->tree);
     }
 
 
@@ -377,6 +358,17 @@ class TreenodeAbstractTest extends TestCase
         self::assertEquals($this->getMockTree(), $this->getChild()->getTree());
         self::assertEquals($this->getMockTree()->getTreeId(), $this->getChild()->getTreeId());
         self::assertInstanceOf(CollectionAbstractInterface::class, $this->getChild()->getChildren());
+    }
+
+    /**
+     * testGetChildrenAsArray
+     * @covers \pvc\struct\tree\node\TreenodeAbstract::getChildrenAsArray
+     */
+    public function testGetChildrenAsArray(): void
+    {
+        $this->createTree();
+        $expectedResult = [$this->getGrandChild()];
+        self::assertEquals($expectedResult, $this->getChild()->getChildrenAsArray());
     }
 
     protected function getChildNodeId(): int
@@ -505,63 +497,4 @@ class TreenodeAbstractTest extends TestCase
         self::assertTrue($this->getChild()->isAncestorOf($this->getGrandChild()));
         self::assertFalse($this->getChild()->isAncestorOf($this->getRoot()));
     }
-
-    /**
-     * testAddGetClearVisitCount
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::getVisitStatus
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setVisitStatus
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::isValidVisitStatus
-     */
-    public function testSetGetVisitStatus(): void
-    {
-        $this->createTree();
-        self::assertEquals(TreenodeAbstract::NEVER_VISITED, $this->getRoot()->getVisitStatus());
-        $this->getRoot()->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
-        self::assertEquals(TreenodeAbstract::FULLY_VISITED, $this->getRoot()->getVisitStatus());
-    }
-
-    /**
-     * testSetVisitStatusThrowsExceptionWithBadArgument
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::setVisitStatus
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::isValidVisitStatus
-     */
-    public function testSetVisitStatusThrowsExceptionWithBadArgument(): void
-    {
-        $this->createTree();
-        self::expectException(InvalidVisitStatusException::class);
-        $this->getRoot()->setVisitStatus(9);
-    }
-
-    /**
-     * testVisitation
-     * @throws InvalidVisitStatusException
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::neverVisited
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::partiallyVisited
-     * @covers \pvc\struct\tree\node\TreenodeAbstract::fullyVisited
-     */
-    public function testVisitation(): void
-    {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
-        $this->node = $this->getMockBuilder(TreenodeAbstract::class)
-                           ->setConstructorArgs([$this->collection, $this->tester])
-                           ->getMockForAbstractClass();
-
-        self::assertTrue($this->node->neverVisited());
-        self::assertFalse($this->node->partiallyVisited());
-        self::assertFalse($this->node->fullyVisited());
-
-        $this->node->setVisitStatus(TreenodeAbstract::PARTIALLY_VISITED);
-
-        self::assertFalse($this->node->neverVisited());
-        self::assertTrue($this->node->partiallyVisited());
-        self::assertFalse($this->node->fullyVisited());
-
-        $this->node->setVisitStatus(TreenodeAbstract::FULLY_VISITED);
-
-        self::assertFalse($this->node->neverVisited());
-        self::assertFalse($this->node->partiallyVisited());
-        self::assertTrue($this->node->fullyVisited());
-    }
-
-
 }

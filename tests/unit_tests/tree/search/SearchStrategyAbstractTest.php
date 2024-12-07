@@ -10,35 +10,47 @@ namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
+use pvc\interfaces\struct\tree\search\NodeInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
-use pvc\struct\tree\search\NodeDepthMap;
 use pvc\struct\tree\search\SearchStrategyAbstract;
 
 class SearchStrategyAbstractTest extends TestCase
 {
     /**
-     * @var NodeDepthMap|MockObject
-     */
-    protected $nodeDepthMap;
-    /**
      * @var MockObject|SearchStrategyAbstract
      */
     protected $strategy;
 
-    /**
-     * @var TreenodeAbstractInterface|MockObject
-     */
-    protected TreenodeAbstractInterface|MockObject $startNodeMock;
+    protected NodeInterface|MockObject $startNodeMock;
 
     public function setUp(): void
     {
-        $this->nodeDepthMap = $this->createMock(NodeDepthMap::class);
+
         $this->strategy = $this->getMockBuilder(SearchStrategyAbstract::class)
                                ->disableOriginalConstructor()
                                ->getMockForAbstractClass();
-        $this->startNodeMock = $this->createMock(TreenodeAbstractInterface::class);
+        $this->startNodeMock = $this->createMock(NodeInterface::class);
+    }
+
+    /**
+     * testSetGetNodeFilter
+     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setNodeFilter
+     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getNodeFilter
+     */
+    public function testSetGetNodeFilter(): void
+    {
+        /**
+         * verify there is a default in place
+         */
+        self::asserttrue(is_callable($this->strategy->getNodeFilter()));
+
+        $odds = function (int $index) {
+            return (1 == $index % 2);
+        };
+
+        $this->strategy->setNodeFilter($odds);
+        self::assertEquals($odds, $this->strategy->getNodeFilter());
     }
 
     /**
@@ -67,110 +79,73 @@ class SearchStrategyAbstractTest extends TestCase
         $this->strategy->setMaxLevels($badLevels);
     }
 
+    /**
+     * testRewindThrowsExceptionWithStartNodeNotSet
+     * @throws StartNodeUnsetException
+     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::rewind()
+     */
+    public function testRewindThrowsExceptionWithStartNodeNotSet(): void
+    {
+        self::expectException(StartNodeUnsetException::class);
+        $this->strategy->rewind();
+    }
+
+    /**
+     * testGetStartNodeThrowsExceptionWhenStartNodeNotSet
+     * @throws StartNodeUnsetException
+     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getStartNode
+     */
+    public function testGetStartNodeThrowsExceptionWhenStartNodeNotSet(): void
+    {
+        self::expectException(StartNodeUnsetException::class);
+        $this->strategy->getStartNode();
+    }
 
     /**
      * testSetGetStartNode
      * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getStartNode
      * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setStartNode
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::startNodeIsSet
      */
     public function testSetGetStartNode(): void
     {
-        self::assertFalse($this->strategy->startNodeIsSet());
         $this->strategy->setStartNode($this->startNodeMock);
-        self::assertTrue($this->strategy->startNodeIsSet());
         self::assertEquals($this->startNodeMock, $this->strategy->getStartNode());
     }
 
     /**
      * testSetGetCurrentNode
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setCurrentNode
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getCurrentNode
-     */
-    public function testSetGetCurrentNode(): void
-    {
-        $this->strategy->setCurrentNode($this->startNodeMock);
-        self::assertEquals($this->startNodeMock, $this->strategy->getCurrentNode());
-    }
-
-    /**
-     * testSetGetNodeDepthMap
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setNodeDepthMap
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getNodeDepthMap
-     */
-    public function testSetGetNodeDepthMap(): void
-    {
-        $this->strategy->setNodeDepthMap($this->nodeDepthMap);
-        self::assertEquals($this->nodeDepthMap, $this->strategy->getNodeDepthMap());
-    }
-
-    /**
-     * testCurrent
+     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setCurrent
      * @covers \pvc\struct\tree\search\SearchStrategyAbstract::current
-     */
-    public function testCurrent(): void
-    {
-        $this->strategy->setCurrentNode($this->startNodeMock);
-        self::assertEquals($this->startNodeMock, $this->strategy->current());
-    }
-
-    /**
-     * testSetGetCurrentLevel
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setCurrentLevel
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::getCurrentLevel
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::incrementCurrentLevel
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::decrementCurrentLevel
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::atMaxLevel
-     */
-    public function testSetGetCurrentLevel(): void
-    {
-        $testLevel = 7;
-        $maxLevel = 9;
-        $this->strategy->setMaxLevels($maxLevel);
-        $this->strategy->setCurrentLevel($testLevel);
-        self::assertEquals($testLevel, $this->strategy->getCurrentLevel());
-        $this->strategy->incrementCurrentLevel();
-        self::assertEquals($testLevel + 1, $this->strategy->getCurrentLevel());
-        self::assertTrue($this->strategy->atMaxLevel());
-        $this->strategy->decrementCurrentLevel();
-        self::assertEquals($testLevel, $this->strategy->getCurrentLevel());
-    }
-
-    /**
-     * testKey
      * @covers \pvc\struct\tree\search\SearchStrategyAbstract::key
-     */
-    public function testKey(): void
-    {
-        $testNodeId = 4;
-        $this->strategy->setCurrentNode($this->startNodeMock);
-        $this->startNodeMock->expects($this->once())->method('getNodeId')->willReturn($testNodeId);
-        self::assertEquals($testNodeId, $this->strategy->key());
-    }
-
-    /**
-     * testValid
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::setValid
      * @covers \pvc\struct\tree\search\SearchStrategyAbstract::valid
      */
-    public function testValid(): void
+    public function testSetGetCurrentNodeAndValid(): void
     {
+        $startNodeId = 0;
+        $this->startNodeMock->method('getNodeId')->willReturn($startNodeId);
+        $this->strategy->setStartNode($this->startNodeMock);
+
         /**
-         * initialized to false
+         * invalid until the start node has been set (via rewind)
          */
         self::assertFalse($this->strategy->valid());
-        $this->strategy->setValid(true);
-        self::assertTrue($this->strategy->valid());
-    }
 
-    /**
-     * testRewindThrowsExceptionIfStartNodeNotSet
-     * @covers \pvc\struct\tree\search\SearchStrategyAbstract::rewind
-     */
-    public function testRewindThrowsExceptionIfStartNodeNotSet(): void
-    {
-        self::expectException(StartNodeUnsetException::class);
+        $this->strategy->setCurrent($this->startNodeMock);
+        self::assertEquals($this->startNodeMock, $this->strategy->current());
+        self::assertEquals($startNodeId, $this->strategy->key());
+
+        /**
+         * now valid after rewinding
+         */
         $this->strategy->rewind();
+        self::assertTrue($this->strategy->valid());
+
+        /**
+         * now test unsetting the current node
+         */
+        $this->strategy->setCurrent(null);
+        self::assertNull($this->strategy->current());
+        self::assertFalse($this->strategy->valid());
     }
 
     /**
@@ -179,15 +154,9 @@ class SearchStrategyAbstractTest extends TestCase
      */
     public function testRewind(): void
     {
-        $testNodeId = 4;
-        $this->startNodeMock->expects($this->once())->method('getNodeId')->willReturn($testNodeId);
         $this->strategy->setStartNode($this->startNodeMock);
-        $this->strategy->setNodeDepthMap($this->nodeDepthMap);
-        $this->nodeDepthMap->expects($this->once())->method('initialize');
-        $this->nodeDepthMap->expects($this->once())->method('setNodeDepth')->with($testNodeId, 0);
         $this->strategy->rewind();
         self::assertTrue($this->strategy->valid());
         self::assertEquals(0, $this->strategy->getCurrentLevel());
-        self::assertEquals($this->startNodeMock, $this->strategy->getCurrentNode());
     }
 }

@@ -12,13 +12,11 @@ use pvc\interfaces\struct\collection\CollectionAbstractInterface as CollectionTy
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
-use pvc\interfaces\struct\payload\ValidatorPayloadInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDTOInterface;
 use pvc\interfaces\struct\tree\node\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\payload\PayloadTesterTrait;
-use pvc\struct\payload\PayloadValidatorTrait;
 use pvc\struct\tree\node\TreenodeAbstract;
 
 /**
@@ -27,7 +25,7 @@ use pvc\struct\tree\node\TreenodeAbstract;
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeValueObjectInterface
+ * @template ValueObjectType of TreenodeDTOInterface
  * @implements TreenodeFactoryInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
 abstract class TreenodeAbstractFactory implements TreenodeFactoryInterface

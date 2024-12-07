@@ -9,8 +9,8 @@ declare(strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\fixture;
 
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\factory\TreenodeValueObjectFactoryInterface;
-use pvc\interfaces\struct\tree\search\NodeDepthMapInterface;
+use pvc\struct\tree\dto\factory\TreenodeDTOOrderedFactory;
+use pvc\struct\tree\dto\factory\TreenodeDTOUnorderedFactory;
 
 /**
  * Class TreeTestFixture
@@ -19,20 +19,13 @@ class TreenodeConfigurationsFixture
 {
     protected int $treeId;
 
-    /**
-     * @var TreenodeValueObjectFactoryInterface
-     */
-    protected TreenodeValueObjectFactoryInterface $valueObjectFactory;
-
-    protected NodeDepthMapInterface $depthMap;
+    protected TreenodeDTOUnorderedFactory|TreenodeDTOOrderedFactory $dtoFactory;
 
     public function __construct(
-        TreenodeValueObjectFactoryInterface $valueObjectFactory,
-        NodeDepthMapInterface $depthMap
+        TreenodeDTOUnorderedFactory|TreenodeDTOOrderedFactory $dtoFactory
     ) {
         $this->treeId = 0;
-        $this->valueObjectFactory = $valueObjectFactory;
-        $this->depthMap = $depthMap;
+        $this->dtoFactory = $dtoFactory;
     }
 
     /**
@@ -44,51 +37,52 @@ class TreenodeConfigurationsFixture
         return $this->treeId;
     }
 
-    public function getDepthMap(): NodeDepthMapInterface
-    {
-        return $this->depthMap;
-    }
-
-    protected function transformNumericNodeData(array $row): array
+    protected function makeAssociativeNodeDataArray(array $row): array
     {
         $result = [];
 
         /**
          * nodeId
          */
-        $result[0] = $row[0];
+        $result['nodeId'] = $row[0];
 
         /**
          * parentId
          */
-        $result[1] = $row[1];
+        $result['parentId'] = $row[1];
 
         /**
          * plug the treeid in
          */
-        $result[2] = $this->treeId;
+        $result['treeId'] = $this->treeId;
 
         /**
          * use the nodeId as the payload
          */
-        $result[3] = $row[0];
+        $result['payload'] = $row[0];
 
         /**
          * index
          */
-        $result[4] = $row[2];
+        $result['index'] = $row[2];
 
         return $result;
     }
 
-    public function makeValueObjectArray(): array
+    public function makeDTOArray(): array
     {
         $nodeIdArray = $this->makeArrayOfNodeIdsForTree();
         $result = [];
         foreach ($nodeIdArray as $nodeData) {
-            $valueObject = $this->valueObjectFactory->makeValueObject();
-            $valueObject->hydrateFromNumericArray($this->transformNumericNodeData($nodeData));
-            $result[] = $valueObject;
+            $dto = $this->dtoFactory->makeDTO();
+            /**
+             * this fixture uses node data that is for ordered trees (e.g. each node has an index property), but it is
+             * used to test both ordered and unordered trees.  The DTO for unordered trees will throw an extra
+             * property exception unless we permit extra properties in the array used to hydrate the DTO.
+             */
+            $dto->permitExtraProperties();
+            $dto->hydrateFromArray($this->makeAssociativeNodeDataArray($nodeData));
+            $result[] = $dto;
         }
         return $result;
     }
@@ -151,28 +145,6 @@ class TreenodeConfigurationsFixture
         $a[] = [12, 5, 0];
 
         return $a;
-    }
-
-    public function makeNodeDepthMap(): void
-    {
-        $this->depthMap->setNodeDepth(0, 0);
-
-        $this->depthMap->setNodeDepth(1, 1);
-        $this->depthMap->setNodeDepth(2, 1);
-
-        $this->depthMap->setNodeDepth(3, 2);
-        $this->depthMap->setNodeDepth(4, 2);
-        $this->depthMap->setNodeDepth(5, 2);
-
-        $this->depthMap->setNodeDepth(6, 2);
-        $this->depthMap->setNodeDepth(7, 2);
-
-        $this->depthMap->setNodeDepth(8, 3);
-
-        $this->depthMap->setNodeDepth(9, 3);
-        $this->depthMap->setNodeDepth(10, 3);
-        $this->depthMap->setNodeDepth(11, 3);
-        $this->depthMap->setNodeDepth(12, 3);
     }
 
     public function makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively(): array
@@ -272,6 +244,21 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
+    /**
+     * makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes
+     * @return array
+     * let's say that 0 is an even number for the moment
+     */
+    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 0;
+        $expectedResult[] = 2;
+        $expectedResult[] = 6;
+        $expectedResult[] = 4;
+        return $expectedResult;
+    }
+
     public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(): array
     {
         $expectedResult = [];
@@ -283,6 +270,16 @@ class TreenodeConfigurationsFixture
         $expectedResult[] = 2;
         $expectedResult[] = 6;
         $expectedResult[] = 7;
+        return $expectedResult;
+    }
+
+    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 0;
+        $expectedResult[] = 4;
+        $expectedResult[] = 2;
+        $expectedResult[] = 6;
         return $expectedResult;
     }
 
@@ -390,7 +387,7 @@ class TreenodeConfigurationsFixture
         $a[] = [6, 11, 0];
         $a[] = [7, 12, 0];
 
-        return $this->makeValueObjectArray($a);
+        return $this->makeDTOArray($a);
     }
 
     public function makeTreeWithMultipleRoots(): array
@@ -409,7 +406,7 @@ class TreenodeConfigurationsFixture
         $a[] = [6, null, 0];
         $a[] = [7, null, 0];
 
-        return $this->makeValueObjectArray($a);
+        return $this->makeDTOArray($a);
     }
 
     public function makeTreeWithCircularParents(): array
@@ -420,6 +417,6 @@ class TreenodeConfigurationsFixture
         $a[] = [2, 1, 0];
         $a[] = [3, 2, 0];
 
-        return $this->makeValueObjectArray($a);
+        return $this->makeDTOArray($a);
     }
 }

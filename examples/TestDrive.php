@@ -11,6 +11,7 @@ use DI\ContainerBuilder;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
+use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\search\SearchStrategyDepthFirst;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
@@ -32,13 +33,13 @@ class TestDrive extends TestCase
         $container = $builder->build();
         $this->tree = $container->get(TreeOrderedInterface::class);
         $this->fixture = $container->get('fixture');
-        $this->tree->hydrate($this->fixture->makeValueObjectArray());
+        $this->tree->hydrate($this->fixture->makeDTOArray());
         $this->strategy = $container->get(SearchStrategyInterface::class);
     }
 
     /**
      * testDepthFirstPreorderSearch
-     * @throws \pvc\struct\tree\err\StartNodeUnsetException
+     * @throws StartNodeUnsetException
      * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::getNodes
      */
     public function testDepthFirstPreorderSearch(): void

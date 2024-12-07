@@ -12,11 +12,11 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDTOInterface;
 use pvc\interfaces\struct\tree\node\factory\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\tree\events\TreeAbstractEventHandlerInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
+use pvc\struct\tree\dto\TreenodeDTOUnordered;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
@@ -37,11 +37,6 @@ class TreeAbstractTest extends TestCase
     protected int $treeId;
 
     /**
-     * @var TreeAbstractEventHandlerInterface|MockObject
-     */
-    protected TreeAbstractEventHandlerInterface $handler;
-
-    /**
      * @var TreeAbstractInterface|MockObject
      */
     protected TreeAbstract $tree;
@@ -54,9 +49,8 @@ class TreeAbstractTest extends TestCase
         $this->treeId = 0;
         /** @var TreenodeFactoryInterface $factory */
         $factory = $this->createMock(TreenodeFactoryInterface::class);
-        $this->handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
         $this->tree = $this->getMockBuilder(TreeAbstract::class)
-                           ->setConstructorArgs([$this->treeId, $factory, $this->handler])
+            ->setConstructorArgs([$this->treeId, $factory])
                            ->getMockForAbstractClass();
     }
 
@@ -125,27 +119,20 @@ class TreeAbstractTest extends TestCase
     }
 
     /**
-     * testSetGetEventHandler
-     * @covers \pvc\struct\tree\tree\TreeAbstract::getEventHandler
-     * @covers \pvc\struct\tree\tree\TreeAbstract::setEventHandler
-     */
-    public function testSetGetEventHandler(): void
-    {
-        $handler = $this->createMock(TreeAbstractEventHandlerInterface::class);
-        $this->tree->setEventHandler($handler);
-        self::assertEquals($handler, $this->tree->getEventHandler());
-    }
-
-    /**
      * testRootTest
      * @covers \pvc\struct\tree\tree\TreeAbstract::rootTest
      */
-    public function testRootTestOnValueObject(): void
+    public function testRootTestOnDTO(): void
     {
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
-        $valueObject->method('getParentId')->willReturnOnConsecutiveCalls(null, 2);
-        self::assertTrue($this->tree->rootTest($valueObject));
-        self::assertFalse($this->tree->rootTest($valueObject));
+        $dtoArray = ['nodeId' => 1, 'parentId' => null, 'treeId' => 1, 'payload' => null];
+        $dto = new TreenodeDTOUnordered();
+        $dto->hydrateFromArray($dtoArray);
+        self::assertTrue($this->tree->rootTest($dto));
+
+        $dtoArray['parentId'] = 2;
+        $dto = new TreenodeDTOUnordered();
+        $dto->hydrateFromArray($dtoArray);
+        self::assertFalse($this->tree->rootTest($dto));
     }
 
     /**
@@ -208,7 +195,7 @@ class TreeAbstractTest extends TestCase
         $rootId = 0;
         $root = $this->createMockRoot($rootId);
 
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
@@ -241,7 +228,7 @@ class TreeAbstractTest extends TestCase
         $secondRootId = 1;
         $secondRoot = $this->createMockRoot($secondRootId);
 
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
@@ -264,7 +251,7 @@ class TreeAbstractTest extends TestCase
      */
     public function testWhenTreeHasTwoNodes(): void
     {
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $rootId = 0;
         $nodeId = 1;
@@ -310,7 +297,7 @@ class TreeAbstractTest extends TestCase
         $rootId = 0;
         $root = $this->createMockRoot($rootId);
 
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
@@ -330,13 +317,14 @@ class TreeAbstractTest extends TestCase
      * @throws NoRootFoundException
      * @covers \pvc\struct\tree\tree\TreeAbstract::hydrate
      */
-    public function testHydrateThrowsExceptionWhenNoRootValueObjectFoundInArray(): void
+    public function testHydrateThrowsExceptionWhenNoRootDTOFoundInArray(): void
     {
-        $parentId = 1;
-        $nodeValueObject = $this->createMock(TreenodeValueObjectInterface::class);
-        $nodeValueObject->method('getParentId')->willReturn($parentId);
+        $dtoArray = ['nodeId' => 1, 'parentId' => 2, 'treeId' => 1, 'payload' => null];
+        $dto = new TreenodeDTOUnordered();
+        $dto->hydrateFromArray($dtoArray);
+
         self::expectException(NoRootFoundException::class);
-        $this->tree->hydrate([$nodeValueObject]);
+        $this->tree->hydrate([$dto]);
     }
 
     /**
@@ -363,7 +351,7 @@ class TreeAbstractTest extends TestCase
         $root = $this->createMockRoot($rootId);
         $root->method('hasChildren')->willReturn(true);
 
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
@@ -382,10 +370,6 @@ class TreeAbstractTest extends TestCase
     /**
      * testDeleteNodeUnsetsRootIfThereAreNoNodesLeftinTree
      * @covers \pvc\struct\tree\tree\TreeAbstract::deleteNode
-     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::beforeAddNode
-     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::afterAddNode
-     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::beforeDeleteNode
-     * @covers \pvc\struct\tree\tree\event\TreeEventHandlerDefault::afterDeleteNode
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
      */
@@ -399,20 +383,16 @@ class TreeAbstractTest extends TestCase
         $collection->method('getElements')->willReturn([]);
         $root->method('getChildren')->willReturn($collection);
 
-        $valueObject = $this->createMock(TreenodeValueObjectInterface::class);
+        $valueObject = $this->createMock(TreenodeDTOInterface::class);
 
         $nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
 
         $nodeFactory->method('makeNode')
                     ->willReturn($root);
         $this->tree->setTreenodeFactory($nodeFactory);
-        $this->handler->expects($this->once())->method('beforeAddNode')->with($root);
-        $this->handler->expects($this->once())->method('afterAddNode')->with($root);
         $this->tree->addNode($valueObject);
 
         $deleteBranch = false;
-        $this->handler->expects($this->once())->method('beforeDeleteNode')->with($root);
-        $this->handler->expects($this->once())->method('afterDeleteNode')->with($root);
         $this->tree->deleteNode($rootId, $deleteBranch);
 
         self::assertTrue($this->tree->isEmpty());

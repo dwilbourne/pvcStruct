@@ -8,39 +8,32 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
-use pvc\interfaces\struct\collection\CollectionAbstractInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
-use pvc\interfaces\struct\tree\search\NodeDepthMapInterface;
-use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
+use pvc\interfaces\struct\tree\search\NodeInterface;
+use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyAbstract
- * @template PayloadType of HasPayloadInterface
- * @template NodeType of TreenodeAbstractInterface
- * @template TreeType of TreeAbstractInterface
- * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeValueObjectInterface
+ * @template NodeType of NodeInterface
+ * @implements SearchStrategyInterface<NodeType>
  */
-abstract class SearchStrategyAbstract
+abstract class SearchStrategyAbstract implements SearchStrategyInterface
 {
     /**
-     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @var ?callable
      */
-    protected TreenodeAbstractInterface $startNode;
+    protected $nodeFilter;
 
     /**
-     * @var TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @var NodeType
      */
-    protected TreenodeAbstractInterface $currentNode;
+    protected mixed $startNode = null;
 
     /**
-     * @var NodeDepthMapInterface
+     * @var NodeType
      */
-    protected NodeDepthMapInterface $nodeDepthMap;
+    protected mixed $currentNode = null;
 
     /**
      * @var int
@@ -53,7 +46,7 @@ abstract class SearchStrategyAbstract
      * @var non-negative-int
      * the start node is on level 0
      */
-    private int $currentLevel;
+    protected int $currentLevel = 0;
 
     /**
      * @var bool
@@ -62,85 +55,71 @@ abstract class SearchStrategyAbstract
      */
     protected bool $valid = false;
 
+
     /**
-     * @param NodeDepthMapInterface $nodeDepthMap
+     * getNodeFilter
+     * @return callable
      */
-    public function __construct(NodeDepthMapInterface $nodeDepthMap)
+    public function getNodeFilter(): callable
     {
-        $this->setNodeDepthMap($nodeDepthMap);
+        /** @phpcs:ignore */
+        return $this->nodeFilter ?? function ($node) {
+            return true;
+        };
+    }
+
+    /**
+     * setNodeFilter
+     * @param callable $nodeFilter
+     */
+    public function setNodeFilter(callable $nodeFilter): void
+    {
+        $this->nodeFilter = $nodeFilter;
     }
 
     /**
      * getStartNode
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @return NodeType
+     * startNode must be set before the class can do anything so throw an exception if it is not set
      */
-    public function getStartNode(): TreenodeAbstractInterface
+    public function getStartNode(): mixed
     {
+        if (!$this->startNode) {
+            throw new StartNodeUnsetException();
+        }
         return $this->startNode;
     }
 
     /**
      * setStartNode
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $startNode
+     * @param NodeType $startNode
      */
-    public function setStartNode(TreenodeAbstractInterface $startNode): void
+    public function setStartNode($startNode): void
     {
         $this->startNode = $startNode;
     }
 
     /**
-     * startNodeIsSet
-     * @return bool
-     */
-    public function startNodeIsSet(): bool
-    {
-        return !is_null($this->startNode ?? null);
-    }
-
-    /**
-     * getNodeDepthMap
-     * @return NodeDepthMapInterface
-     */
-    public function getNodeDepthMap(): NodeDepthMapInterface
-    {
-        return $this->nodeDepthMap;
-    }
-
-    /**
-     * setNodeDepthMap
-     * @param NodeDepthMapInterface $nodeDepthMap
-     */
-    public function setNodeDepthMap(NodeDepthMapInterface $nodeDepthMap): void
-    {
-        $this->nodeDepthMap = $nodeDepthMap;
-    }
-
-    /**
      * current
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * @return NodeType|null
      */
-    public function current(): TreenodeAbstractInterface
+    public function current(): mixed
     {
-        return $this->getCurrentNode();
+        return $this->currentNode ?? null;
     }
 
     /**
-     * getCurrentNode
-     * @return TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
+     * setCurrent
+     * @param NodeType|null $currentNode
      */
-    public function getCurrentNode(): TreenodeAbstractInterface
+    public function setCurrent(mixed $currentNode): void
     {
-        return $this->currentNode;
-    }
-
-    /**
-     * setCurrentNode
-     * @phpcs:ignore
-     * @param TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $currentNode
-     */
-    public function setCurrentNode(TreenodeAbstractInterface $currentNode): void
-    {
-        $this->currentNode = $currentNode;
+        if ($currentNode) {
+            $this->currentNode = $currentNode;
+        } else {
+            unset($this->currentNode);
+            $this->valid = false;
+        }
     }
 
     /**
@@ -176,60 +155,14 @@ abstract class SearchStrategyAbstract
     }
 
     /**
-     * setCurrentLevel
-     * @param non-negative-int $currentLevel
-     */
-    public function setCurrentLevel(int $currentLevel): void
-    {
-        $this->currentLevel = $currentLevel;
-    }
-
-    /**
-     * incrementCurrentLevel
-     */
-    public function incrementCurrentLevel(): void
-    {
-        $this->currentLevel++;
-    }
-
-    /**
-     * decrementCurrentLevel
-     */
-    public function decrementCurrentLevel(): void
-    {
-        assert($this->currentLevel > 0);
-        $this->currentLevel--;
-    }
-
-    /**
-     * exceededMaxLevels
-     * @return bool
-     * as an example, max levels of 2 means the first level (containing the start node) is at level 0 and the level
-     * below that is on level 1.  So if the current level goes to level 2 then we have exceeded the max-levels
-     * threshold.
-     */
-    protected function exceededMaxLevels(): bool
-    {
-        return ($this->currentLevel >= $this->maxLevels);
-    }
-
-    /**
-     * atMaxLevel
-     * @return bool
-     */
-    public function atMaxLevel(): bool
-    {
-        return ($this->currentLevel == ($this->maxLevels - 1));
-    }
-
-    /**
      * key
-     * @return int
+     * @return non-negative-int
      */
     public function key(): int
     {
         return $this->currentNode->getNodeId();
     }
+
 
     /**
      * valid
@@ -241,28 +174,14 @@ abstract class SearchStrategyAbstract
     }
 
     /**
-     * setValid
-     * @param bool $valid
-     */
-    public function setValid(bool $valid): void
-    {
-        $this->valid = $valid;
-    }
-
-    /**
      * rewind
      * @throws StartNodeUnsetException
      */
     public function rewind(): void
     {
-        if (!$this->startNodeIsSet()) {
-            throw new StartNodeUnsetException();
-        }
-        $this->setValid(true);
-        $this->setCurrentLevel(0);
-        $this->nodeDepthMap->initialize();
-        $this->setCurrentNode($this->getStartNode());
-        $this->getNodeDepthMap()->setNodeDepth($this->getStartNode()->getNodeId(), 0);
+        $this->setCurrent($this->getStartNode());
+        $this->valid = true;
+        $this->currentLevel = 0;
     }
 
     abstract public function next(): void;

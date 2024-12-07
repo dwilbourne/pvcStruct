@@ -10,8 +10,9 @@ namespace pvc\struct\tree\node;
 use pvc\interfaces\struct\collection\CollectionAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\payload\PayloadTesterInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDTOInterface;
 use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\interfaces\struct\tree\node_value_object\TreenodeValueObjectInterface;
+use pvc\interfaces\struct\tree\search\NodeVisitableInterface;
 use pvc\interfaces\struct\tree\tree\TreeAbstractInterface;
 use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
@@ -19,25 +20,26 @@ use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\err\InvalidVisitStatusException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
+use pvc\struct\tree\search\VisitationTrait;
 
 /**
  * @template PayloadType of HasPayloadInterface
  * @template NodeType of TreenodeAbstractInterface
  * @template TreeType of TreeAbstractInterface
  * @template CollectionType of CollectionAbstractInterface
- * @template ValueObjectType of TreenodeValueObjectInterface
+ * @template ValueObjectType of TreenodeDTOInterface
  * @implements TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType>
  */
-class TreenodeAbstract implements TreenodeAbstractInterface
+class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterface
 {
     /**
      * @use PayloadTrait<PayloadType>
      */
     use PayloadTrait;
+    use VisitationTrait;
 
     /**
      * unique id for this node
@@ -62,19 +64,6 @@ class TreenodeAbstract implements TreenodeAbstractInterface
      */
     protected CollectionAbstractInterface $children;
 
-    /**
-     * @var non-negative-int
-     */
-    protected int $visitStatus = self::NEVER_VISITED;
-
-    /**
-     * partially visited means that the node has been visited once but not all of its children have been fully visited.
-     */
-    public const NEVER_VISITED = 0;
-
-    public const PARTIALLY_VISITED = 1;
-
-    public const FULLY_VISITED = 2;
 
     /**
      * @param CollectionAbstractInterface<PayloadType, CollectionType> $collection
@@ -109,7 +98,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
 
     /**
      * hydrate
-     * @param TreenodeValueObjectInterface<PayloadType, ValueObjectType> $valueObject
+     * @param TreenodeDTOInterface<PayloadType, ValueObjectType> $dto
      * @param TreeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, ValueObjectType> $tree
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
@@ -118,7 +107,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
      * @throws RootCannotBeMovedException
      * @throws SetTreeIdException
      */
-    public function hydrate(TreenodeValueObjectInterface $valueObject, TreeAbstractInterface $tree): void
+    public function hydrate(TreenodeDTOInterface $dto, TreeAbstractInterface $tree): void
     {
         /**
          * cannot hydrate a node if it already has been hydrated
@@ -127,9 +116,9 @@ class TreenodeAbstract implements TreenodeAbstractInterface
             throw new NodeNotEmptyHydrationException($this->getNodeId());
         }
 
-        $nodeId = $valueObject->getNodeId();
-        $parentId = $valueObject->getParentId();
-        $treeId = $valueObject->getTreeId();
+        $nodeId = $dto->nodeId;
+        $parentId = $dto->parentId;
+        $treeId = $dto->treeId;
 
         /**
          * nodeid must be non-negative.  phpstan will catch static problems but to be thorough, let's catch it anyway
@@ -167,7 +156,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface
         /**
          * set the payload - the setPayload method validates the payload before setting it
          */
-        $this->setPayload($valueObject->getPayload());
+        $this->setPayload($dto->payload);
     }
 
     /**
@@ -279,6 +268,15 @@ class TreenodeAbstract implements TreenodeAbstractInterface
     }
 
     /**
+     * getChildrenAsArray
+     * @return array<int, PayloadType>
+     */
+    public function getChildrenAsArray(): array
+    {
+        return $this->getChildren()->getElements();
+    }
+
+    /**
      * @function isLeaf
      * @return bool
      */
@@ -363,65 +361,5 @@ class TreenodeAbstract implements TreenodeAbstractInterface
         } else {
             return $this->getParent()->isDescendantOf($node);
         }
-    }
-
-    /**
-     * getVisitStatus
-     * @return non-negative-int
-     */
-    public function getVisitStatus(): int
-    {
-        return $this->visitStatus;
-    }
-
-    /**
-     * neverVisited
-     * @return bool
-     */
-    public function neverVisited(): bool
-    {
-        return ($this->visitStatus == self::NEVER_VISITED);
-    }
-
-    /**
-     * partiallyVisited
-     * @return bool
-     */
-    public function partiallyVisited(): bool
-    {
-        return ($this->visitStatus == self::PARTIALLY_VISITED);
-    }
-
-    /**
-     * fullyVisited
-     * @return bool
-     */
-    public function fullyVisited(): bool
-    {
-        return ($this->visitStatus == self::FULLY_VISITED);
-    }
-
-    /**
-     * isValidVisitStatus
-     * @param non-negative-int $status
-     * @return bool
-     */
-    protected function isValidVisitStatus(int $status): bool
-    {
-        $validStatusArray = [self::NEVER_VISITED, self::PARTIALLY_VISITED, self::FULLY_VISITED];
-        return (in_array($status, $validStatusArray));
-    }
-
-    /**
-     * setVisitStatus
-     * @param non-negative-int $status
-     * @throws InvalidVisitStatusException
-     */
-    public function setVisitStatus(int $status): void
-    {
-        if (!$this->isValidVisitStatus($status)) {
-            throw new InvalidVisitStatusException();
-        }
-        $this->visitStatus = $status;
     }
 }

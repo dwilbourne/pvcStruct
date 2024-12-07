@@ -3,51 +3,35 @@
 /**
  * @author: Doug Wilbourne (dougwilbourne@gmail.com)
  */
-
 declare (strict_types=1);
 
 namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
-use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
-use pvc\struct\tree\search\NodeDepthMap;
+use pvc\interfaces\struct\tree\search\NodeMapInterface;
 use pvc\struct\tree\search\SearchStrategyDepthFirst;
 
 class SearchStrategyDepthFirstTest extends TestCase
 {
-    /**
-     * @var SearchStrategyDepthFirst
-     */
+    protected NodeMapInterface $nodeMap;
+
     protected SearchStrategyDepthFirst $strategy;
 
     public function setUp(): void
     {
-        $depthMap = $this->createMock(NodeDepthMap::class);
-        $this->strategy = new SearchStrategyDepthFirst($depthMap);
+        $this->nodeMap = $this->createMock(NodeMapInterface::class);
+        $this->strategy = $this->getMockBuilder(SearchStrategyDepthFirst::class)
+                               ->setConstructorArgs([$this->nodeMap])
+                               ->getMockForAbstractClass();
     }
 
     /**
-     * testSetGetOrdering
-     * @throws InvalidDepthFirstSearchOrderingException
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::setOrdering
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::getOrdering
+     * testSetGetNodeMap
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::setNodeMap
+     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::getNodeMap
      */
-    public function testSetGetOrdering(): void
+    public function testSetGetNodeMap(): void
     {
-        self::assertEquals(SearchStrategyDepthFirst::PREORDER, $this->strategy->getOrdering());
-        $this->strategy->setOrdering(SearchStrategyDepthFirst::POSTORDER);
-        self::assertEquals(SearchStrategyDepthFirst::POSTORDER, $this->strategy->getOrdering());
-    }
-
-    /**
-     * testSetOrderingThrowsExceptionWithBadArgument
-     * @throws InvalidDepthFirstSearchOrderingException
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::setOrdering
-     * @covers \pvc\struct\tree\search\SearchStrategyDepthFirst::orderingIsValid
-     */
-    public function testSetOrderingThrowsExceptionWithBadArgument(): void
-    {
-        self::expectException(InvalidDepthFirstSearchOrderingException::class);
-        $this->strategy->setOrdering(3);
+        self::assertEquals($this->nodeMap, $this->strategy->getNodeMap());
     }
 }

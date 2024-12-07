@@ -9,24 +9,24 @@ namespace pvcTests\struct\unit_tests\payload;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\payload\ValueObjectPayloadTrait;
+use pvc\struct\payload\DtoPayloadTrait;
 
-class ValueObjectPayloadTraitTest extends TestCase
+class DtoPayloadTraitTest extends TestCase
 {
     /**
-     * @var ValueObjectPayloadTrait|MockObject $mockTrait
+     * @var DtoPayloadTrait|MockObject $mockTrait
      */
     protected $mockTrait;
 
     public function setUp(): void
     {
-        $this->mockTrait = $this->getMockForTrait(ValueObjectPayloadTrait::class);
+        $this->mockTrait = $this->getMockForTrait(DtoPayloadTrait::class);
     }
 
     /**
      * testSetGetPayload
-     * @covers pvc\struct\payload\ValueObjectPayloadTrait::setPayload
-     * @covers pvc\struct\payload\ValueObjectPayloadTrait::getPayload
+     * @covers pvc\struct\payload\DtoPayloadTrait::setPayload
+     * @covers pvc\struct\payload\DtoPayloadTrait::getPayload
      */
     public function testSetGetPayload(): void
     {
