@@ -26,7 +26,12 @@ readonly class TreenodeDTOOrdered implements TreenodeDTOOrderedInterface
 
     public int $nodeId;
     public ?int $parentId;
-    public int $treeId;
+    /**
+     * @var int|null
+     * dto is allowed to have a null treeId.  If null, the node hydration method will use the treeId supplied from
+     * the tree to which the node belongs.
+     */
+    public ?int $treeId;
     public mixed $payload;
     public int $index;
 

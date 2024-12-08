@@ -116,32 +116,28 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
             throw new NodeNotEmptyHydrationException($this->getNodeId());
         }
 
-        $nodeId = $dto->nodeId;
-        $parentId = $dto->parentId;
-        $treeId = $dto->treeId;
-
         /**
          * nodeid must be non-negative.  phpstan will catch static problems but to be thorough, let's catch it anyway
          */
-        if ($nodeId < 0) {
-            throw new InvalidNodeIdException($nodeId);
+        if ($dto->nodeId < 0) {
+            throw new InvalidNodeIdException($dto->nodeId);
         }
 
         /**
          * node id cannot already exist in the tree
          */
-        if ($tree->getNode($nodeId)) {
-            throw new AlreadySetNodeidException($nodeId);
+        if ($tree->getNode($dto->nodeId)) {
+            throw new AlreadySetNodeidException($dto->nodeId);
         }
-        $this->nodeid = $nodeId;
+        $this->nodeid = $dto->nodeId;
 
         /**
-         * verify that the tree id in the arguments matches the tree id of the tree we are setting a reference to
+         * if it is not null, verify that the tree id in the arguments matches the tree id of the tree we are setting a
+         * reference to.  Otherwise, treeId of the node is automatically set to the treeId of the containing tree.
          */
-        if ($treeId != $tree->getTreeId()) {
+        if (!is_null($dto->treeId) && ($dto->treeId != $tree->getTreeId())) {
             throw new SetTreeIdException();
         }
-
         /**
          * tree reference in this structure must be set before calling setParent so that we ensure $parent is
          * already in the same tree
@@ -151,7 +147,7 @@ class TreenodeAbstract implements TreenodeAbstractInterface, NodeVisitableInterf
         /**
          * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent
          */
-        $this->setParent($parentId);
+        $this->setParent($dto->parentId);
 
         /**
          * set the payload - the setPayload method validates the payload before setting it
