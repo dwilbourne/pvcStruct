@@ -57,7 +57,7 @@ return [
         ->constructor(get(TreenodeValueObjectFactoryInterface::class)),
 
     /**
-     * once the tree is created and hydrated, we will search it using a search strategy object
+     * once the tree is created and hydrated, we will search it using a search search object
      */
     SearchFilterInterface::class => create(SearchFilterDefault::class),
 

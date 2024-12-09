@@ -15,9 +15,9 @@ use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyDepthFirst
- * @extends SearchStrategyAbstract<NodeVisitableInterface>
+ * @extends SearchAbstract<NodeVisitableInterface>
  */
-abstract class SearchStrategyDepthFirst extends SearchStrategyAbstract
+abstract class SearchDepthFirst extends SearchAbstract
 {
     use VisitationTrait;
 

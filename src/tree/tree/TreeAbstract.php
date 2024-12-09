@@ -198,7 +198,7 @@ abstract class TreeAbstract implements TreeAbstractInterface
     }
 
     /**
-     * @function getNodes
+     * @function getNodeIds
      * @return array<TreenodeAbstractInterface<PayloadType, NodeType, TreeType, CollectionType, DtoType>>
      */
     public function getNodes(): array

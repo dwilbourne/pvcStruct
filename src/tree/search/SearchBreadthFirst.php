@@ -13,9 +13,9 @@ use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst
- * @extends SearchStrategyAbstract<NodeSearchableInterface>
+ * @extends SearchAbstract<NodeSearchableInterface>
  */
-class SearchStrategyBreadthFirst extends SearchStrategyAbstract
+class SearchBreadthFirst extends SearchAbstract
 {
     /**
      * array of nodes in the "current level" of the tree
@@ -49,7 +49,7 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract
     {
         parent::rewind();
 
-        $this->currentLevelNodes[] = $this->getStartNode();
+        $this->currentLevelNodes = [$this->getStartNode()];
 
         /**
          * at the beginning of the iteration, the current node is returned without next() being called first. So
@@ -81,7 +81,8 @@ class SearchStrategyBreadthFirst extends SearchStrategyAbstract
             if (!call_user_func($this->getNodeFilter(), $this->currentNode)) {
                 $this->next();
             }
-        } /**
+        }
+        /**
          * otherwise populate $currentLevelNodes with the next level of nodes
          */
         else {

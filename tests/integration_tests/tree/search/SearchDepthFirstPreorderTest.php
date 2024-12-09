@@ -15,17 +15,16 @@ use pvc\struct\tree\dto\factory\TreenodeDTOUnorderedFactory;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
 use pvc\struct\tree\search\NodeMap;
-use pvc\struct\tree\search\SearchStrategyDepthFirst;
-use pvc\struct\tree\search\SearchStrategyDepthFirstPreorder;
+use pvc\struct\tree\search\SearchDepthFirstPreorder;
 use pvc\struct\tree\tree\TreeUnordered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
-class SearchStrategyDepthFirstPreorderTest extends TestCase
+class SearchDepthFirstPreorderTest extends TestCase
 {
     /**
-     * @var SearchStrategyDepthFirstPreorder
+     * @var SearchDepthFirstPreorder
      */
-    protected SearchStrategyDepthFirstPreorder $strategy;
+    protected SearchDepthFirstPreorder $search;
 
     /**
      * @var TreeUnordered
@@ -50,13 +49,13 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
 
         $nodeMap = new NodeMap();
 
-        $this->strategy = new SearchStrategyDepthFirstPreorder($nodeMap);
+        $this->search = new SearchDepthFirstPreorder($nodeMap);
     }
 
-    protected function getNodes(): array
+    protected function getNodeIds(): array
     {
         $nodes = [];
-        foreach ($this->strategy as $node) {
+        foreach ($this->search as $node) {
             $nodes[] = $node->getNodeId();
         }
         return $nodes;
@@ -68,7 +67,7 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
      */
     public function testConstruct(): void
     {
-        self::assertInstanceOf(SearchStrategyDepthFirst::class, $this->strategy);
+        self::assertInstanceOf(SearchDepthFirstPreorder::class, $this->search);
     }
 
     /**
@@ -81,19 +80,19 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
     {
         $startNode = $this->tree->getRoot();
         $startNode->setVisitStatus(VisitStatus::FULLY_VISITED);
-        $this->strategy->setStartNode($startNode);
-        $this->strategy->rewind();
+        $this->search->setStartNode($startNode);
+        $this->search->rewind();
 
         /**
          * confirm parent::rewind was called
          */
-        self::assertTrue($this->strategy->valid());
-        self::assertEquals(0, $this->strategy->getCurrentLevel());
+        self::assertTrue($this->search->valid());
+        self::assertEquals(0, $this->search->getCurrentLevel());
 
         /**
          * confirm the current node is the start node
          */
-        self::assertEquals($startNode, $this->strategy->current());
+        self::assertEquals($startNode, $this->search->current());
     }
 
     /**
@@ -110,15 +109,15 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
      */
     public function testIteratorPreorder(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeUnorderedPreorderDepthFirstArrayOfAllNodeIds();
-        $actualResult = $this->getNodes();
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
 
         /**
          * test it again to make sure the rewind machinery really is working
          */
-        $actualResult = $this->getNodes();
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
     }
 
@@ -133,10 +132,10 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
      */
     public function testMaxLevelsPreorder(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
-        $this->strategy->setMaxLevels(3);
-        $actualResult = $this->getNodes();
+        $this->search->setMaxLevels(3);
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
     }
 
@@ -147,16 +146,16 @@ class SearchStrategyDepthFirstPreorderTest extends TestCase
      */
     public function testNodeFiltering(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         /** @phpcs:ignore */
         $expectedResult = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(
         );
         $evens = function (NodeInterface $node) {
             return (0 == $node->getNodeId() % 2);
         };
-        $this->strategy->setNodeFilter($evens);
-        $this->strategy->setMaxLevels(3);
-        $actualResult = $this->getNodes();
+        $this->search->setNodeFilter($evens);
+        $this->search->setMaxLevels(3);
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
     }
 }

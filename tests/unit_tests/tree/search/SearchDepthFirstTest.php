@@ -9,20 +9,20 @@ namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\search\NodeMapInterface;
-use pvc\struct\tree\search\SearchStrategyDepthFirst;
+use pvc\struct\tree\search\SearchDepthFirst;
 
-class SearchStrategyDepthFirstTest extends TestCase
+class SearchDepthFirstTest extends TestCase
 {
     protected NodeMapInterface $nodeMap;
 
-    protected SearchStrategyDepthFirst $strategy;
+    protected SearchDepthFirst $search;
 
     public function setUp(): void
     {
         $this->nodeMap = $this->createMock(NodeMapInterface::class);
-        $this->strategy = $this->getMockBuilder(SearchStrategyDepthFirst::class)
-                               ->setConstructorArgs([$this->nodeMap])
-                               ->getMockForAbstractClass();
+        $this->search = $this->getMockBuilder(SearchDepthFirst::class)
+                             ->setConstructorArgs([$this->nodeMap])
+                             ->getMockForAbstractClass();
     }
 
     /**
@@ -32,6 +32,6 @@ class SearchStrategyDepthFirstTest extends TestCase
      */
     public function testSetGetNodeMap(): void
     {
-        self::assertEquals($this->nodeMap, $this->strategy->getNodeMap());
+        self::assertEquals($this->nodeMap, $this->search->getNodeMap());
     }
 }

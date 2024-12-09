@@ -13,23 +13,23 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\search\NodeInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
-use pvc\struct\tree\search\SearchStrategyAbstract;
+use pvc\struct\tree\search\SearchAbstract;
 
-class SearchStrategyAbstractTest extends TestCase
+class SearchAbstractTest extends TestCase
 {
     /**
-     * @var MockObject|SearchStrategyAbstract
+     * @var MockObject|SearchAbstract
      */
-    protected $strategy;
+    protected $search;
 
     protected NodeInterface|MockObject $startNodeMock;
 
     public function setUp(): void
     {
 
-        $this->strategy = $this->getMockBuilder(SearchStrategyAbstract::class)
-                               ->disableOriginalConstructor()
-                               ->getMockForAbstractClass();
+        $this->search = $this->getMockBuilder(SearchAbstract::class)
+                             ->disableOriginalConstructor()
+                             ->getMockForAbstractClass();
         $this->startNodeMock = $this->createMock(NodeInterface::class);
     }
 
@@ -43,14 +43,14 @@ class SearchStrategyAbstractTest extends TestCase
         /**
          * verify there is a default in place
          */
-        self::asserttrue(is_callable($this->strategy->getNodeFilter()));
+        self::asserttrue(is_callable($this->search->getNodeFilter()));
 
         $odds = function (int $index) {
             return (1 == $index % 2);
         };
 
-        $this->strategy->setNodeFilter($odds);
-        self::assertEquals($odds, $this->strategy->getNodeFilter());
+        $this->search->setNodeFilter($odds);
+        self::assertEquals($odds, $this->search->getNodeFilter());
     }
 
     /**
@@ -61,10 +61,10 @@ class SearchStrategyAbstractTest extends TestCase
      */
     public function testSetGetMaxLevels(): void
     {
-        self::assertEquals(PHP_INT_MAX, $this->strategy->getMaxLevels());
+        self::assertEquals(PHP_INT_MAX, $this->search->getMaxLevels());
         $newMaxLevels = 3;
-        $this->strategy->setMaxLevels($newMaxLevels);
-        self::assertEquals($newMaxLevels, $this->strategy->getMaxLevels());
+        $this->search->setMaxLevels($newMaxLevels);
+        self::assertEquals($newMaxLevels, $this->search->getMaxLevels());
     }
 
     /**
@@ -76,7 +76,7 @@ class SearchStrategyAbstractTest extends TestCase
     {
         $badLevels = -2;
         self::expectException(BadSearchLevelsException::class);
-        $this->strategy->setMaxLevels($badLevels);
+        $this->search->setMaxLevels($badLevels);
     }
 
     /**
@@ -87,7 +87,7 @@ class SearchStrategyAbstractTest extends TestCase
     public function testRewindThrowsExceptionWithStartNodeNotSet(): void
     {
         self::expectException(StartNodeUnsetException::class);
-        $this->strategy->rewind();
+        $this->search->rewind();
     }
 
     /**
@@ -98,7 +98,7 @@ class SearchStrategyAbstractTest extends TestCase
     public function testGetStartNodeThrowsExceptionWhenStartNodeNotSet(): void
     {
         self::expectException(StartNodeUnsetException::class);
-        $this->strategy->getStartNode();
+        $this->search->getStartNode();
     }
 
     /**
@@ -108,8 +108,8 @@ class SearchStrategyAbstractTest extends TestCase
      */
     public function testSetGetStartNode(): void
     {
-        $this->strategy->setStartNode($this->startNodeMock);
-        self::assertEquals($this->startNodeMock, $this->strategy->getStartNode());
+        $this->search->setStartNode($this->startNodeMock);
+        self::assertEquals($this->startNodeMock, $this->search->getStartNode());
     }
 
     /**
@@ -123,29 +123,29 @@ class SearchStrategyAbstractTest extends TestCase
     {
         $startNodeId = 0;
         $this->startNodeMock->method('getNodeId')->willReturn($startNodeId);
-        $this->strategy->setStartNode($this->startNodeMock);
+        $this->search->setStartNode($this->startNodeMock);
 
         /**
          * invalid until the start node has been set (via rewind)
          */
-        self::assertFalse($this->strategy->valid());
+        self::assertFalse($this->search->valid());
 
-        $this->strategy->setCurrent($this->startNodeMock);
-        self::assertEquals($this->startNodeMock, $this->strategy->current());
-        self::assertEquals($startNodeId, $this->strategy->key());
+        $this->search->setCurrent($this->startNodeMock);
+        self::assertEquals($this->startNodeMock, $this->search->current());
+        self::assertEquals($startNodeId, $this->search->key());
 
         /**
          * now valid after rewinding
          */
-        $this->strategy->rewind();
-        self::assertTrue($this->strategy->valid());
+        $this->search->rewind();
+        self::assertTrue($this->search->valid());
 
         /**
          * now test unsetting the current node
          */
-        $this->strategy->setCurrent(null);
-        self::assertNull($this->strategy->current());
-        self::assertFalse($this->strategy->valid());
+        $this->search->setCurrent(null);
+        self::assertNull($this->search->current());
+        self::assertFalse($this->search->valid());
     }
 
     /**
@@ -154,9 +154,9 @@ class SearchStrategyAbstractTest extends TestCase
      */
     public function testRewind(): void
     {
-        $this->strategy->setStartNode($this->startNodeMock);
-        $this->strategy->rewind();
-        self::assertTrue($this->strategy->valid());
-        self::assertEquals(0, $this->strategy->getCurrentLevel());
+        $this->search->setStartNode($this->startNodeMock);
+        $this->search->rewind();
+        self::assertTrue($this->search->valid());
+        self::assertEquals(0, $this->search->getCurrentLevel());
     }
 }

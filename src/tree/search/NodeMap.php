@@ -14,7 +14,7 @@ use pvc\interfaces\struct\tree\search\NodeVisitableInterface;
 /**
  * Class NodeMap
  * This is generated as a by-product of a search and as a result of iteration.  It is initialized in the rewind
- * method of the search strategy. The start node of the search is at depth = 0
+ * method of the search search. The start node of the search is at depth = 0
  */
 class NodeMap implements NodeMapInterface
 {

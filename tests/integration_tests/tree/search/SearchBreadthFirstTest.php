@@ -16,15 +16,15 @@ use pvc\struct\collection\factory\CollectionOrderedFactory;
 use pvc\struct\tree\dto\factory\TreenodeDTOOrderedFactory;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
-use pvc\struct\tree\search\SearchStrategyBreadthFirst;
+use pvc\struct\tree\search\SearchBreadthFirst;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
 /**
- * Class SearchStrategyBreadthFirstTest
+ * Class SearchBreadthFirstTest
  * @template PayloadType of HasPayloadInterface
  */
-class SearchStrategyBreadthFirstTest extends TestCase
+class SearchBreadthFirstTest extends TestCase
 {
     /**
      * @var TreeOrdered<PayloadType>
@@ -32,9 +32,9 @@ class SearchStrategyBreadthFirstTest extends TestCase
     protected TreeOrdered $tree;
 
     /**
-     * @var SearchStrategyBreadthFirst
+     * @var SearchBreadthFirst
      */
-    protected SearchStrategyBreadthFirst $strategy;
+    protected SearchBreadthFirst $search;
 
     /**
      * @var TreenodeConfigurationsFixture
@@ -52,17 +52,17 @@ class SearchStrategyBreadthFirstTest extends TestCase
         $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory);
         $this->tree->hydrate($this->fixture->makeDTOArray());
 
-        $this->strategy = new SearchStrategyBreadthFirst();
+        $this->search = new SearchBreadthFirst();
     }
 
     /**
-     * getNodes
+     * getNodeIds
      * @return array
      */
-    protected function getNodes(): array
+    protected function getNodeIds(): array
     {
         $nodes = [];
-        foreach ($this->strategy as $node) {
+        foreach ($this->search as $node) {
             $nodes[] = $node->getNodeId();
         }
         return $nodes;
@@ -77,9 +77,9 @@ class SearchStrategyBreadthFirstTest extends TestCase
      */
     public function testGetFullTree(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayOfAllNodeIds();
-        $actualResult = $this->getNodes();
+        $actualResult = $this->getNodeIds();
         /**
          * ordered search so not canonicalize the results
          */
@@ -96,10 +96,10 @@ class SearchStrategyBreadthFirstTest extends TestCase
      */
     public function testMaxLevels(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot();
-        $this->strategy->setMaxLevels(3);
-        $actualResult = $this->getNodes();
+        $this->search->setMaxLevels(3);
+        $actualResult = $this->getNodeIds();
         /**
          * ordered search so not canonicalize the results
          */
@@ -113,15 +113,15 @@ class SearchStrategyBreadthFirstTest extends TestCase
      */
     public function testNodeFiltering(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes();
-        $this->strategy->setMaxLevels(3);
+        $this->search->setMaxLevels(3);
         $evens = function (NodeInterface $node) {
             return (0 == $node->getNodeId() % 2);
         };
-        $this->strategy->setNodeFilter($evens);
+        $this->search->setNodeFilter($evens);
 
-        $actualResult = $this->getNodes();
+        $actualResult = $this->getNodeIds();
         /**
          * ordered search so not canonicalize the results
          */

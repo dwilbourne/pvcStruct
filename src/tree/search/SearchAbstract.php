@@ -9,16 +9,16 @@ declare(strict_types=1);
 namespace pvc\struct\tree\search;
 
 use pvc\interfaces\struct\tree\search\NodeInterface;
-use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
+use pvc\interfaces\struct\tree\search\SearchInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyAbstract
  * @template NodeType of NodeInterface
- * @implements SearchStrategyInterface<NodeType>
+ * @implements SearchInterface<NodeType>
  */
-abstract class SearchStrategyAbstract implements SearchStrategyInterface
+abstract class SearchAbstract implements SearchInterface
 {
     /**
      * @var ?callable
@@ -111,6 +111,8 @@ abstract class SearchStrategyAbstract implements SearchStrategyInterface
     /**
      * setCurrent
      * @param NodeType|null $currentNode
+     * nullable because you want to set the current node to null at the end of a search, after the last node has been
+     * returned
      */
     public function setCurrent(mixed $currentNode): void
     {
@@ -185,4 +187,17 @@ abstract class SearchStrategyAbstract implements SearchStrategyInterface
     }
 
     abstract public function next(): void;
+
+    /**
+     * getNodeIds
+     * @return array<NodeInterface>
+     */
+    public function getNodes(): array
+    {
+        $result = [];
+        foreach ($this as $node) {
+            $result[$node->getNodeId()] = $node;
+        }
+        return $result;
+    }
 }

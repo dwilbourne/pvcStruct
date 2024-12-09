@@ -12,7 +12,7 @@ use pvc\interfaces\struct\tree\search\VisitStatus;
 /**
  * Class SearchStrategyDepthFirstPostorder
  */
-class SearchStrategyDepthFirstPostorder extends SearchStrategyDepthFirst
+class SearchDepthFirstPostorder extends SearchDepthFirst
 {
     public function rewind(): void
     {

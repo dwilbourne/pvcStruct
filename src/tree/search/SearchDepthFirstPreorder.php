@@ -12,7 +12,7 @@ use pvc\interfaces\struct\tree\search\VisitStatus;
 /**
  * Class SearchStrategyDepthFirstPreorder
  */
-class SearchStrategyDepthFirstPreorder extends SearchStrategyDepthFirst
+class SearchDepthFirstPreorder extends SearchDepthFirst
 {
     /**
      * getMovementDirection

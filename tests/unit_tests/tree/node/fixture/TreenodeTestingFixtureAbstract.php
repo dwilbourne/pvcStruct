@@ -243,7 +243,7 @@ abstract class TreenodeTestingFixtureAbstract extends TestCase
     public function makeChildCollectionMocksIterable(): void
     {
         /**
-         * make children iterable - use a pvc testing strategy called mockIterator
+         * make children iterable - use a pvc testing search called mockIterator
          */
         $childrenArray = [$this->child];
         $this->mockIterator($this->root->getChildren(), $childrenArray);

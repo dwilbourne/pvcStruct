@@ -14,17 +14,16 @@ use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\InvalidDepthFirstSearchOrderingException;
 use pvc\struct\tree\node\factory\TreenodeUnorderedFactory;
 use pvc\struct\tree\search\NodeMap;
-use pvc\struct\tree\search\SearchStrategyDepthFirst;
-use pvc\struct\tree\search\SearchStrategyDepthFirstPostorder;
+use pvc\struct\tree\search\SearchDepthFirstPostorder;
 use pvc\struct\tree\tree\TreeUnordered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
-class SearchStrategyDepthFirstPostorderTest extends TestCase
+class SearchDepthFirstPostorderTest extends TestCase
 {
     /**
-     * @var SearchStrategyDepthFirst
+     * @var SearchDepthFirstPostorder
      */
-    protected SearchStrategyDepthFirstPostorder $strategy;
+    protected SearchDepthFirstPostorder $search;
 
     /**
      * @var TreeUnordered
@@ -49,7 +48,7 @@ class SearchStrategyDepthFirstPostorderTest extends TestCase
 
         $nodeMap = new NodeMap();
 
-        $this->strategy = new SearchStrategyDepthFirstPostorder($nodeMap);
+        $this->search = new SearchDepthFirstPostorder($nodeMap);
     }
 
     /**
@@ -58,7 +57,7 @@ class SearchStrategyDepthFirstPostorderTest extends TestCase
      */
     public function testConstruct(): void
     {
-        self::assertInstanceOf(SearchStrategyDepthFirst::class, $this->strategy);
+        self::assertInstanceOf(SearchDepthFirstPostorder::class, $this->search);
     }
 
     /**
@@ -71,16 +70,16 @@ class SearchStrategyDepthFirstPostorderTest extends TestCase
      */
     public function testIteratorPostOrder(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeUnorderedPostOrderDepthFirstArrayOfAllNodeIds();
-        $actualResult = $this->getNodes();
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
     }
 
-    protected function getNodes(): array
+    protected function getNodeIds(): array
     {
         $nodes = [];
-        foreach ($this->strategy as $node) {
+        foreach ($this->search as $node) {
             $nodes[] = $node->getNodeId();
         }
         return $nodes;
@@ -94,10 +93,10 @@ class SearchStrategyDepthFirstPostorderTest extends TestCase
      */
     public function testMaxLevelsPostOrder(): void
     {
-        $this->strategy->setStartNode($this->tree->getRoot());
+        $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
-        $this->strategy->setMaxLevels(3);
-        $actualResult = $this->getNodes();
+        $this->search->setMaxLevels(3);
+        $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
     }
 }
