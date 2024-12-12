@@ -10,6 +10,7 @@ namespace pvc\struct\tree\tree\factory;
 
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\factory\TreenodeOrderedFactoryInterface;
+use pvc\interfaces\struct\tree\tree\factory\TreeOrderedFactoryInterface;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\SetTreeIdException;
 use pvc\struct\tree\tree\TreeOrdered;
@@ -18,7 +19,7 @@ use pvc\struct\tree\tree\TreeOrdered;
  * Class TreeOrderedFactory
  * @template PayloadType of HasPayloadInterface
  */
-class TreeOrderedFactory
+class TreeOrderedFactory implements TreeOrderedFactoryInterface
 {
     /**
      * @param TreenodeOrderedFactoryInterface<PayloadType> $treenodeFactory
@@ -34,7 +35,7 @@ class TreeOrderedFactory
      * @throws InvalidTreeidException
      * @throws SetTreeIdException
      */
-    public function makeTree(int $treeId)
+    public function makeTree(int $treeId): TreeOrdered
     {
         return new TreeOrdered($treeId, $this->treenodeFactory);
     }

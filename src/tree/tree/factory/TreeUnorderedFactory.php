@@ -10,6 +10,7 @@ namespace pvc\struct\tree\tree\factory;
 
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\factory\TreenodeUnorderedFactoryInterface;
+use pvc\interfaces\struct\tree\tree\factory\TreeUnorderedFactoryInterface;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\SetTreeIdException;
 use pvc\struct\tree\tree\TreeUnordered;
@@ -18,7 +19,7 @@ use pvc\struct\tree\tree\TreeUnordered;
  * Class TreeUnorderedFactory
  * @template PayloadType of HasPayloadInterface
  */
-class TreeUnorderedFactory
+class TreeUnorderedFactory implements TreeUnorderedFactoryInterface
 {
     /**
      * @param TreenodeUnorderedFactoryInterface<PayloadType> $treenodeFactory
