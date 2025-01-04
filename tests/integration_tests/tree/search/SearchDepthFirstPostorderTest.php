@@ -74,6 +74,11 @@ class SearchDepthFirstPostorderTest extends TestCase
         $expectedResult = $this->fixture->makeUnorderedPostOrderDepthFirstArrayOfAllNodeIds();
         $actualResult = $this->getNodeIds();
         self::assertEquals($expectedResult, $actualResult);
+
+        /**
+         * test that the nodemap has all the nodes in it
+         */
+        self::assertEquals(count($this->search->getNodeMap()->getNodeMapAsArray()), count($actualResult));
     }
 
     protected function getNodeIds(): array

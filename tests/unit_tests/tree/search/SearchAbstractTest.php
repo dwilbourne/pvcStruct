@@ -10,7 +10,8 @@ namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\tree\search\NodeInterface;
+use pvc\interfaces\struct\tree\search\NodeMapInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
 use pvc\struct\tree\search\SearchAbstract;
@@ -22,15 +23,17 @@ class SearchAbstractTest extends TestCase
      */
     protected $search;
 
-    protected NodeInterface|MockObject $startNodeMock;
+    protected NodeSearchableInterface|MockObject $startNodeMock;
+
+    protected NodeMapInterface|MockObject $nodeMap;
 
     public function setUp(): void
     {
-
+        $this->nodeMap = $this->createMock(NodeMapInterface::class);
         $this->search = $this->getMockBuilder(SearchAbstract::class)
-                             ->disableOriginalConstructor()
+                             ->setConstructorArgs([$this->nodeMap])
                              ->getMockForAbstractClass();
-        $this->startNodeMock = $this->createMock(NodeInterface::class);
+        $this->startNodeMock = $this->createMock(NodeSearchableInterface::class);
     }
 
     /**
@@ -137,6 +140,7 @@ class SearchAbstractTest extends TestCase
         /**
          * now valid after rewinding
          */
+        $this->nodeMap->expects($this->once())->method('setNode')->with($startNodeId, null, $this->startNodeMock);
         $this->search->rewind();
         self::assertTrue($this->search->valid());
 

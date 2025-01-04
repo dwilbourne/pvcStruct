@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
-use pvc\interfaces\struct\tree\search\NodeMapInterface;
 use pvc\interfaces\struct\tree\search\NodeVisitableInterface;
 use pvc\interfaces\struct\tree\search\VisitStatus;
 use pvc\struct\tree\err\StartNodeUnsetException;
@@ -20,37 +19,6 @@ use pvc\struct\tree\err\StartNodeUnsetException;
 abstract class SearchDepthFirst extends SearchAbstract
 {
     use VisitationTrait;
-
-    /**
-     * @var NodeMapInterface
-     */
-    protected NodeMapInterface $nodeMap;
-
-    /**
-     * @param NodeMapInterface $nodeMap
-     */
-    public function __construct(NodeMapInterface $nodeMap)
-    {
-        $this->setNodeMap($nodeMap);
-    }
-
-    /**
-     * getNodeMap
-     * @return NodeMapInterface
-     */
-    public function getNodeMap(): NodeMapInterface
-    {
-        return $this->nodeMap;
-    }
-
-    /**
-     * setNodeMap
-     * @param NodeMapInterface $nodeMap
-     */
-    public function setNodeMap(NodeMapInterface $nodeMap): void
-    {
-        $this->nodeMap = $nodeMap;
-    }
 
     /**
      * initializeVisitStatusRecurse
@@ -72,14 +40,13 @@ abstract class SearchDepthFirst extends SearchAbstract
     public function rewind(): void
     {
         parent::rewind();
-        $this->nodeMap->initialize();
+
         $this->initializeVisitStatusRecurse($this->getStartNode());
         /**
-         * currentNode gets called right after rewind.  In the normal flow, a node is visited when you call
+         * current gets called right after rewind.  In the normal flow, a node is visited when you call
          * the next() method, so we initialize by visiting the start node, adding it to the node map and updating its
          * visit status.
          */
-        $this->nodeMap->setNode($this->getStartNode()->getNodeId(), null, $this->getStartNode());
         $this->updateVisitStatus($this->currentNode);
     }
 
@@ -115,15 +82,6 @@ abstract class SearchDepthFirst extends SearchAbstract
             }
         }
         return $child;
-    }
-
-    /**
-     * getParent
-     * @return NodeVisitableInterface|null
-     */
-    protected function getParent(): ?NodeVisitableInterface
-    {
-        return $this->getNodeMap()->getParent($this->currentNode->getNodeId());
     }
 
     /**
@@ -235,9 +193,9 @@ abstract class SearchDepthFirst extends SearchAbstract
          * the current node from never visited to partially visited
          */
         $direction = $this->getMovementDirection();
-        $priorNode = $this->currentNode;
+
         /**
-         * update the visit status on thge prior node before or after calling shouldStop depending on whether in
+         * update the visit status on the prior node before or after calling shouldStop depending on whether in
          * preorder or postorder mode
          */
         $this->move($direction);

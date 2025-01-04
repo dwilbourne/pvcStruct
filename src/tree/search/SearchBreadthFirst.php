@@ -110,7 +110,11 @@ class SearchBreadthFirst extends SearchAbstract
     {
         $getChildrenCallback = function ($node): array {
             /** @var NodeSearchableInterface $node */
-            return $node->getChildrenAsArray();
+            $childNodes = $node->getChildrenAsArray();
+            foreach ($childNodes as $childNode) {
+                $this->nodeMap->setNode($childNode->getNodeId(), $node->getNodeId(), $childNode);
+            }
+            return $childNodes;
         };
         $childArrays = array_map($getChildrenCallback, $this->currentLevelNodes);
         /**

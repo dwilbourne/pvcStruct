@@ -10,7 +10,7 @@ namespace pvcTests\struct\unit_tests\tree\search;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\tree\search\NodeVisitableInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
 use pvc\struct\tree\search\NodeMap;
 
 /**
@@ -23,10 +23,10 @@ class NodeMapTest extends TestCase
      */
     protected NodeMap $map;
 
-    protected NodeVisitableInterface|MockObject $rootNode;
+    protected NodeSearchableInterface|MockObject $rootNode;
     protected int $rootNodeId;
 
-    protected NodeVisitableInterface|MockObject $childNode;
+    protected NodeSearchableInterface|MockObject $childNode;
 
     protected int $childNodeId;
 
@@ -38,8 +38,8 @@ class NodeMapTest extends TestCase
         $this->map = new NodeMap();
         $this->rootNodeId = 0;
         $this->childNodeId = 1;
-        $this->rootNode = $this->createMock(NodeVisitableInterface::class);
-        $this->childNode = $this->createMock(NodeVisitableInterface::class);
+        $this->rootNode = $this->createMock(NodeSearchableInterface::class);
+        $this->childNode = $this->createMock(NodeSearchableInterface::class);
         $this->map->setNode($this->rootNodeId, null, $this->rootNode);
         $this->map->setNode($this->childNodeId, $this->rootNodeId, $this->childNode);
         $this->nonExistentNodeId = 100;

@@ -29,15 +29,18 @@ readonly class TreenodeDTOUnordered implements TreenodeDTOUnorderedInterface
     public ?int $parentId;
     /**
      * @var int|null
-     * dto is allowed to have a null treeId.  If null, the node hydration method will use the treeId supplied from
-     * the tree to which the node belongs.
+     * dto is allowed to have a null treeId.  The node hydration method takes two arguments: the first is this dto
+     * and the second is the containing tree (because the node keeps a reference to its containing tree).  If this
+     * dto has a non-null treeid, then the treeid value of this dto is compared to the treeid of the containing
+     * tree to ensure they are the same.  But if this dto's treeid is null, the node hydration method will use the
+     * treeid from the containing tree.
      */
     public ?int $treeId;
     public mixed $payload;
 
     /**
      * hydrateFromNode
-     * @phpcs:ignore-next-line
+     * @phpcs:ignore
      * @param TreenodeAbstractInterface<PayloadType, TreenodeUnorderedInterface, TreeUnorderedInterface, CollectionUnorderedInterface, TreenodeDTOUnorderedInterface> $node
      */
     public function hydrateFromNode(TreenodeAbstractInterface $node): void

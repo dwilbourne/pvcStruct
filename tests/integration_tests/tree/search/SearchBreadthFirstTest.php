@@ -12,10 +12,12 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\search\NodeInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
 use pvc\struct\collection\factory\CollectionOrderedFactory;
 use pvc\struct\tree\dto\factory\TreenodeDTOOrderedFactory;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
+use pvc\struct\tree\search\NodeMap;
 use pvc\struct\tree\search\SearchBreadthFirst;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
@@ -52,7 +54,7 @@ class SearchBreadthFirstTest extends TestCase
         $this->tree = new TreeOrdered($this->fixture->getTreeId(), $treenodeFactory);
         $this->tree->hydrate($this->fixture->makeDTOArray());
 
-        $this->search = new SearchBreadthFirst();
+        $this->search = new SearchBreadthFirst(new NodeMap());
     }
 
     /**
@@ -84,6 +86,10 @@ class SearchBreadthFirstTest extends TestCase
          * ordered search so not canonicalize the results
          */
         self::assertEquals($expectedResult, $actualResult);
+        /*
+         * test that the nodemap contains all the nodes as well
+         */
+        self::assertEquals(count($this->search->getNodeMap()->getNodeMapAsArray()), count($actualResult));
     }
 
     /**
@@ -116,7 +122,7 @@ class SearchBreadthFirstTest extends TestCase
         $this->search->setStartNode($this->tree->getRoot());
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes();
         $this->search->setMaxLevels(3);
-        $evens = function (NodeInterface $node) {
+        $evens = function (NodeSearchableInterface $node) {
             return (0 == $node->getNodeId() % 2);
         };
         $this->search->setNodeFilter($evens);

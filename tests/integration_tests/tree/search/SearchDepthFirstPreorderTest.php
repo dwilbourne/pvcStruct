@@ -8,7 +8,7 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\search;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\tree\search\NodeInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
 use pvc\interfaces\struct\tree\search\VisitStatus;
 use pvc\struct\collection\factory\CollectionUnorderedFactory;
 use pvc\struct\tree\dto\factory\TreenodeDTOUnorderedFactory;
@@ -115,6 +115,11 @@ class SearchDepthFirstPreorderTest extends TestCase
         self::assertEquals($expectedResult, $actualResult);
 
         /**
+         * test that the nodemap has all the nodes in it
+         */
+        self::assertEquals(count($this->search->getNodeMap()->getNodeMapAsArray()), count($actualResult));
+
+        /**
          * test it again to make sure the rewind machinery really is working
          */
         $actualResult = $this->getNodeIds();
@@ -150,7 +155,7 @@ class SearchDepthFirstPreorderTest extends TestCase
         /** @phpcs:ignore */
         $expectedResult = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(
         );
-        $evens = function (NodeInterface $node) {
+        $evens = function (NodeSearchableInterface $node) {
             return (0 == $node->getNodeId() % 2);
         };
         $this->search->setNodeFilter($evens);

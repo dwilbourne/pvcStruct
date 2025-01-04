@@ -8,14 +8,15 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\search;
 
-use pvc\interfaces\struct\tree\search\NodeInterface;
+use pvc\interfaces\struct\tree\search\NodeMapInterface;
+use pvc\interfaces\struct\tree\search\NodeSearchableInterface;
 use pvc\interfaces\struct\tree\search\SearchInterface;
 use pvc\struct\tree\err\BadSearchLevelsException;
 use pvc\struct\tree\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyAbstract
- * @template NodeType of NodeInterface
+ * @template NodeType of NodeSearchableInterface
  * @implements SearchInterface<NodeType>
  */
 abstract class SearchAbstract implements SearchInterface
@@ -55,6 +56,36 @@ abstract class SearchAbstract implements SearchInterface
      */
     protected bool $valid = false;
 
+    /**
+     * @var NodeMapInterface
+     */
+    protected NodeMapInterface $nodeMap;
+
+    /**
+     * @param NodeMapInterface $nodeMap
+     */
+    public function __construct(NodeMapInterface $nodeMap)
+    {
+        $this->setNodeMap($nodeMap);
+    }
+
+    /**
+     * getNodeMap
+     * @return NodeMapInterface
+     */
+    public function getNodeMap(): NodeMapInterface
+    {
+        return $this->nodeMap;
+    }
+
+    /**
+     * setNodeMap
+     * @param NodeMapInterface $nodeMap
+     */
+    public function setNodeMap(NodeMapInterface $nodeMap): void
+    {
+        $this->nodeMap = $nodeMap;
+    }
 
     /**
      * getNodeFilter
@@ -125,6 +156,15 @@ abstract class SearchAbstract implements SearchInterface
     }
 
     /**
+     * getParent
+     * @return NodeType|null
+     */
+    protected function getParent(): ?NodeSearchableInterface
+    {
+        return $this->getNodeMap()->getParent($this->currentNode->getNodeId());
+    }
+
+    /**
      * getMaxLevels
      * @return int
      */
@@ -184,13 +224,15 @@ abstract class SearchAbstract implements SearchInterface
         $this->setCurrent($this->getStartNode());
         $this->valid = true;
         $this->currentLevel = 0;
+        $this->nodeMap->initialize();
+        $this->nodeMap->setNode($this->getStartNode()->getNodeId(), null, $this->getStartNode());
     }
 
     abstract public function next(): void;
 
     /**
-     * getNodeIds
-     * @return array<NodeInterface>
+     * getNodes
+     * @return array<NodeType>
      */
     public function getNodes(): array
     {
