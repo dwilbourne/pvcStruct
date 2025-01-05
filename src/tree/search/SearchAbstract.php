@@ -159,9 +159,14 @@ abstract class SearchAbstract implements SearchInterface
      * getParent
      * @return NodeType|null
      */
-    protected function getParent(): ?NodeSearchableInterface
+    public function getParent(): ?NodeSearchableInterface
     {
         return $this->getNodeMap()->getParent($this->currentNode->getNodeId());
+    }
+
+    public function getParentId(): ?int
+    {
+        return $this->getNodeMap()->getParentId($this->current()->getNodeId());
     }
 
     /**
