@@ -16,7 +16,7 @@ use Throwable;
  */
 class NodeNotEmptyHydrationException extends LogicException
 {
-    public function __construct(int $nodeId, Throwable $prev = null)
+    public function __construct(int $nodeId, ?Throwable $prev = null)
     {
         parent::__construct($nodeId, $prev);
     }

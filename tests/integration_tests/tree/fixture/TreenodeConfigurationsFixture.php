@@ -8,102 +8,13 @@ declare(strict_types=1);
 
 namespace pvcTests\struct\integration_tests\tree\fixture;
 
-use pvc\interfaces\struct\tree\node\TreenodeAbstractInterface;
-use pvc\struct\tree\dto\factory\TreenodeDTOOrderedFactory;
-use pvc\struct\tree\dto\factory\TreenodeDTOUnorderedFactory;
-
 /**
  * Class TreeTestFixture
  */
 class TreenodeConfigurationsFixture
 {
-    protected int $treeId;
-
-    protected TreenodeDTOUnorderedFactory|TreenodeDTOOrderedFactory $dtoFactory;
-
-    public function __construct(
-        TreenodeDTOUnorderedFactory|TreenodeDTOOrderedFactory $dtoFactory
-    ) {
-        $this->treeId = 0;
-        $this->dtoFactory = $dtoFactory;
-    }
-
     /**
-     * getTreeId
-     * @return int
-     */
-    public function getTreeId(): int
-    {
-        return $this->treeId;
-    }
-
-    protected function makeAssociativeNodeDataArray(array $row): array
-    {
-        $result = [];
-
-        /**
-         * nodeId
-         */
-        $result['nodeId'] = $row[0];
-
-        /**
-         * parentId
-         */
-        $result['parentId'] = $row[1];
-
-        /**
-         * plug the treeid in
-         */
-        $result['treeId'] = $this->treeId;
-
-        /**
-         * use the nodeId as the payload
-         */
-        $result['payload'] = $row[0];
-
-        /**
-         * index
-         */
-        $result['index'] = $row[2];
-
-        return $result;
-    }
-
-    public function makeDTOArray(): array
-    {
-        $nodeIdArray = $this->makeArrayOfNodeIdsForTree();
-        $result = [];
-        foreach ($nodeIdArray as $nodeData) {
-            $dto = $this->dtoFactory->makeDTO();
-            /**
-             * this fixture uses node data that is for ordered trees (e.g. each node has an index property), but it is
-             * used to test both ordered and unordered trees.  The DTO for unordered trees will throw an extra
-             * property exception unless we permit extra properties in the array used to hydrate the DTO.
-             */
-            $dto->permitExtraProperties();
-            $dto->hydrateFromArray($this->makeAssociativeNodeDataArray($nodeData));
-            $result[] = $dto;
-        }
-        return $result;
-    }
-
-    /**
-     * makeArrayOfNodeIdsFromArrayOfNodes
-     * @param array<TreenodeAbstractInterface> $nodeArray
-     * @return array<int>
-     */
-    public function makeArrayOfNodeIdsFromArrayOfNodes(array $nodeArray): array
-    {
-        $result = [];
-        foreach ($nodeArray as $node) {
-            $result[] = $node->getNodeId();
-        }
-        return $result;
-    }
-
-
-    /**
-     * @function makeTreeStructureWithGoodData
+     * @function makeArrayOfNodeIdsForTree
      * @return array
      *
      * the order of the node data is scrambled in order to properly test the getTreeDepthFirst
@@ -122,7 +33,7 @@ class TreenodeConfigurationsFixture
      *                                 6    7       5           3       4
      *                                          12 11 10 9      8
      */
-    public function makeArrayOfNodeIdsForTree(): array
+    public function getNodeData(): array
     {
         $a = [];
         $a[] = [0, null, 0];
@@ -387,7 +298,7 @@ class TreenodeConfigurationsFixture
         $a[] = [6, 11, 0];
         $a[] = [7, 12, 0];
 
-        return $this->makeDTOArray($a);
+        return $this->makeDtoArray($a);
     }
 
     public function makeTreeWithMultipleRoots(): array
@@ -406,7 +317,7 @@ class TreenodeConfigurationsFixture
         $a[] = [6, null, 0];
         $a[] = [7, null, 0];
 
-        return $this->makeDTOArray($a);
+        return $this->makeDtoArray($a);
     }
 
     public function makeTreeWithCircularParents(): array
@@ -417,6 +328,6 @@ class TreenodeConfigurationsFixture
         $a[] = [2, 1, 0];
         $a[] = [3, 2, 0];
 
-        return $this->makeDTOArray($a);
+        return $this->makeDtoArray($a);
     }
 }

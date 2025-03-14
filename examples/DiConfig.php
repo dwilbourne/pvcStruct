@@ -15,14 +15,13 @@ use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\interfaces\validator\ValidatorInterface;
 use pvc\struct\collection\factory\CollectionOrderedFactory;
 use pvc\struct\tree\dto\factory\TreenodeValueObjectOrderedFactory;
-use pvc\struct\tree\node\factory\TreenodeAbstractFactory;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
+use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
-use pvc\struct\tree\search\SearchFilterDefault;
-use pvc\struct\tree\search\SearchStrategyDepthFirst;
 use pvc\struct\tree\tree\TreeOrdered;
+use pvc\struct\tree\treesearch\SearchFilterDefault;
+use pvc\struct\tree\treesearch\SearchStrategyDepthFirst;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
-
 use function DI\create;
 use function DI\get;
 
@@ -34,7 +33,7 @@ return [
     CollectionFactoryInterface::class => create(CollectionOrderedFactory::class),
     NodeTypeFactoryInterface::class => create(TreenodeOrderedFactory::class),
     ValidatorInterface::class => create(TreenodeValueValidatorDefault::class),
-    TreenodeFactoryInterface::class => create(TreenodeAbstractFactory::class)
+    TreenodeFactoryInterface::class => create(TreenodeFactory::class)
         ->constructor(
             get(NodeTypeFactoryInterface::class),
             get(CollectionFactoryInterface::class),

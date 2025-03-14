@@ -24,15 +24,14 @@
 	},
 	"minimum-stability": "dev",
 	"require": {
-		"pvc/interfaces": "*",
+		"pvc/interfaces": "dev-newtree",
 		"pvc/err": "*",
-		"pvc/storage": "*"
-	},
+		"league/container": "*"
+
+    },
 	"require-dev": {
-		"phpunit/phpunit": "^9",
-		"squizlabs/php_codesniffer": "*",
-		"friendsofphp/php-cs-fixer": "*",
-		"phpstan/phpstan": "*",
-		"pvc/testing-traits": "*"
+		"phpunit/phpunit": "9.6.22",
+		"pvc/testing-traits": "*",
+		"phpstan/phpstan": "*"
 	}
 }

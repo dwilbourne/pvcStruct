@@ -15,7 +15,7 @@ use Throwable;
  */
 class NonExistentKeyException extends LogicException
 {
-    public function __construct(int $nonExistentKey, Throwable $prev = null)
+    public function __construct(int $nonExistentKey, ?Throwable $prev = null)
     {
         parent::__construct($nonExistentKey, $prev);
     }

@@ -19,7 +19,6 @@ class _TreeXDataTest extends XDataTestMaster
      * @covers \pvc\struct\tree\err\_TreeXData::getXMessageTemplates
      * @covers \pvc\struct\tree\err\AlreadySetNodeidException::__construct
      * @covers \pvc\struct\tree\err\AlreadySetRootException::__construct
-     * @covers \pvc\struct\tree\err\BadSearchLevelsException::__construct
      * @covers \pvc\struct\tree\err\CircularGraphException::__construct
      * @covers \pvc\struct\tree\err\DeleteInteriorNodeException::__construct
      * @covers \pvc\struct\tree\err\InvalidNodeIdException::__construct
@@ -28,8 +27,9 @@ class _TreeXDataTest extends XDataTestMaster
      * @covers \pvc\struct\tree\err\InvalidTreeidException::__construct
      * @covers \pvc\struct\tree\err\NodeNotInTreeException::__construct
      * @covers \pvc\struct\tree\err\SetTreeIdException::__construct
-     * @covers \pvc\struct\tree\err\InvalidVisitStatusException::__construct
      * @covers \pvc\struct\tree\err\NodeNotEmptyHydrationException::__construct
+     * @covers \pvc\struct\tree\err\TreenodeFactoryNotInitializedException
+     * @covers \pvc\struct\tree\err\TreeNotInitializedException
      */
     public function testTreeExceptionLibrary(): void
     {

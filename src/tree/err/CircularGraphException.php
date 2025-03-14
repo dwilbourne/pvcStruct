@@ -15,7 +15,7 @@ use Throwable;
  */
 class CircularGraphException extends LogicException
 {
-    public function __construct(int $nodeid, Throwable $prev = null)
+    public function __construct(int $nodeid, ?Throwable $prev = null)
     {
         parent::__construct($nodeid, $prev);
     }

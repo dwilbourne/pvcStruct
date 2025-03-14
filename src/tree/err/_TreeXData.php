@@ -20,11 +20,9 @@ class _TreeXData extends XDataAbstract
         return [
             AlreadySetNodeidException::class => 1001,
             AlreadySetRootException::class => 1002,
-            BadSearchLevelsException::class => 1003,
             ChildCollectionException::class => 1004,
             CircularGraphException::class => 1005,
             DeleteInteriorNodeException::class => 1006,
-            InvalidDepthFirstSearchOrderingException::class => 1007,
             InvalidNodeIdException::class => 1008,
             InvalidValueException::class => 1009,
             InvalidParentNodeException::class => 1010,
@@ -33,10 +31,9 @@ class _TreeXData extends XDataAbstract
             NoRootFoundException::class => 1013,
             RootCannotBeMovedException::class => 1014,
             SetTreeIdException::class => 1015,
-            StartNodeUnsetException::class => 1016,
-            TreeNotEmptyHydrationException::class => 1017,
-            InvalidVisitStatusException::class => 1018,
             NodeNotEmptyHydrationException::class => 1019,
+            TreeNotInitializedException::class => 1021,
+            TreenodeFactoryNotInitializedException::class => 1022,
         ];
     }
 
@@ -45,11 +42,9 @@ class _TreeXData extends XDataAbstract
         return [
             AlreadySetNodeidException::class => 'nodeid ${nodeid} already exists in the tree.',
             AlreadySetRootException::class => 'set root error - root of tree is already set.',
-            BadSearchLevelsException::class => 'Max levels to search must be > 0, actual supplied = ${badLevels}.',
             ChildCollectionException::class => 'Child collection supplied to the constructor must be empty.',
             CircularGraphException::class => 'circular graph error: nodeid ${nodeid} cannot be its own ancestor.',
             DeleteInteriorNodeException::class => 'cannot delete nodeid ${nodeid} - must be a leaf.',
-            InvalidDepthFirstSearchOrderingException::class => 'oredering payload must be the PREORDER or POSTORDER class consant.',
             InvalidNodeIdException::class => 'Invalid nodeid ${nodeid} - must be an integer >= 0.',
             InvalidValueException::class => 'Invalid node payload.',
             InvalidParentNodeException::class => 'Parentid ${parentid} does not exist in the current tree.',
@@ -58,10 +53,9 @@ class _TreeXData extends XDataAbstract
             NoRootFoundException::class => 'no root node found in tree node payload object array.',
             RootCannotBeMovedException::class => 'The root node cannot be moved to another place in the tree.',
             SetTreeIdException::class => 'cannot set the treeid on a tree which is not empty.',
-            StartNodeUnsetException::class => 'start node must be set before searching or resetting the search.',
-            TreeNotEmptyHydrationException::class => 'cannot hydrate a non empty tree.',
-            InvalidVisitStatusException::class => 'invalid visit status supplied - use one of the TreenodeAbstract class constants.',
             NodeNotEmptyHydrationException::class => 'cannot hydrate a non-empty node - nodeid ${nodeId} is already set.',
+            TreeNotInitializedException::class => 'cannot use Tree until it has been initialized.',
+            TreenodeFactoryNotInitializedException::class => 'cannot use TreeNodeFactory until it has been initialized.',
         ];
     }
 }

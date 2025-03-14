@@ -16,7 +16,7 @@ use Throwable;
 class DuplicateKeyException extends LogicException
 {
 
-    public function __construct(int $duplicateKey, Throwable $prev = null)
+    public function __construct(int $duplicateKey, ?Throwable $prev = null)
     {
         parent::__construct($duplicateKey, $prev);
     }
