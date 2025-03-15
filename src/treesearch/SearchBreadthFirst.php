@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace pvc\struct\treesearch;
 
 use pvc\interfaces\struct\treesearch\NodeSearchableInterface;
-use pvc\struct\err\StartNodeUnsetException;
+use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst

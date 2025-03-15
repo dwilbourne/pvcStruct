@@ -2,32 +2,9 @@
 
 namespace pvcTests\struct\unit_tests\collection\fixtures;
 
-use pvc\interfaces\struct\collection\CollectionElementInterface;
-
-class CollectionElement implements CollectionElementInterface
+class CollectionElement
 {
-    /**
-     * @var non-negative-int
-     */
-    protected int $index = 0;
-
     protected int $value;
-
-    /**
-     * @return non-negative-int
-     */
-    public function getIndex(): int {
-        return $this->index;
-    }
-
-    /**
-     * @param non-negative-int $index
-     * @return void
-     */
-    public function setIndex(int $index): void
-    {
-        $this->index = $index;
-    }
 
     /**
      * @return int
@@ -45,6 +22,5 @@ class CollectionElement implements CollectionElementInterface
     {
         $this->value = $value;
     }
-
 
 }

@@ -12,7 +12,6 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\dto\TreenodeDtoCollectionFactoryInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
@@ -48,8 +47,6 @@ class TreeTest extends TestCase
      */
     protected TreenodeFactoryInterface&MockObject $nodeFactory;
 
-    protected TreenodeDtoCollectionFactoryInterface&MockObject $dtoCollectionFactory;
-
     /**
      * setUp
      */
@@ -57,8 +54,7 @@ class TreeTest extends TestCase
     {
         $this->treeId = 0;
         $this->nodeFactory = $this->createMock(TreenodeFactoryInterface::class);
-        $this->dtoCollectionFactory = $this->createMock(TreenodeDtoCollectionFactoryInterface::class);
-        $this->tree = new Tree($this->nodeFactory, $this->dtoCollectionFactory);
+        $this->tree = new Tree($this->nodeFactory);
     }
 
     /**

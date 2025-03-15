@@ -8,8 +8,8 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
-use pvc\interfaces\struct\collection\CollectionElementInterface;
 use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
 
@@ -21,7 +21,7 @@ use pvc\struct\collection\err\NonExistentKeyException;
  * index of an element via its key and all the other elements in the collection will have their indices updated
  * accordingly.
  *
- * @template ElementType of CollectionElementInterface
+ * @template ElementType of IndexedElementInterface
  * @extends Collection<ElementType>
  * @implements CollectionInterface<ElementType>
  */
@@ -31,16 +31,29 @@ class CollectionIndexed extends Collection implements CollectionInterface
     private const int SHUFFLE_DOWN = -1;
 
     /**
+     * @var callable(ElementType, ElementType):int
+     * used by getElements to return the elements in order of index
+     */
+    protected $comparator;
+
+    /**
      * @param array<non-negative-int, ElementType> $array
      */
     public function __construct(array $array = [])
     {
-        parent::__construct($array);
+        $comparator = function($a, $b) {
+            /**
+             * @var ElementType $a
+             * @var ElementType $b
+             */
+            return $a->getIndex() <=> $b->getIndex();
+        };
+        parent::__construct($array, $comparator);
 
         /**
          * do not assume that the indices of the elements being imported are continuously ascending starting at 0.
          */
-        $this->iterator->uasort([$this, 'compareIndices']);
+        $this->iterator->uasort($this->comparator);
 
         /**
          * renumber the indices
@@ -190,7 +203,12 @@ class CollectionIndexed extends Collection implements CollectionInterface
         $this->setIndex($key, $newIndex);
     }
 
-    protected function compareIndices(CollectionElementInterface $a, CollectionElementInterface $b): int
+    /**
+     * @param ElementType $a
+     * @param ElementType $b
+     * @return int
+     */
+    protected function compareIndices(mixed $a, mixed $b): int
     {
         return $a->getIndex() <=> $b->getIndex();
     }

@@ -8,7 +8,6 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\tree\dto\TreenodeDtoCollectionFactoryInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
@@ -49,13 +48,15 @@ class Tree implements TreeInterface
     protected array $nodes = [];
 
     /**
-     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
-     * @param TreenodeDtoCollectionFactoryInterface<PayloadType> $treenodeDtoCollectionFactory
+     * @var callable|null
      */
-    public function __construct(
-        protected TreenodeFactoryInterface $treenodeFactory,
-        protected TreenodeDtoCollectionFactoryInterface $treenodeDtoCollectionFactory,
-    ) {
+    protected $treenodeDtoComparator = null;
+
+    /**
+     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
+     */
+    public function __construct(protected TreenodeFactoryInterface $treenodeFactory)
+    {
         $this->isInitialized = false;
     }
 
@@ -297,12 +298,20 @@ class Tree implements TreeInterface
                 return $parentId === $dto->parentId;
             };
         $childDtos = array_filter($dtos, $filter);
-        $treenodeDtoCollection = $this->treenodeDtoCollectionFactory->makeTreenodeDtoCollection($childDtos);
 
         /**
-         * recurse down through the children to hydrate the tree
+         * if necessary, sort the dtos so they go into the tree in the correct order
          */
-        foreach ($treenodeDtoCollection as $key => $nodeDto) {
+        if ($this->treenodeDtoComparator) {
+            uasort($childDtos, $this->treenodeDtoComparator);
+        }
+
+        /**
+         * recurse down through the children to hydrate the tree.  The foreach looks a little odd because
+         * we only need the key from the array, not the dto. The second parameter is the complete set of dtos we
+         * are importing into the tree
+         */
+        foreach ($childDtos as $key => $dto) {
             $this->insertNodeRecurse($key, $dtos);
         }
     }

@@ -16,16 +16,17 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 /**
  * Class SearchAbstract
  * @template NodeType of NodeSearchableInterface
+ * @implements SearchInterface<NodeType>
  */
 abstract class SearchAbstract implements SearchInterface
 {
     /**
-     * @var NodeSearchableInterface
+     * @var NodeType
      */
     protected mixed $startNode;
 
     /**
-     * @var NodeSearchableInterface|null
+     * @var NodeType|null
      */
     protected mixed $currentNode = null;
 
@@ -53,7 +54,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * current
-     * @return NodeSearchableInterface|null
+     * @return NodeType|null
      */
     public function current(): mixed
     {
@@ -81,7 +82,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * setCurrent
-     * @param NodeSearchableInterface|null $currentNode
+     * @param NodeType|null $currentNode
      * nullable because you want to set the current node to null at the end of a search, after the last node has been
      * returned and have it initialized as null
      */
@@ -92,7 +93,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * getStartNode
-     * @return NodeSearchableInterface
+     * @return NodeType
      * startNode must be set before the class can do anything so throw an exception if it is not set
      * @throws StartNodeUnsetException
      */
@@ -106,7 +107,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * setStartNode
-     * @param NodeSearchableInterface $startNode
+     * @param NodeType $startNode
      */
     public function setStartNode($startNode): void
     {
@@ -119,13 +120,11 @@ abstract class SearchAbstract implements SearchInterface
     abstract public function next(): void;
 
     /**
-     * @return NodeSearchableInterface
-     *
+     * @return array<NodeType>
      */
     public function getNodes(): array
     {
         $result = [];
-        /** @var NodeSearchableInterface $node */
         foreach ($this as $node) {
             $result[$node->getNodeId()] = $node;
         }

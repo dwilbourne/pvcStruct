@@ -11,7 +11,7 @@ namespace pvc\struct\treesearch;
 use pvc\interfaces\struct\treesearch\NodeMapInterface;
 use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
-use pvc\struct\err\StartNodeUnsetException;
+use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchDepthFirst

@@ -3,9 +3,9 @@
 namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\collection\CollectionElementInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
+use stdClass;
 
 class CollectionFactoryTest extends TestCase
 {
@@ -33,8 +33,7 @@ class CollectionFactoryTest extends TestCase
      */
     public function testMakeCollectionWithArray(): void
     {
-        $element = $this->createMock(CollectionElementInterface::class);
-        $collection = $this->collectionFactory->makeCollection([$element]);
+        $collection = $this->collectionFactory->makeCollection([new stdClass()]);
         self::assertInstanceOf(Collection::class, $collection);
         self::assertEquals(1, $collection->count());
     }

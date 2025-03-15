@@ -6,31 +6,41 @@ use League\Container\Container;
 use League\Container\Definition\DefinitionAggregate;
 use League\Container\ReflectionContainer;
 use pvc\interfaces\struct\dto\DtoInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\dto\err\DtoInvalidPropertyValueException;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\tree\Tree;
+use pvc\struct\tree\tree\TreeOrdered;
 use ReflectionException;
 
+/**
+ * @template PayloadType of HasPayloadInterface
+ */
 class TestUtils
 {
     protected Container $container;
 
-    public function __construct(bool $ordered = false)
-    {
-        // $payloadTester = ???
-        // $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions($ordered, $payloadTester));
+    protected TreenodeConfigurationsFixture $fixture;
 
-        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions($ordered));
+    /**
+     * @param ValTesterInterface<PayloadType>|null $valTester
+     */
+    public function __construct(?ValTesterInterface $valTester, TreenodeConfigurationsFixture $fixture)
+    {
+        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions($valTester));
         $this->container = new Container($aggregate);
         /**
          * enable autowiring, which recursively evaluates arguments inside the definitions
          */
         $this->container->delegate(new ReflectionContainer());
+
+        $this->fixture = $fixture;
     }
 
     /**
@@ -47,11 +57,11 @@ class TestUtils
         return array_values(array_map($callback, $nodeArray));
     }
 
-    public function testTreeSetup(TreenodeConfigurationsFixture $fixture, bool $ordered = false) : Tree
+    public function testTreeSetup(bool $ordered) : TreeInterface
     {
         $treeId = 1;
-        $dtoArray = $this->makeDtoArray($fixture);
-        $tree = $this->makeTestTree();
+        $dtoArray = $this->makeDtoArray($this->fixture);
+        $tree = $this->makeTestTree($ordered);
         $tree->initialize($treeId, $dtoArray);
         return $tree;
     }
@@ -81,8 +91,9 @@ class TestUtils
         return array_map($callback, $nodeData);
     }
 
-    public function makeTestTree(): TreeInterface
+    public function makeTestTree(bool $ordered): TreeInterface
     {
-        return $this->container->get(TreeInterface::class);
+        $classString = $ordered ? TreeOrdered::class : Tree::class;
+        return $this->container->get($classString);
     }
 }

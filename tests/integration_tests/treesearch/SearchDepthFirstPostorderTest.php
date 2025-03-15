@@ -8,25 +8,34 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
-use pvc\struct\tree\tree\Tree;
-use pvc\struct\treesearch\err\InvalidDepthFirstSearchOrderingException;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPostorder;
 use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
+/**
+ * @template PayloadType of HasPayloadInterface
+ */
 class SearchDepthFirstPostorderTest extends TestCase
 {
+    /**
+     * @var TreeInterface<PayloadType>
+     */
+    protected TreeInterface $tree;
+
+    /**
+     * @var ValTesterInterface<PayloadType>|null
+     */
+    protected ValTesterInterface|null $valTester = null;
+
     /**
      * @var SearchDepthFirstPostorder
      */
     protected SearchDepthFirstPostorder $search;
-
-    /**
-     * @var Tree
-     */
-    protected Tree $tree;
 
     /**
      * @var TreenodeConfigurationsFixture
@@ -35,15 +44,16 @@ class SearchDepthFirstPostorderTest extends TestCase
 
     public function setUp(): void
     {
-        $testUtils = new TestUtils();
+        $ordered = false;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($this->fixture);
+        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $this->fixture = new TreenodeConfigurationsFixture();
+        $this->tree = $testUtils->testTreeSetup($ordered);
         $this->search = new SearchDepthFirstPostorder(new NodeMap());
     }
 
     /**
      * testIteratorPostOrder
-     * @throws InvalidDepthFirstSearchOrderingException
      * @covers \pvc\struct\treesearch\SearchDepthFirstPostorder
      * @covers \pvc\struct\treesearch\SearchAbstract::getNodes
      */
@@ -57,7 +67,6 @@ class SearchDepthFirstPostorderTest extends TestCase
 
     /**
      * testMaxLevelsPostOrder
-     * @throws InvalidDepthFirstSearchOrderingException
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchAbstract::getNodes
      * @covers \pvc\struct\treesearch\SearchDepthFirstPostorder

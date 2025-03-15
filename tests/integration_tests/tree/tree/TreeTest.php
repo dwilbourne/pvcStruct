@@ -10,6 +10,7 @@ namespace pvcTests\struct\integration_tests\tree\tree;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
@@ -22,7 +23,16 @@ class TreeTest extends TestCase
 {
     protected TreeInterface $tree;
 
+    protected ValTesterInterface|null $valTester = null;
+
     protected TreenodeConfigurationsFixture $fixture;
+
+    public function treeSetup(bool $ordered): void
+    {
+        $this->fixture = new TreenodeConfigurationsFixture();
+        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $this->tree = $testUtils->testTreeSetup($ordered);
+    }
 
     /**
      * testHydration
@@ -37,33 +47,6 @@ class TreeTest extends TestCase
         self::assertEquals(count($this->fixture->getNodeData()), count($this->tree->getNodes()));
     }
 
-    public function treeSetup(bool $ordered): void
-    {
-        $testUtils = new TestUtils($ordered);
-        $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($this->fixture);
-    }
-
-    /**
-     * @return void
-     * @coversNothing
-     */
-    public function testTreenodeCollectionIteration(): void
-    {
-        $ordered = false;
-        $this->treeSetup($ordered);
-        /**
-         * 3, 4 and 5 are the children of 1
-         */
-        $expectedResult = [3, 4, 5];
-        $children = $this->tree->getNode(1)->getChildren();
-
-        $actualResult = [];
-        foreach ($children as $child) {
-            $actualResult[] = $child->getNodeId();
-        }
-        self::assertEquals($expectedResult, $actualResult);
-    }
 
     /**
      * testDeleteNodeRecurse
@@ -87,6 +70,7 @@ class TreeTest extends TestCase
      * testHydrationOrder
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
      */
     public function testHydrationOrder(): void
     {

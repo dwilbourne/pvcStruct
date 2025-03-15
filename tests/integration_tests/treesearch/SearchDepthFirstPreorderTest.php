@@ -8,25 +8,36 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
+use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
-use pvc\struct\tree\tree\Tree;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPreorder;
 use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
 use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
+/**
+ * @template PayloadType of HasPayloadInterface
+ */
 class SearchDepthFirstPreorderTest extends TestCase
 {
+    /**
+     * @var TreeInterface<PayloadType>
+     */
+    protected TreeInterface $tree;
+
+    /**
+     * @var ValTesterInterface<PayloadType>|null
+     */
+    protected ValTesterInterface|null $valTester = null;
+
+
     /**
      * @var SearchDepthFirstPreorder
      */
     protected SearchDepthFirstPreorder $search;
-
-    /**
-     * @var Tree
-     */
-    protected Tree $tree;
 
     /**
      * @var TreenodeConfigurationsFixture
@@ -35,9 +46,11 @@ class SearchDepthFirstPreorderTest extends TestCase
 
     public function setUp(): void
     {
-        $testUtils = new TestUtils();
+        $ordered = false;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($this->fixture);
+        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $this->fixture = new TreenodeConfigurationsFixture();
+        $this->tree = $testUtils->testTreeSetup($ordered);
         $this->search = new SearchDepthFirstPreorder(new NodeMap());
     }
 

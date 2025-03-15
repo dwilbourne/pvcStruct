@@ -3,7 +3,7 @@
 namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\collection\CollectionElementInterface;
+use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\struct\collection\CollectionIndexed;
 use pvc\struct\collection\CollectionIndexedFactory;
 
@@ -33,7 +33,7 @@ class CollectionIndexedFactoryTest extends TestCase
      */
     public function testMakeCollectionWithArray(): void
     {
-        $element = $this->createMock(CollectionElementInterface::class);
+        $element = $this->createMock(IndexedElementInterface::class);
         $collection = $this->collectionIndexedFactory->makeCollection([$element]);
         self::assertInstanceOf(CollectionIndexed::class, $collection);
         self::assertEquals(1, $collection->count());

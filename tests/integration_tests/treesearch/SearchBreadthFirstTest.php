@@ -10,7 +10,8 @@ namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\struct\tree\tree\Tree;
+use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\SearchBreadthFirst;
 use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
@@ -23,9 +24,14 @@ use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture
 class SearchBreadthFirstTest extends TestCase
 {
     /**
-     * @var Tree<PayloadType>
+     * @var TreeInterface<PayloadType>
      */
-    protected Tree $tree;
+    protected TreeInterface $tree;
+
+    /**
+     * @var ValTesterInterface<PayloadType>|null
+     */
+    protected ValTesterInterface|null $valTester = null;
 
     /**
      * @var SearchBreadthFirst
@@ -40,9 +46,10 @@ class SearchBreadthFirstTest extends TestCase
     public function setUp(): void
     {
         $ordered = true;
-        $testUtils = new TestUtils($ordered);
         $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($this->fixture);
+        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $this->fixture = new TreenodeConfigurationsFixture();
+        $this->tree = $testUtils->testTreeSetup($ordered);
         $this->search = new SearchBreadthFirst();
     }
 
@@ -59,7 +66,7 @@ class SearchBreadthFirstTest extends TestCase
         $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayOfAllNodeIds();
         $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
         /**
-         * ordered search so not canonicalize the results
+         * ordered search so do not canonicalize the results
          */
         self::assertEquals($expectedResult, $actualResult);
     }

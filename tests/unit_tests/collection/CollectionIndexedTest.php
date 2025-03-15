@@ -10,6 +10,7 @@ use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
 use pvcTests\struct\unit_tests\collection\fixtures\CollectionElement;
 use pvcTests\struct\unit_tests\collection\fixtures\CollectionElementFactory;
+use pvcTests\struct\unit_tests\collection\fixtures\CollectionIndexedElement;
 
 class CollectionIndexedTest extends TestCase
 {
@@ -33,7 +34,8 @@ class CollectionIndexedTest extends TestCase
      */
     protected function addElements(int $n): void
     {
-        $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray($n);
+        $indexed = true;
+        $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray($n, $indexed);
         $this->collection = new CollectionIndexed($this->collectionElements);
     }
 
@@ -50,7 +52,6 @@ class CollectionIndexedTest extends TestCase
      * @return void
      * @throws InvalidKeyException
      * @covers \pvc\struct\collection\CollectionIndexed::__construct
-     * @covers \pvc\struct\collection\CollectionIndexed::compareIndices
      */
     public function testConstructReindexesElements(): void
     {
@@ -69,6 +70,7 @@ class CollectionIndexedTest extends TestCase
      * @covers \pvc\struct\collection\CollectionIndexed::add
      * @covers \pvc\struct\collection\CollectionIndexed::trimIndex
      * @covers \pvc\struct\collection\CollectionIndexed::shuffleIndices
+     * @covers \pvc\struct\collection\CollectionIndexed::compareIndices
      */
     public function testDeleteThenAddInMiddle(): void
     {
@@ -81,7 +83,7 @@ class CollectionIndexedTest extends TestCase
         $actualIndices = array_values($this->getResultArray());
         self::assertEquals($expectedIndices, $actualIndices);
 
-        $element = new CollectionElement();
+        $element = new CollectionIndexedElement();
         /**
          * place this element to be second in the list
          */
@@ -113,11 +115,12 @@ class CollectionIndexedTest extends TestCase
      */
     public function testUpdate(): void
     {
+        $indexed = true;
         $this->addElements(3);
         /**
          * create a new element and have it replace the first element in the collection
          */
-        $newElement = $this->collectionElementFactory->makeElement(7);
+        $newElement = $this->collectionElementFactory->makeElement(7, $indexed);
         $newElement->setIndex(0);
         /**
          * replace the existing element with $key = 2.  Note that the key does not change but the value of
@@ -138,7 +141,7 @@ class CollectionIndexedTest extends TestCase
      */
     public function testAddPushesNewElementOnEndOfCollectionIfIndexIsGreaterThanCountOfCollection(): void
     {
-        $element = new CollectionElement();
+        $element = new CollectionIndexedElement();
         $key = 10;
         $proposedNewKeyIndex = 5;
         $element->setIndex($proposedNewKeyIndex);

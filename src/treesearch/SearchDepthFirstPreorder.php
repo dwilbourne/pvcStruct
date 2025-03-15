@@ -50,9 +50,12 @@ class SearchDepthFirstPreorder extends SearchDepthFirst
 
             /**
              * if all the children are fully visited, or we are at the max search level, then we move to full visited
-             * otherwise we move down
+             * otherwise we move down.  The default case should never be true, which is to say that we should never
+             * be moving into a node that is fully visited.  The default case is only there to satisfy the type checker
+             * that the $direction variable will have a value in all cases.
              */
             case VisitStatus::PARTIALLY_VISITED:
+            default:
                 if ($this->allChildrenFullyVisited() || $this->atMaxLevels()) {
                     $this->current()->setVisitStatus(VisitStatus::FULLY_VISITED);
                     $direction = Direction::MOVE_UP;

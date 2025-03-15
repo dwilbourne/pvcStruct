@@ -7,29 +7,21 @@ namespace pvc\struct\tree\di;
 use League\Container\Argument\LiteralArgument;
 use League\Container\Definition\Definition;
 use League\Container\Definition\DefinitionInterface;
-use pvc\interfaces\struct\collection\CollectionFactoryInterface;
-use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\dto\DtoFactoryAbstractInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\dto\TreenodeDtoCollectionFactoryInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoFactoryInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionFactoryInterface;
-use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
-use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\collection\CollectionIndexed;
 use pvc\struct\collection\CollectionIndexedFactory;
-use pvc\struct\dto\DtoFactoryAbstract;
 use pvc\struct\dto\PropertyMapFactory;
 use pvc\struct\tree\dto\TreenodeDto;
-use pvc\struct\tree\dto\TreenodeDtoCollectionFactory;
 use pvc\struct\tree\dto\TreenodeDtoFactory;
 use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\node\TreenodeCollectionFactory;
 use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\tree\Tree;
+use pvc\struct\tree\tree\TreeOrdered;
 
 /**
  * @template PayloadType of HasPayloadInterface
@@ -37,29 +29,15 @@ use pvc\struct\tree\tree\Tree;
 class TreeDefinitions
 {
     /**
-     * @param bool $ordered
      * @param ValTesterInterface<PayloadType>|null $payloadTester
      * @return array<int, DefinitionInterface>
      */
-    public static function makeDefinitions(bool $ordered = false, ?ValTesterInterface $payloadTester = null): array
+    public static function makeDefinitions(?ValTesterInterface $payloadTester): array
     {
         return [
             /**
-             * collections and their factories are either ordered or unordered
+             * definitions to make Dtos (Data Transfer Objects)
              */
-            $ordered ?
-                new Definition(CollectionInterface::class, CollectionIndexed::class) :
-                new Definition(CollectionInterface::class, Collection::class),
-
-            $ordered ?
-                new Definition(CollectionFactoryInterface::class, CollectionIndexedFactory::class) :
-                new Definition(CollectionFactoryInterface::class, CollectionFactory::class),
-
-            /**
-             * definitions needed to make an array of TreenodeDto
-             */
-
-            (new Definition(TreenodeDtoCollectionFactoryInterface::class, TreenodeDtoCollectionFactory::class))->addArgument(CollectionFactoryInterface::class),
 
             (new Definition('TreenodePropertyMapFactory', PropertyMapFactory::class))
                 /**
@@ -69,31 +47,35 @@ class TreeDefinitions
                 ->addArgument(new LiteralArgument(TreenodeDto::class))
                 ->addArgument(new LiteralArgument(Treenode::class)),
 
-            (new Definition(DtoFactoryAbstractInterface::class, DtoFactoryAbstract::class))
-                ->addArgument(PropertyMapFactory::class),
+            // (new Definition(DtoFactoryAbstract::class))->addArgument(PropertyMapFactory::class),
 
             (new Definition(TreenodeDtoFactoryInterface::class, TreenodeDtoFactory::class))
                 ->addArgument('TreenodePropertyMapFactory'),
 
             /**
-             * definitions to make Tree nodes
+             * objects necessary to make a plain (unordered) tree
              */
-
-            (new Definition(TreenodeFactoryInterface::class, TreenodeFactory::class))
-                ->addArgument(TreenodeCollectionFactoryInterface::class)
+            (new Definition(Collection::class)),
+            (new Definition(CollectionFactory::class)),
+            (new Definition('TreenodeCollectionFactoryUnordered', TreenodeCollectionFactory::class))
+                ->addArgument(CollectionFactory::class),
+            (new Definition('TreenodeFactoryUnordered', TreenodeFactory::class))
+                ->addArgument('TreenodeCollectionFactoryUnordered')
                 ->addArgument($payloadTester),
-
-
-            (new Definition(TreenodeCollectionFactoryInterface::class, TreenodeCollectionFactory::class))
-                ->addArgument(CollectionFactoryInterface::class),
+            (new Definition(Tree::class))->addArgument('TreenodeFactoryUnordered'),
 
             /**
-             * definitions to make a Tree
+             * objects necessary to make an ordered tree
              */
+            (new Definition(CollectionIndexed::class)),
+            (new Definition(CollectionIndexedFactory::class)),
+            (new Definition('TreenodeCollectionFactoryOrdered', TreenodeCollectionFactory::class))
+                ->addArgument(CollectionIndexedFactory::class),
+            (new Definition('TreenodeFactoryOrdered', TreenodeFactory::class))
+                ->addArgument('TreenodeCollectionFactoryOrdered')
+                ->addArgument($payloadTester),
 
-            (new Definition(TreeInterface::class, Tree::class))
-                ->addArgument(TreenodeFactoryInterface::class)
-                ->addArgument(TreenodeDtoCollectionFactoryInterface::class),
+            (new Definition(TreeOrdered::class))->addArgument('TreenodeFactoryOrdered'),
         ];
     }
 }

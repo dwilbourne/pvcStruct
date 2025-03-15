@@ -16,23 +16,28 @@ class CollectionElementFactory
      * the indices are purposefully skewed to test that CollectionIndexed properly reindexes
      * the elements of the collection
      */
-    public function makeCollectionElementArray(int $n): array
+    public function makeCollectionElementArray(int $n, bool $indexed = false): array
     {
         $result = [];
         for ($i = 0; $i < $n; $i++) {
-            $result[$i] = $this->makeElement($i);
+            $result[$i] = $this->makeElement($i, $indexed);
         }
         return $result;
     }
 
-    public function makeElement(int $key): CollectionElement
+    public function makeElement(int $key, bool $indexed): CollectionElement
     {
-        $element = new CollectionElement();
+        if ($indexed) {
+            $element = new CollectionIndexedElement();
+            /**
+             * start at 2 and ascend in increments of $skewMultiplier
+             */
+            $element->setIndex($key  * $this->skewMultiplier + $this->skewStartValue);
+        } else {
+            $element = new CollectionElement();
+        }
+
         $element->setValue($this->calculateValueFromKey($key));
-        /**
-         * start at 2 and ascend in increments of $skewMultiplier
-         */
-        $element->setIndex($key  * $this->skewMultiplier + $this->skewStartValue);
         return $element;
     }
 

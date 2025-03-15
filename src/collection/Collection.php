@@ -10,7 +10,6 @@ namespace pvc\struct\collection;
 
 use ArrayIterator;
 use IteratorIterator;
-use pvc\interfaces\struct\collection\CollectionElementInterface;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
@@ -18,7 +17,7 @@ use pvc\struct\collection\err\NonExistentKeyException;
 
 /**
  * Class Collection
- * @template ElementType of CollectionElementInterface
+ * @template ElementType
  * @extends IteratorIterator<non-negative-int, ElementType, ArrayIterator>
  * @implements CollectionInterface<ElementType>
  *
@@ -32,14 +31,14 @@ class Collection extends IteratorIterator implements CollectionInterface
     protected ArrayIterator $iterator;
 
     /**
-     * @var callable|null
+     * @var callable(ElementType, ElementType):int|null
      * used by getElements to return the elements in whatever sort order you choose
      */
     protected $comparator = null;
 
     /**
      * @param array<non-negative-int, ElementType> $elements
-     * @param callable|null $comparator
+     * @param callable(ElementType, ElementType):int|null $comparator
      */
     public function __construct(array $elements = [], callable|null $comparator = null)
     {

@@ -45,21 +45,4 @@ class TreenodeDto implements TreenodeDtoInterface
      * @var non-negative-int
      */
     public int $index;
-
-    /**
-     * @return non-negative-int
-     */
-    public function getIndex(): int
-    {
-        return $this->index;
-    }
-
-    /**
-     * @param non-negative-int $index
-     * @return void
-     */
-    public function setIndex(int $index): void
-    {
-        $this->index = $index;
-    }
 }
