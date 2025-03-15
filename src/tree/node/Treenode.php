@@ -142,10 +142,11 @@ class Treenode implements TreenodeInterface
 
         /**
          * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent.
-         * We have to set the index first because in the case of ordered collections, the collection will need to
-         * know what index to use when adding this node to the child collection of the parent.
+         * We have to set the index first (if it is in the dto) because in the case of ordered collections,
+         * the collection will need to know what index to use when adding this node to the child collection of the
+         * parent.
          */
-        $this->setIndex($dto->index);
+        if (isset($dto->index)) $this->setIndex($dto->index);
         $this->setParent($dto->parentId);
 
         /**

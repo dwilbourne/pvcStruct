@@ -15,7 +15,7 @@ use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\validator\ValTesterInterface;
-use pvc\struct\tree\dto\TreenodeDto;
+use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\node\Treenode;
 use pvc\testingutils\testingTraits\IteratorTrait;
 
@@ -200,11 +200,11 @@ class TreenodeTestingFixture extends TestCase
     /**
      * @param non-negative-int $nodeId
      * @param non-negative-int|null $parentId
-     * @return TreenodeDtoShape&TreenodeDto<PayloadType>
+     * @return TreenodeDtoShape&TreenodeDtoUnordered<PayloadType>
      */
-    public function makeDTO(int $nodeId, int|null $parentId): TreenodeDto
+    public function makeDTO(int $nodeId, int|null $parentId): TreenodeDtoUnordered
     {
-        $dto = new TreenodeDto();
+        $dto = new TreenodeDtoUnordered();
         $dto->nodeId = $nodeId;
         $dto->parentId = $parentId;
         $dto->treeId = $this->treeId;

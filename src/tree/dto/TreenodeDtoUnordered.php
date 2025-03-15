@@ -14,7 +14,7 @@ use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
  * @template PayloadType
  * @implements TreenodeDtoInterface<PayloadType>
  */
-class TreenodeDto implements TreenodeDtoInterface
+class TreenodeDtoUnordered implements TreenodeDtoInterface
 {
     /**
      * @var non-negative-int
@@ -40,9 +40,4 @@ class TreenodeDto implements TreenodeDtoInterface
      * @var mixed
      */
     public mixed $payload;
-
-    /**
-     * @var non-negative-int
-     */
-    public int $index;
 }

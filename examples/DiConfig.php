@@ -5,6 +5,7 @@
  */
 declare (strict_types=1);
 
+use integration_tests\fixture\TreenodeConfigurationsFixture;
 use pvc\interfaces\struct\collection\factory\CollectionFactoryInterface;
 use pvc\interfaces\struct\tree\factory\NodeTypeFactoryInterface;
 use pvc\interfaces\struct\tree\factory\TreenodeFactoryInterface;
@@ -21,7 +22,6 @@ use pvc\struct\tree\node\TreenodeValueValidatorDefault;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\treesearch\SearchFilterDefault;
 use pvc\struct\tree\treesearch\SearchStrategyDepthFirst;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 use function DI\create;
 use function DI\get;
 

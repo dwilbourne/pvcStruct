@@ -6,7 +6,7 @@
 
 declare(strict_types=1);
 
-namespace pvcTests\struct\integration_tests\tree\fixture;
+namespace pvcTests\struct\integration_tests\fixture;
 
 /**
  * Class TreeTestFixture

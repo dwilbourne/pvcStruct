@@ -10,8 +10,8 @@ namespace pvcTests\struct\unit_tests\tree\dto;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\struct\dto\PropertyMapFactory;
-use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\dto\TreenodeDtoFactory;
+use pvc\struct\tree\dto\TreenodeDtoUnordered;
 
 /**
  * @template PayloadType of HasPayloadInterface
@@ -25,8 +25,9 @@ class TreenodeDtoFactoryTest extends TestCase
 
     public function setUp(): void
     {
+        $ordered = true;
         $propertyMapFactory = $this->createMock(PropertyMapFactory::class);
-        $this->factory = new TreenodeDtoFactory($propertyMapFactory);
+        $this->factory = new TreenodeDtoFactory($propertyMapFactory, $ordered);
     }
 
     /**
@@ -52,7 +53,7 @@ class TreenodeDtoFactoryTest extends TestCase
             'payload' => '5',
             'index' => -1,
         ];
-        self::assertInstanceOf(TreenodeDto::class, $this->factory->makeDto($source));
+        self::assertInstanceOf(TreenodeDtoUnordered::class, $this->factory->makeDto($source));
     }
 
 }

@@ -13,8 +13,8 @@ use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
-use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
+use pvcTests\struct\integration_tests\fixture\TestUtils;
+use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
 /**
  * @template PayloadType of HasPayloadInterface
@@ -22,7 +22,6 @@ use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture
 class TreeTest extends TestCase
 {
     protected TreeInterface $tree;
-
     protected ValTesterInterface|null $valTester = null;
 
     protected TreenodeConfigurationsFixture $fixture;

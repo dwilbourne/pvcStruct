@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace pvcExamples\struct;
 
 use DI\ContainerBuilder;
+use integration_tests\fixture\TreenodeConfigurationsFixture;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\search\SearchStrategyInterface;
 use pvc\interfaces\struct\tree\tree\TreeOrderedInterface;
 use pvc\struct\tree\treesearch\SearchStrategyDepthFirst;
 use pvc\struct\treesearch\err\StartNodeUnsetException;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
 
 /**
  * Class TestDrive

@@ -10,7 +10,7 @@ use pvc\struct\dto\err\DtoInvalidPropertyNameException;
 use pvc\struct\dto\err\InvalidDtoReflection;
 use pvc\struct\dto\PropertyMap;
 use pvc\struct\dto\PropertyMapFactory;
-use pvc\struct\tree\dto\TreenodeDto;
+use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\node\Treenode;
 use ReflectionException;
 
@@ -37,7 +37,7 @@ class PropertyMapFactoryTest extends TestCase
 
     public function setUp() : void
     {
-        $this->goodDtoClassString = TreenodeDto::class;
+        $this->goodDtoClassString = TreenodeDtoUnordered::class;
         $this->badDtoClassString = Collection::class;
         $this->entityClassString = Treenode::class;
         $this->propertyMapFactory = new PropertyMapFactory($this->goodDtoClassString, $this->entityClassString);
@@ -64,7 +64,10 @@ class PropertyMapFactoryTest extends TestCase
      */
     public function testConstruct(): void
     {
-        $expectedResult = ['nodeId', 'parentId', 'treeId', 'payload', 'index'];
+        /**
+         * property map factory for an unordered treenode dto
+         */
+        $expectedResult = ['nodeId', 'parentId', 'treeId', 'payload'];
         self::assertEquals($expectedResult, $this->propertyMapFactory->getDTOProperties());
     }
 

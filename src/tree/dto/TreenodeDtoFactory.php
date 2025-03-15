@@ -11,6 +11,7 @@ namespace pvc\struct\tree\dto;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoFactoryInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\struct\dto\DtoFactoryAbstract;
+use pvc\struct\dto\PropertyMapFactory;
 use ReflectionClass;
 
 /**
@@ -22,15 +23,20 @@ use ReflectionClass;
  */
 class TreenodeDtoFactory extends DtoFactoryAbstract implements TreenodeDtoFactoryInterface
 {
+    public function __construct(PropertyMapFactory $propertyMapFactory, protected bool $ordered)
+    {
+        parent::__construct($propertyMapFactory);
+    }
+
     /**
      * makeDTO
      * @param array<TreenodeDtoShape>|object $source
-     * @return TreenodeDto<PayloadType>
+     * @return TreenodeDtoUnordered<PayloadType>
      */
-    public function makeDto(array|object $source): TreenodeDto
+    public function makeDto(array|object $source): TreenodeDtoUnordered
     {
-        /** @var TreenodeDto<PayloadType> $dto */
-        $dto = new TreenodeDto();
+        /** @var TreenodeDtoUnordered<PayloadType> $dto */
+        $dto = $this->ordered? new TreenodeDtoOrdered() : new TreenodeDtoUnordered();
         $this->hydrate($dto, $source);
         return $dto;
     }

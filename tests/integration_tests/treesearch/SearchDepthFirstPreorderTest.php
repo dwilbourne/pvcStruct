@@ -15,8 +15,8 @@ use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPreorder;
-use pvcTests\struct\integration_tests\tree\fixture\TestUtils;
-use pvcTests\struct\integration_tests\tree\fixture\TreenodeConfigurationsFixture;
+use pvcTests\struct\integration_tests\fixture\TestUtils;
+use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
 /**
  * @template PayloadType of HasPayloadInterface

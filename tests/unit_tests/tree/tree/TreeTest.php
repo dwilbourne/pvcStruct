@@ -16,7 +16,7 @@ use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
-use pvc\struct\tree\dto\TreenodeDto;
+use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
@@ -133,7 +133,7 @@ class TreeTest extends TestCase
         /**
          * @var TreenodeDtoShape $dto
          */
-        $dto = new TreenodeDto();
+        $dto = new TreenodeDtoUnordered();
 
         $dto->parentId = null;
         self::assertTrue($this->tree->rootTest($dto));
@@ -219,7 +219,7 @@ class TreeTest extends TestCase
         /**
          * cannot mock a dto
          */
-        $dto = new TreenodeDto();
+        $dto = new TreenodeDtoUnordered();
         $this->tree->addNode($dto);
 
         self::assertFalse($this->tree->isEmpty());
@@ -263,7 +263,7 @@ class TreeTest extends TestCase
          * cannot mock a dto - it only has properties
          * @var TreenodeDtoShape $dto
          */
-        $dto = new TreenodeDto();
+        $dto = new TreenodeDtoUnordered();
         $dto->parentId = null;
 
         /**
@@ -321,7 +321,7 @@ class TreeTest extends TestCase
         /**
          * @var TreenodeDtoShape $dto
          */
-        $dto = new TreenodeDto();
+        $dto = new TreenodeDtoUnordered();
         $dto->parentId = 1;
         self::expectException(NoRootFoundException::class);
         $this->tree->initialize($this->treeId, [$dto]);

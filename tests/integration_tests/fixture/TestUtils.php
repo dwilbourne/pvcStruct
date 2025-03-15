@@ -1,13 +1,12 @@
 <?php
 
-namespace pvcTests\struct\integration_tests\tree\fixture;
+namespace pvcTests\struct\integration_tests\fixture;
 
 use League\Container\Container;
 use League\Container\Definition\DefinitionAggregate;
 use League\Container\ReflectionContainer;
 use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\dto\TreenodeDtoFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\validator\ValTesterInterface;
@@ -45,7 +44,7 @@ class TestUtils
 
     /**
      * getNodeIdsFromNodeArray
-     * @param array<TreenodeInterface<int>> $nodeArray
+     * @param TreenodeInterface $nodeArray
      * @return array<int>
      */
     public static function getNodeIdsFromNodeArray(array $nodeArray): array
@@ -60,7 +59,7 @@ class TestUtils
     public function testTreeSetup(bool $ordered) : TreeInterface
     {
         $treeId = 1;
-        $dtoArray = $this->makeDtoArray($this->fixture);
+        $dtoArray = $this->makeDtoArray($ordered);
         $tree = $this->makeTestTree($ordered);
         $tree->initialize($treeId, $dtoArray);
         return $tree;
@@ -74,18 +73,21 @@ class TestUtils
      * @throws DtoInvalidEntityGetterException
      * @throws DtoInvalidPropertyValueException
      */
-    public function makeDtoArray(TreenodeConfigurationsFixture $fixture) : array
+    public function makeDtoArray(bool $ordered) : array
     {
-        $nodeData = $fixture->getNodeData();
-        $dtoFactory = $this->container->get(TreenodeDtoFactoryInterface::class);
+        $nodeData = $this->fixture->getNodeData();
+        $factoryId = $ordered ? 'TreenodeDtoFactoryOrdered' : 'TreenodeDtoFactoryUnordered';
+        $dtoFactory = $this->container->get($factoryId);
 
-        $callback = function(array $row) use ($dtoFactory) : DtoInterface  {
+        $callback = function(array $row) use ($dtoFactory, $ordered) : DtoInterface  {
             $arr = [];
             $arr['nodeId'] = $row[0];
             $arr['parentId'] = $row[1];
             $arr['treeId'] = null;
             $arr['payload'] = null;
-            $arr['index'] = $row[2];
+            if ($ordered) {
+                $arr['index'] = $row[2];
+            }
             return $dtoFactory->makeDto($arr);
         };
         return array_map($callback, $nodeData);

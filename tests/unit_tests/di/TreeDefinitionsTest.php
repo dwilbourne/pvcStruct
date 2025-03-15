@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\dto\TreenodeDtoFactoryInterface;
 use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
@@ -58,8 +57,10 @@ class TreeDefinitionsTest extends TestCase
      */
     public function testSetupDtos(): void
     {
-        self::assertInstanceOf(PropertyMapFactory::class, $this->container->get('TreenodePropertyMapFactory'));
-        self::assertInstanceOf(TreenodeDtoFactory::class, $this->container->get(TreenodeDtoFactoryInterface::class));
+        self::assertInstanceOf(PropertyMapFactory::class, $this->container->get('TreenodePropertyMapFactoryUnordered'));
+        self::assertInstanceOf(TreenodeDtoFactory::class, $this->container->get('TreenodeDtoFactoryUnordered'));
+        self::assertInstanceOf(PropertyMapFactory::class, $this->container->get('TreenodePropertyMapFactoryOrdered'));
+        self::assertInstanceOf(TreenodeDtoFactory::class, $this->container->get('TreenodeDtoFactoryOrdered'));
     }
 
     /**
