@@ -10,10 +10,14 @@ use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\validator\ValTesterInterface;
+use pvc\struct\dto\DtoFactory;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\dto\err\DtoInvalidPropertyValueException;
 use pvc\struct\tree\di\TreeDefinitions;
+use pvc\struct\tree\dto\TreenodeDtoOrdered;
+use pvc\struct\tree\dto\TreenodeDtoUnordered;
+use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\tree\Tree;
 use pvc\struct\tree\tree\TreeOrdered;
 use ReflectionException;
@@ -71,13 +75,13 @@ class TestUtils
      * @throws ReflectionException
      * @throws DtoInvalidArrayKeyException
      * @throws DtoInvalidEntityGetterException
-     * @throws DtoInvalidPropertyValueException
      */
     public function makeDtoArray(bool $ordered) : array
     {
         $nodeData = $this->fixture->getNodeData();
-        $factoryId = $ordered ? 'TreenodeDtoFactoryOrdered' : 'TreenodeDtoFactoryUnordered';
-        $dtoFactory = $this->container->get($factoryId);
+        $dtoFactory = $ordered ?
+            new DtoFactory(TreenodeDtoOrdered::class, Treenode::class) :
+            new DtoFactory(TreenodeDtoUnordered::class, Treenode::class);
 
         $callback = function(array $row) use ($dtoFactory, $ordered) : DtoInterface  {
             $arr = [];

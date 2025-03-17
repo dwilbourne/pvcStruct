@@ -2,14 +2,14 @@
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
+use pvc\interfaces\struct\tree\node\TreenodeInterface;
 
 /**
  * @class TreeOrdered
  * @template PayloadType
  * @extends Tree<PayloadType>
- * @phpstan-import-type TreenodeDtoShape from TreenodeDtoInterface
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreeOrdered extends Tree
 {

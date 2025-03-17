@@ -8,7 +8,7 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\node;
 
-use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
+use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
@@ -28,7 +28,7 @@ use pvc\struct\treesearch\VisitationTrait;
 /**
  * @template PayloadType
  * @implements TreenodeInterface<PayloadType>
- * @phpstan-import-type TreenodeDtoShape from TreenodeDtoInterface
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Treenode implements TreenodeInterface
 {
@@ -107,7 +107,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param TreenodeDtoShape&TreenodeDtoInterface<PayloadType> $dto
+     * @param TreenodeDtoShape&DtoInterface $dto
      * @return void
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
@@ -118,7 +118,7 @@ class Treenode implements TreenodeInterface
      * @throws SetTreeIdException
      * @throws InvalidValueException
      */
-    public function hydrate(TreenodeDtoInterface $dto): void
+    public function hydrate(DtoInterface $dto): void
     {
         /**
          * cannot hydrate a node if it already has been hydrated

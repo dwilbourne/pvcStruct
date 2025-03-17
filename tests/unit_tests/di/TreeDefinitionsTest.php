@@ -17,7 +17,7 @@ use pvc\struct\collection\CollectionIndexedFactory;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\dto\err\DtoInvalidPropertyValueException;
-use pvc\struct\dto\PropertyMapFactory;
+use pvc\struct\dto\PropertyMapAggregate;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDtoFactory;
 use pvc\struct\tree\node\TreenodeCollectionFactory;
@@ -53,24 +53,9 @@ class TreeDefinitionsTest extends TestCase
      * @return void
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @covers \pvc\struct\tree\di\TreeDefinitions
-     */
-    public function testSetupDtos(): void
-    {
-        self::assertInstanceOf(PropertyMapFactory::class, $this->container->get('TreenodePropertyMapFactoryUnordered'));
-        self::assertInstanceOf(TreenodeDtoFactory::class, $this->container->get('TreenodeDtoFactoryUnordered'));
-        self::assertInstanceOf(PropertyMapFactory::class, $this->container->get('TreenodePropertyMapFactoryOrdered'));
-        self::assertInstanceOf(TreenodeDtoFactory::class, $this->container->get('TreenodeDtoFactoryOrdered'));
-    }
-
-    /**
-     * @return void
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws ReflectionException
      * @throws DtoInvalidArrayKeyException
      * @throws DtoInvalidEntityGetterException
-     * @throws DtoInvalidPropertyValueException
      * @covers \pvc\struct\tree\di\TreeDefinitions
      */
     public function testSetUpUnordered(): void

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace pvc\struct\tree\di;
 
-use League\Container\Argument\LiteralArgument;
 use League\Container\Definition\Definition;
 use League\Container\Definition\DefinitionInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
@@ -13,11 +12,6 @@ use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\collection\CollectionIndexed;
 use pvc\struct\collection\CollectionIndexedFactory;
-use pvc\struct\dto\PropertyMapFactory;
-use pvc\struct\tree\dto\TreenodeDtoFactory;
-use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvc\struct\tree\dto\TreenodeDtoUnordered;
-use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\node\TreenodeCollectionFactory;
 use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\tree\Tree;
@@ -35,25 +29,6 @@ class TreeDefinitions
     public static function makeDefinitions(?ValTesterInterface $payloadTester): array
     {
         return [
-            /**
-             * definitions to make Dtos (Data Transfer Objects)
-             */
-
-            (new Definition('TreenodePropertyMapFactoryUnordered', PropertyMapFactory::class))
-                ->addArgument(new LiteralArgument(TreenodeDtoUnordered::class))
-                ->addArgument(new LiteralArgument(Treenode::class)),
-
-            (new Definition('TreenodePropertyMapFactoryOrdered', PropertyMapFactory::class))
-                ->addArgument(new LiteralArgument(TreenodeDtoOrdered::class))
-                ->addArgument(new LiteralArgument(Treenode::class)),
-
-            (new Definition('TreenodeDtoFactoryUnordered', TreenodeDtoFactory::class))
-                ->addArgument('TreenodePropertyMapFactoryUnordered')
-                ->addArgument(false),
-
-            (new Definition('TreenodeDtoFactoryOrdered', TreenodeDtoFactory::class))
-                ->addArgument('TreenodePropertyMapFactoryOrdered')
-                ->addArgument(true),
 
             /**
              * objects necessary to make a plain (unordered) tree

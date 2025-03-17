@@ -169,13 +169,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
-
-        /**
-         * the value of the treeId property of the fixture is 0
-         */
-        $treeId = 3;
-        $dto->treeId = $treeId;
+        $dto = $this->fixture->makeDtoWithNonMatchingTreeId($nodeId, $parentId);
 
         $this->tree->expects($this->once())->method('getNode')->with($nodeId)->willReturn(null);
 

@@ -23,9 +23,9 @@ class _DtoXDataTest extends XDataTestMaster
      * @covers \pvc\struct\dto\err\DtoInvalidArrayKeyException
      * @covers \pvc\struct\dto\err\DtoInvalidEntityGetterException
      * @covers \pvc\struct\dto\err\DtoInvalidPropertyNameException
-     * @covers \pvc\struct\dto\err\DtoInvalidPropertyValueException
+     * @covers \pvc\struct\dto\err\InvalidDtoClassException
      * @covers \pvc\struct\dto\err\InvalidDtoReflection
-     * @covers \pvc\struct\dto\err\PropertMapInvalidKeyException
+     * @covers \pvc\struct\dto\err\DtoClassDefinitionException
      */
     public function testListExceptionLibrary(): void
     {
