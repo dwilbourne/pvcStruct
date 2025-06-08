@@ -204,6 +204,7 @@ class TreeTest extends TestCase
     /**
      * testWhenTreeHasOneNode
      * @covers \pvc\struct\tree\tree\Tree::addNode
+     * @covers \pvc\struct\tree\tree\Tree::canAccept
      * @covers \pvc\struct\tree\tree\Tree::isEmpty
      * @covers \pvc\struct\tree\tree\Tree::nodeCount
      * @covers \pvc\struct\tree\tree\Tree::getNodes
