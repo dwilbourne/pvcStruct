@@ -34,6 +34,7 @@ class _TreeXData extends XDataAbstract
             NodeNotEmptyHydrationException::class => 1019,
             TreeNotInitializedException::class => 1021,
             TreenodeFactoryNotInitializedException::class => 1022,
+            IncompatibleNodeException::class => 1023,
         ];
     }
 
@@ -56,6 +57,7 @@ class _TreeXData extends XDataAbstract
             NodeNotEmptyHydrationException::class => 'cannot hydrate a non-empty node - nodeid ${nodeId} is already set.',
             TreeNotInitializedException::class => 'cannot use Tree until it has been initialized.',
             TreenodeFactoryNotInitializedException::class => 'cannot use TreeNodeFactory until it has been initialized.',
+            IncompatibleNodeException::class => 'Cannot add node with nodeid ${nodeid}.',
         ];
     }
 }

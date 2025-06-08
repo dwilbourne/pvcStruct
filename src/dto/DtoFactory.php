@@ -24,6 +24,8 @@ use Throwable;
 /**
  * Class DtoFactory
  *
+ * This class is a singleton.
+ *
  * This is a dirt-simple mapper/factory, intended really to facilitate testing of data structures / objects such
  * as those found in this library.  Large frameworks and other standalone ORMs obviously have much more
  * sophisticated functionality to get data in and out of the model.
@@ -54,7 +56,6 @@ class DtoFactory implements DtoFactoryInterface
 {
     /**
      * @var ReflectionClass<DtoInterface>
-     * allow visibility from outside the class
      */
     protected ReflectionClass $dtoReflection;
 

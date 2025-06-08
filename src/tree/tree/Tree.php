@@ -14,6 +14,7 @@ use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
+use pvc\struct\tree\err\IncompatibleNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\NoRootFoundException;
@@ -226,6 +227,10 @@ class Tree implements TreeInterface
      */
     public function addNode(DtoInterface $dto): void
     {
+        if (!$this->canAccept($dto)) {
+            throw new IncompatibleNodeException($dto->nodeId);
+        }
+
         $node = $this->treenodeFactory->makeNode();
         $node->hydrate($dto);
 
@@ -234,6 +239,17 @@ class Tree implements TreeInterface
         if ($this->rootTest($node)) {
             $this->setRoot($node);
         }
+    }
+
+    /**
+     * @param  DtoInterface  $dto
+     *
+     * @return bool
+     * hook so that subclasses can insert logic about whether it is OK to add this node
+     */
+    protected function canAccept(DtoInterface $dto): bool
+    {
+        return true;
     }
 
     /**
