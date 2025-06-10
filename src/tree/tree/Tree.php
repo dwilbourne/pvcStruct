@@ -227,10 +227,12 @@ class Tree implements TreeInterface
      */
     public function addNode(DtoInterface $dto): void
     {
-        if (!$this->canAccept($dto)) {
-            throw new IncompatibleNodeException($dto->nodeId);
-        }
-
+        /**
+         * external rules that determine whether this node can be added to the
+         * tree are more easily enforced if the node is incorporated into the
+         * tree first.  If it is incompatible, then remove it and throw an
+         * exception
+         */
         $node = $this->treenodeFactory->makeNode();
         $node->hydrate($dto);
 
@@ -238,6 +240,11 @@ class Tree implements TreeInterface
 
         if ($this->rootTest($node)) {
             $this->setRoot($node);
+        }
+
+        if (!$this->canAccept($dto)) {
+            $this->deleteNode($node->getNodeId());
+            throw new IncompatibleNodeException($dto->nodeId);
         }
     }
 
