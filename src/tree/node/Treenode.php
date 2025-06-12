@@ -336,6 +336,14 @@ class Treenode implements TreenodeInterface
     }
 
     /**
+     * @return bool
+     */
+    public function isRoot(): bool
+    {
+        return ($this->tree->getRoot() === $this);
+    }
+
+    /**
      * @function isAncestorOf
      * @param TreenodeInterface<PayloadType> $node
      * @return bool
