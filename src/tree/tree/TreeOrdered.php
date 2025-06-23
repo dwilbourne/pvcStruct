@@ -13,10 +13,10 @@ use pvc\struct\tree\node\TreenodeFactory;
 class TreeOrdered extends Tree
 {
     /**
-     * @param TreenodeFactory $treenodeFactory
+     * @param TreenodeFactoryInterface $treenodeFactory
      */
     public function __construct(
-        TreenodeFactory $treenodeFactory,
+        TreenodeFactoryInterface $treenodeFactory,
     )
     {
         $this->treenodeDtoComparator = function (mixed $a, mixed $b) {
