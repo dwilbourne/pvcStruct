@@ -11,9 +11,9 @@ namespace pvcTests\struct\unit_tests\tree\tree;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
@@ -204,7 +204,6 @@ class TreeTest extends TestCase
     /**
      * testWhenTreeHasOneNode
      * @covers \pvc\struct\tree\tree\Tree::addNode
-     * @covers \pvc\struct\tree\tree\Tree::canAccept
      * @covers \pvc\struct\tree\tree\Tree::isEmpty
      * @covers \pvc\struct\tree\tree\Tree::nodeCount
      * @covers \pvc\struct\tree\tree\Tree::getNodes
@@ -392,7 +391,7 @@ class TreeTest extends TestCase
         $root = $this->createMockRoot($rootId);
         $root->method('hasChildren')->willReturn(false);
 
-        $collection = $this->createMock(TreenodeCollectionInterface::class);
+        $collection = $this->createMock(CollectionInterface::class);
         $collection->method('getElements')->willReturn([]);
         $root->method('getChildren')->willReturn($collection);
 

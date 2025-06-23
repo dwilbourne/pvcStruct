@@ -19,19 +19,13 @@ use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
 /**
  * Class SearchBreadthFirstTest
- * @template PayloadType of HasPayloadInterface
  */
 class SearchBreadthFirstTest extends TestCase
 {
     /**
-     * @var TreeInterface<PayloadType>
+     * @var TreeInterface
      */
     protected TreeInterface $tree;
-
-    /**
-     * @var ValTesterInterface<PayloadType>|null
-     */
-    protected ValTesterInterface|null $valTester = null;
 
     /**
      * @var SearchBreadthFirst
@@ -47,7 +41,7 @@ class SearchBreadthFirstTest extends TestCase
     {
         $ordered = true;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
         $this->tree = $testUtils->testTreeSetup($ordered);
         $this->search = new SearchBreadthFirst();

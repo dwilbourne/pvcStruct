@@ -221,7 +221,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * @param int $key
+     * @param non-negative-int $key
      * @return int
      */
     public function getIndex(int $key): int

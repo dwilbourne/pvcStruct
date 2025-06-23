@@ -36,10 +36,6 @@ readonly class TreenodeDtoUnordered implements DtoInterface
          */
         public ?int  $treeId,
 
-        /**
-         * @var mixed
-         */
-        public mixed $payload,
     )
     {
     }

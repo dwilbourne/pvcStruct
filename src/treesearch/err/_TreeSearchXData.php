@@ -19,7 +19,7 @@ class _TreeSearchXData extends XDataAbstract
     {
         return [
             SetMaxSearchLevelsException::class => 1003,
-            StartNodeUnsetException::class => 1016,
+            StartNodeUnsetException::class     => 1016,
         ];
     }
 
@@ -27,7 +27,7 @@ class _TreeSearchXData extends XDataAbstract
     {
         return [
             SetMaxSearchLevelsException::class => 'Max levels to search must be > 0, actual supplied = ${badLevels}.',
-            StartNodeUnsetException::class => 'start node must be set before searching or resetting the search.',
+            StartNodeUnsetException::class     => 'start node must be set before searching or resetting the search.',
         ];
     }
 }

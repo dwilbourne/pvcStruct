@@ -14,16 +14,15 @@ use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
-use pvc\struct\tree\err\IncompatibleNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\NoRootFoundException;
 use pvc\struct\tree\err\TreeNotInitializedException;
+use pvc\struct\tree\node\Treenode;
+use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @class Tree
- * @template PayloadType
- * @implements TreeInterface<PayloadType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Tree implements TreeInterface
@@ -34,17 +33,17 @@ class Tree implements TreeInterface
     protected bool $isInitialized;
 
     /**
-     * @var int
+     * @var non-negative-int
      */
     protected int $treeId;
 
     /**
-     * @var TreenodeInterface<PayloadType>|null
+     * @var TreenodeInterface|null
      */
     protected TreenodeInterface|null $root;
 
     /**
-     * @var array<TreenodeInterface<PayloadType>>
+     * @var array<TreenodeInterface>
      */
     protected array $nodes = [];
 
@@ -54,7 +53,7 @@ class Tree implements TreeInterface
     protected $treenodeDtoComparator = null;
 
     /**
-     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
+     * @param TreenodeFactoryInterface $treenodeFactory
      */
     public function __construct(protected TreenodeFactoryInterface $treenodeFactory)
     {
@@ -105,7 +104,7 @@ class Tree implements TreeInterface
 
     /**
      * @function getTreeId
-     * @return int
+     * @return non-negative-int
      */
     public function getTreeId(): int
     {
@@ -132,7 +131,7 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @return TreenodeFactoryInterface<PayloadType>
+     * @return TreenodeFactoryInterface
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {
@@ -145,7 +144,7 @@ class Tree implements TreeInterface
     /**
      * rootTest
      * encapsulate logic for testing whether something is or can be the root
-     * @param TreenodeInterface<PayloadType>|(TreenodeDtoShape&DtoInterface) $nodeItem
+     * @param TreenodeInterface|(DtoInterface&TreenodeDtoShape) $nodeItem
      * @return bool
      */
     public function rootTest(TreenodeInterface|DtoInterface $nodeItem): bool
@@ -159,7 +158,7 @@ class Tree implements TreeInterface
 
     /**
      * @function getRoot
-     * @return TreenodeInterface<PayloadType>|null
+     * @return TreenodeInterface|null
      */
     public function getRoot(): TreenodeInterface|null
     {
@@ -168,10 +167,10 @@ class Tree implements TreeInterface
 
     /**
      * @function setRoot sets a reference to the root node of the tree
-     * @param TreenodeInterface<PayloadType> $node
+     * @param TreenodeInterface $node
      * @throws AlreadySetRootException
      */
-    protected function setRoot($node): void
+    protected function setRoot(TreenodeInterface $node): void
     {
         /**
          * if the root is already set, throw an exception
@@ -195,7 +194,7 @@ class Tree implements TreeInterface
 
     /**
      * @function getNodes
-     * @return array<TreenodeInterface<PayloadType>>
+     * @return array<TreenodeInterface>
      */
     public function getNodes(): array
     {
@@ -205,7 +204,7 @@ class Tree implements TreeInterface
     /**
      * @function getNode
      * @param non-negative-int|null $nodeId
-     * @return TreenodeInterface<PayloadType>|null
+     * @return TreenodeInterface|null
      */
     public function getNode(?int $nodeId): ?TreenodeInterface
     {
@@ -241,22 +240,6 @@ class Tree implements TreeInterface
         if ($this->rootTest($node)) {
             $this->setRoot($node);
         }
-
-        if (!$this->canAccept($dto)) {
-            $this->deleteNode($node->getNodeId());
-            throw new IncompatibleNodeException($dto->nodeId);
-        }
-    }
-
-    /**
-     * @param  DtoInterface  $dto
-     *
-     * @return bool
-     * hook so that subclasses can insert logic about whether it is OK to add this node
-     */
-    protected function canAccept(DtoInterface $dto): bool
-    {
-        return true;
     }
 
     /**
@@ -381,7 +364,7 @@ class Tree implements TreeInterface
 
     /**
      * @function deleteNodeRecurse does the actual work of deleting the node / branch
-     * @param TreenodeInterface<PayloadType> $node
+     * @param TreenodeInterface $node
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
      */

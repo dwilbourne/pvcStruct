@@ -11,9 +11,7 @@ namespace pvcTests\struct\unit_tests\tree\node;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionFactoryInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionFactoryInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
+use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
@@ -22,24 +20,16 @@ use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 use pvc\struct\tree\node\TreenodeFactory;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TreenodeFactoryTest extends TestCase
 {
 
     /**
-     * @var CollectionFactoryInterface<TreenodeInterface<PayloadType>>|MockObject
+     * @var CollectionFactoryInterface<TreenodeInterface>|MockObject
      */
     protected CollectionFactoryInterface|MockObject $collectionFactory;
 
     /**
-     * @var ValTesterInterface<PayloadType>&MockObject
-     */
-    protected ValTesterInterface&MockObject $tester;
-
-    /**
-     * @var TreeInterface<PayloadType>&MockObject
+     * @var TreeInterface&MockObject
      */
     protected TreeInterface $tree;
 
@@ -49,7 +39,7 @@ class TreenodeFactoryTest extends TestCase
     protected int $treeId;
 
     /**
-     * @var TreenodeFactoryInterface<PayloadType>
+     * @var TreenodeFactoryInterface
      */
     protected TreenodeFactoryInterface $factory;
 
@@ -57,9 +47,8 @@ class TreenodeFactoryTest extends TestCase
     {
         $this->tree = $this->createMock(TreeInterface::class);
         $this->treeId = 1;
-        $this->collectionFactory = $this->createMock(TreenodeCollectionFactoryInterface::class);
-        $this->tester = $this->createMock(ValTesterInterface::class);
-        $this->factory = new TreenodeFactory($this->collectionFactory, $this->tester);
+        $this->collectionFactory = $this->createMock(CollectionFactoryInterface::class);
+        $this->factory = new TreenodeFactory($this->collectionFactory);
     }
 
     /**
@@ -132,8 +121,8 @@ class TreenodeFactoryTest extends TestCase
     {
         $this->initializeFactory();
         $this->tree->method('getTreeId')->willReturn(1);
-        $mockCollection = $this->createMock(TreenodeCollectionInterface::class);
-        $this->collectionFactory->expects(self::once())->method('makeTreenodeCollection')->willReturn($mockCollection);
+        $mockCollection = $this->createMock(CollectionInterface::class);
+        $this->collectionFactory->expects(self::once())->method('makeCollection')->willReturn($mockCollection);
         $mockCollection->expects($this->once())->method('isEmpty')->willReturn(true);
         self::assertInstanceOf(TreenodeInterface::class, $this->factory->makeNode());
     }

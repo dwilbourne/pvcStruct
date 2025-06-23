@@ -90,7 +90,7 @@ class CollectionIndexed extends Collection implements CollectionInterface
         /**
          * 'trim' the new index first
          */
-        $newIndex = $this->trimIndex($maxIndex, $newIndex);
+        $newNewIndex = $this->trimIndex($maxIndex, $newIndex);
 
         $this->delete($key);
         $element->setIndex($newIndex);
@@ -217,7 +217,7 @@ class CollectionIndexed extends Collection implements CollectionInterface
      * getIndex returns the index which corresponds to $key
      *
      * @param non-negative-int $key
-     * @return int
+     * @return non-negative-int
      */
     public function getIndex(int $key): int
     {

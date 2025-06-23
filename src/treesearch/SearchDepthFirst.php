@@ -47,12 +47,12 @@ abstract class SearchDepthFirst extends SearchAbstract
 
     /**
      * initializeVisitStatusRecurse
-     * @param NodeVisitableInterface $node
+     *
+     * @param  NodeVisitableInterface  $node
      */
     protected function initializeVisitStatusRecurse(NodeVisitableInterface $node): void
     {
         $node->initializeVisitStatus();
-        /** @var NodeVisitableInterface $child */
         foreach ($node->getChildrenArray() as $child) {
             $this->initializeVisitStatusRecurse($child);
         }
@@ -108,11 +108,13 @@ abstract class SearchDepthFirst extends SearchAbstract
         /**
          * get the next node (could be null at the end of a search)
          */
+        /** @var NodeVisitableInterface $nextNode */
         $nextNode = $this->getNextNode($direction);
 
         if (is_null($nextNode)) {
             $this->invalidate();
-        } else {
+        }
+        else {
             /**
              * move
              */

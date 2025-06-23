@@ -16,11 +16,7 @@ use pvc\struct\collection\CollectionIndexed;
 use pvc\struct\collection\CollectionIndexedFactory;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
-use pvc\struct\dto\err\DtoInvalidPropertyValueException;
-use pvc\struct\dto\PropertyMapAggregate;
 use pvc\struct\tree\di\TreeDefinitions;
-use pvc\struct\tree\dto\TreenodeDtoFactory;
-use pvc\struct\tree\node\TreenodeCollectionFactory;
 use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\tree\Tree;
 use pvc\struct\tree\tree\TreeOrdered;
@@ -31,17 +27,11 @@ use ReflectionException;
  */
 class TreeDefinitionsTest extends TestCase
 {
-    /**
-     * @var ValTesterInterface<PayloadType>|null
-     */
-    protected ValTesterInterface|null $payloadTester;
-
     protected Container $container;
 
     public function setUp() : void
     {
-        $this->payloadTester = null;
-        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions($this->payloadTester));
+        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions());
         $this->container = new Container($aggregate);
         /**
          * enable autowiring, which recursively evaluates arguments inside the definitions
@@ -62,8 +52,8 @@ class TreeDefinitionsTest extends TestCase
     {
         self::assertInstanceOf(Collection::class, $this->container->get(Collection::class));
         self::assertInstanceOf(CollectionFactory::class, $this->container->get(CollectionFactory::class));
-        self::assertInstanceOf(TreenodeCollectionFactory::class, $this->container->get('TreenodeCollectionFactoryUnordered'));
         self::assertInstanceOf(TreenodeFactory::class, $this->container->get('TreenodeFactoryUnordered'));
+        // self::assertInstanceOf(TreenodeFactory::class, $this->container->get('TreenodeFactoryUnordered'));
         self::assertInstanceOf(Tree::class, $this->container->get(Tree::class));
     }
 
@@ -77,7 +67,6 @@ class TreeDefinitionsTest extends TestCase
     {
         self::assertInstanceOf(CollectionIndexed::class, $this->container->get(CollectionIndexed::class));
         self::assertInstanceOf(CollectionIndexedFactory::class, $this->container->get(CollectionIndexedFactory::class));
-        self::assertInstanceOf(TreenodeCollectionFactory::class, $this->container->get('TreenodeCollectionFactoryOrdered'));
         self::assertInstanceOf(TreenodeFactory::class, $this->container->get('TreenodeFactoryOrdered'));
         self::assertInstanceOf(TreeOrdered::class, $this->container->get(TreeOrdered::class));
     }

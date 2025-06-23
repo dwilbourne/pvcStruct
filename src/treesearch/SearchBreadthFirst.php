@@ -101,6 +101,11 @@ class SearchBreadthFirst extends SearchAbstract
      */
     protected function getNextLevelOfNodes(): array
     {
+        /**
+         * @param NodeSearchableInterface $node
+         *
+         * @return array<NodeSearchableInterface>
+         */
         $getChildrenCallback = function (NodeSearchableInterface $node): array {
             return $node->getChildrenArray();
         };

@@ -38,10 +38,9 @@ abstract class SearchAbstract implements SearchInterface
     private int $maxLevels = PHP_INT_MAX;
 
     /**
-     * @var int <-1, max>
-     * current level of -1 is 'undefined'
+     * @var non-negative-int int
      */
-    private int $currentLevel = -1;
+    private int $currentLevel = 0;
 
     /**
      * key
@@ -166,11 +165,12 @@ abstract class SearchAbstract implements SearchInterface
          * feels backwards but moving down in the search increases the level.  Because Direction::DOWN is defined as
          * -1, we want to subtract it from, not add it to, the current level.
          *
-         * type checker does not know that a value of -1 is an initialization condition and that the current level
-         * must be >= 0 in the middle of a search
+         * Type checker cannot know that the logic in the searches does not permit a current level of
+         * -1
          */
-        assert($this->currentLevel >= 0);
-        $this->currentLevel -= $direction->value;
+        $newLevel = $this->currentLevel - $direction->value;
+        assert($newLevel >= 0);
+        $this->currentLevel = $newLevel;
     }
 
     /**
@@ -203,6 +203,6 @@ abstract class SearchAbstract implements SearchInterface
     protected function invalidate(): void
     {
         $this->currentNode = null;
-        $this->currentLevel = -1;
+        $this->currentLevel = 0;
     }
 }

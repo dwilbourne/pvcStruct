@@ -13,7 +13,6 @@ use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\dto\DtoFactory;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
-use pvc\struct\dto\err\DtoInvalidPropertyValueException;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
@@ -31,12 +30,9 @@ class TestUtils
 
     protected TreenodeConfigurationsFixture $fixture;
 
-    /**
-     * @param ValTesterInterface<PayloadType>|null $valTester
-     */
-    public function __construct(?ValTesterInterface $valTester, TreenodeConfigurationsFixture $fixture)
+    public function __construct(TreenodeConfigurationsFixture $fixture)
     {
-        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions($valTester));
+        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions());
         $this->container = new Container($aggregate);
         /**
          * enable autowiring, which recursively evaluates arguments inside the definitions
@@ -88,7 +84,6 @@ class TestUtils
             $arr['nodeId'] = $row[0];
             $arr['parentId'] = $row[1];
             $arr['treeId'] = null;
-            $arr['payload'] = null;
             if ($ordered) {
                 $arr['index'] = $row[2];
             }

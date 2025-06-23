@@ -4,20 +4,19 @@ namespace pvc\struct\tree\tree;
 
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @class TreeOrdered
- * @template PayloadType
- * @extends Tree<PayloadType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreeOrdered extends Tree
 {
     /**
-     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
+     * @param TreenodeFactory $treenodeFactory
      */
     public function __construct(
-        TreenodeFactoryInterface $treenodeFactory,
+        TreenodeFactory $treenodeFactory,
     )
     {
         $this->treenodeDtoComparator = function (mixed $a, mixed $b) {

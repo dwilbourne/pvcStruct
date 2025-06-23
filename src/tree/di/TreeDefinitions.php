@@ -12,7 +12,6 @@ use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\collection\CollectionIndexed;
 use pvc\struct\collection\CollectionIndexedFactory;
-use pvc\struct\tree\node\TreenodeCollectionFactory;
 use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\tree\Tree;
 use pvc\struct\tree\tree\TreeOrdered;
@@ -23,10 +22,9 @@ use pvc\struct\tree\tree\TreeOrdered;
 class TreeDefinitions
 {
     /**
-     * @param ValTesterInterface<PayloadType>|null $payloadTester
      * @return array<int, DefinitionInterface>
      */
-    public static function makeDefinitions(?ValTesterInterface $payloadTester): array
+    public static function makeDefinitions(): array
     {
         return [
 
@@ -35,11 +33,8 @@ class TreeDefinitions
              */
             (new Definition(Collection::class)),
             (new Definition(CollectionFactory::class)),
-            (new Definition('TreenodeCollectionFactoryUnordered', TreenodeCollectionFactory::class))
+            (new Definition( 'TreenodeFactoryUnordered', TreenodeFactory::class))
                 ->addArgument(CollectionFactory::class),
-            (new Definition('TreenodeFactoryUnordered', TreenodeFactory::class))
-                ->addArgument('TreenodeCollectionFactoryUnordered')
-                ->addArgument($payloadTester),
             (new Definition(Tree::class))->addArgument('TreenodeFactoryUnordered'),
 
             /**
@@ -47,12 +42,8 @@ class TreeDefinitions
              */
             (new Definition(CollectionIndexed::class)),
             (new Definition(CollectionIndexedFactory::class)),
-            (new Definition('TreenodeCollectionFactoryOrdered', TreenodeCollectionFactory::class))
-                ->addArgument(CollectionIndexedFactory::class),
             (new Definition('TreenodeFactoryOrdered', TreenodeFactory::class))
-                ->addArgument('TreenodeCollectionFactoryOrdered')
-                ->addArgument($payloadTester),
-
+                ->addArgument(CollectionIndexedFactory::class),
             (new Definition(TreeOrdered::class))->addArgument('TreenodeFactoryOrdered'),
         ];
     }

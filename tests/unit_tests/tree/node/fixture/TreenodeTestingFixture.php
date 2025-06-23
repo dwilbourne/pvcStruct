@@ -9,17 +9,15 @@ namespace pvcTests\struct\unit_tests\tree\node\fixture;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
+use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\validator\ValTesterInterface;
+use pvc\struct\collection\Collection;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\node\Treenode;
 use pvc\testingutils\testingTraits\IteratorTrait;
 
 /**
- * @template PayloadType of HasPayloadInterface
  * Class TreenodeTestingFixture
  * @phpstan-import-type TreenodeDtoShape from TreenodeDtoUnordered
  */
@@ -33,7 +31,7 @@ class TreenodeTestingFixture extends TestCase
     public int $treeId;
 
     /**
-     * @var MockObject&TreeInterface<PayloadType>
+     * @var MockObject&TreeInterface
      */
     public MockObject&TreeInterface $mockTree;
 
@@ -53,39 +51,39 @@ class TreenodeTestingFixture extends TestCase
     public int $grandChildNodeId;
 
     /**
-     * @var TreenodeInterface<PayloadType>
+     * @var TreenodeInterface
      */
     public TreenodeInterface $root;
 
     /**
-     * @var TreenodeInterface<PayloadType>
+     * @var TreenodeInterface
      */
     public TreenodeInterface $child;
 
     /**
-     * @var TreenodeInterface<PayloadType>
+     * @var TreenodeInterface
      */
     public TreenodeInterface $grandChild;
 
     /**
-     * @var TreenodeCollectionInterface<PayloadType>&MockObject
+     * @var Collection|MockObject
      */
-    public TreenodeCollectionInterface&MockObject $rootSiblingsCollection;
+    public CollectionInterface|MockObject $rootSiblingsCollection;
 
     /**
-     * @var TreenodeCollectionInterface<PayloadType>&MockObject
+     * @var CollectionInterface|MockObject
      */
-    public TreenodeCollectionInterface&MockObject $children;
+    public CollectionInterface|MockObject $children;
 
     /**
-     * @var TreenodeCollectionInterface<PayloadType>&MockObject
+     * @var CollectionInterface|MockObject
      */
-    public TreenodeCollectionInterface&MockObject $grandChildren;
+    public CollectionInterface|MockObject $grandChildren;
 
     /**
-     * @var TreenodeCollectionInterface<PayloadType>&MockObject
+     * @var CollectionInterface|MockObject
      */
-    public TreenodeCollectionInterface&MockObject $greatGrandChildren;
+    public CollectionInterface|MockObject $greatGrandChildren;
 
     public function setUp(): void
     {
@@ -131,10 +129,10 @@ class TreenodeTestingFixture extends TestCase
 
     public function createCollectionMocks(): void
     {
-        $this->rootSiblingsCollection = $this->createMock(TreenodeCollectionInterface::class);
-        $this->children = $this->createMock(TreenodeCollectionInterface::class);
-        $this->grandChildren = $this->createMock(TreenodeCollectionInterface::class);
-        $this->greatGrandChildren = $this->createMock(TreenodeCollectionInterface::class);
+        $this->rootSiblingsCollection = $this->createMock(CollectionInterface::class);
+        $this->children = $this->createMock(CollectionInterface::class);
+        $this->grandChildren = $this->createMock(CollectionInterface::class);
+        $this->greatGrandChildren = $this->createMock(CollectionInterface::class);
 
         $childrenIsEmptyCallback = function () {
             return !isset($this->root);
@@ -155,24 +153,21 @@ class TreenodeTestingFixture extends TestCase
 
     public function makeNodes(): void
     {
-        $tester = $this->createStub(ValTesterInterface::class);
-        $tester->method('testValue')->willReturn(true);
-
         /**
          * don't set the value of $this->root until after the node is hydrated or you generate a 'node already in the
          * tree exception' because of the way the callback is structured for the mock tree getNode method.
          */
-        $root = new Treenode($this->children, $this->mockTree, $tester);
+        $root = new Treenode($this->children, $this->mockTree);
         $dto = $this->makeDTO($this->rootNodeId, null);
         $root->hydrate($dto);
         $this->root = $root;
 
-        $child = new Treenode($this->grandChildren, $this->mockTree, $tester);
+        $child = new Treenode($this->grandChildren, $this->mockTree);
         $dto = $this->makeDTO($this->childNodeId, $this->rootNodeId);
         $child->hydrate($dto);
         $this->child = $child;
 
-        $grandChild = new Treenode($this->greatGrandChildren, $this->mockTree, $tester);
+        $grandChild = new Treenode($this->greatGrandChildren, $this->mockTree);
         $dto = $this->makeDTO($this->grandChildNodeId, $this->childNodeId);
         $grandChild->hydrate($dto);
         $this->grandChild = $grandChild;
@@ -184,22 +179,22 @@ class TreenodeTestingFixture extends TestCase
          * make children iterable - use a pvc testing utility called makeMockIterableOverArray
          */
         $childrenArray = [$this->child];
-        $this->makeMockIterableOverArray($this->root->getChildren(), $childrenArray);
-        $this->root->getChildren()->method('getElements')->willReturn([$this->child]);
+        $this->makeMockIterableOverArray($this->children, $childrenArray);
+        $this->children->method('getElements')->willReturn([$this->child]);
 
         $grandChildrenArray = [$this->grandChild];
-        $this->makeMockIterableOverArray($this->child->getChildren(), $grandChildrenArray);
-        $this->child->getChildren()->method('getElements')->willReturn([$this->grandChild]);
+        $this->makeMockIterableOverArray($this->grandChildren, $grandChildrenArray);
+        $this->grandChildren->method('getElements')->willReturn([$this->grandChild]);
 
         $greatGrandChildrenArray = [];
-        $this->makeMockIterableOverArray($this->grandChild->getChildren(), $greatGrandChildrenArray);
-        $this->grandChild->getChildren()->method('getElements')->willReturn([]);
+        $this->makeMockIterableOverArray($this->greatGrandChildren, $greatGrandChildrenArray);
+        $this->greatGrandChildren->method('getElements')->willReturn([]);
     }
 
     /**
      * @param non-negative-int $nodeId
      * @param non-negative-int|null $parentId
-     * @return TreenodeDtoShape&TreenodeDtoUnordered<PayloadType>
+     * @return TreenodeDtoShape&TreenodeDtoUnordered
      */
     public function makeDTO(int $nodeId, int|null $parentId): TreenodeDtoUnordered
     {

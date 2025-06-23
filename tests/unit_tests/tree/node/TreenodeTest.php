@@ -10,9 +10,8 @@ namespace pvcTests\struct\unit_tests\tree\node;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionFactoryInterface;
-use pvc\interfaces\struct\tree\node\TreenodeCollectionInterface;
+use pvc\interfaces\struct\collection\CollectionFactoryInterface;
+use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\AlreadySetNodeidException;
@@ -28,30 +27,27 @@ use pvc\struct\tree\node\TreenodeFactory;
 use pvc\testingutils\testingTraits\IteratorTrait;
 use pvcTests\struct\unit_tests\tree\node\fixture\TreenodeTestingFixture;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TreenodeTest extends TestCase
 {
     use IteratorTrait;
 
     /**
-     * @var TreenodeTestingFixture<PayloadType>
+     * @var TreenodeTestingFixture
      */
     protected TreenodeTestingFixture $fixture;
 
     /**
-     * @var TreenodeCollectionInterface<PayloadType>&MockObject
+     * @var CollectionInterface&MockObject
      */
-    protected TreenodeCollectionInterface&MockObject $collection;
+    protected CollectionInterface&MockObject $collection;
 
     /**
-     * @var TreeInterface<PayloadType>&MockObject
+     * @var TreeInterface&MockObject
      */
     protected TreeInterface&MockObject $tree;
 
     /**
-     * @var Treenode<PayloadType>
+     * @var Treenode
      */
     protected Treenode $node;
 
@@ -59,7 +55,7 @@ class TreenodeTest extends TestCase
     {
         $this->fixture = new TreenodeTestingFixture();
         $this->fixture->setUp();
-        $this->collection = $this->createMock(TreenodeCollectionInterface::class);
+        $this->collection = $this->createMock(CollectionInterface::class);
         $this->tree = $this->createMock(TreeInterface::class);
         $this->tree->method('getTreeId')->willReturn($this->fixture->treeId);
     }
@@ -293,7 +289,7 @@ class TreenodeTest extends TestCase
         $nodeId = 0;
         $parentId = 1;
 
-        $siblings = $this->createMock(TreenodeCollectionInterface::class);
+        $siblings = $this->createMock(CollectionInterface::class);
         $siblings->expects($this->once())->method('add');
 
         $mockRoot = $this->createMock(TreenodeInterface::class);
@@ -413,8 +409,8 @@ class TreenodeTest extends TestCase
          * called on to make a collection
          */
 
-        $mockTreenodeCollectionFactory = $this->createMock(TreenodeCollectionFactoryInterface::class);
-        $mockTreenodeCollectionFactory->expects($this->once())->method('makeTreenodeCollection')->willReturn($this->fixture->rootSiblingsCollection);
+        $mockTreenodeCollectionFactory = $this->createMock(CollectionFactoryInterface::class);
+        $mockTreenodeCollectionFactory->expects($this->once())->method('makeCollection')->willReturn($this->fixture->rootSiblingsCollection);
 
         $mockTreenodeFactory = $this->createMock(TreenodeFactory::class);
         $mockTreenodeFactory->expects($this->once())->method('getTreenodeCollectionFactory')->willReturn($mockTreenodeCollectionFactory);
@@ -422,7 +418,7 @@ class TreenodeTest extends TestCase
         $this->fixture->mockTree->method('getTreenodeFactory')->willReturn($mockTreenodeFactory);
 
         $siblings = $this->fixture->root->getSiblings();
-        self::assertInstanceOf(TreenodeCollectionInterface::class, $siblings);
+        self::assertInstanceOf(CollectionInterface::class, $siblings);
     }
 
     /**
@@ -435,6 +431,16 @@ class TreenodeTest extends TestCase
             $this->fixture->children,
             $this->fixture->child->getSiblings()
         );
+    }
+
+    /**
+     * @return void
+     * @covers \pvc\struct\tree\node\Treenode::isRoot
+     */
+    public function testIsRoot(): void
+    {
+        self::assertTrue($this->fixture->root->isRoot());
+        self::assertFalse($this->fixture->child->isRoot());
     }
 
     /**

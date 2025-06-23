@@ -155,7 +155,7 @@ class SearchAbstractTest extends TestCase
      */
     public function testInitialState(): void
     {
-        self::assertEquals(-1, $this->search->getCurrentLevel());
+        self::assertEquals(0, $this->search->getCurrentLevel());
         self::assertNull($this->search->current());
     }
 }

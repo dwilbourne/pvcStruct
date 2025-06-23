@@ -18,21 +18,12 @@ use pvc\struct\treesearch\SearchDepthFirstPreorder;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
 use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class SearchDepthFirstPreorderTest extends TestCase
 {
     /**
-     * @var TreeInterface<PayloadType>
+     * @var TreeInterface
      */
     protected TreeInterface $tree;
-
-    /**
-     * @var ValTesterInterface<PayloadType>|null
-     */
-    protected ValTesterInterface|null $valTester = null;
-
 
     /**
      * @var SearchDepthFirstPreorder
@@ -48,7 +39,7 @@ class SearchDepthFirstPreorderTest extends TestCase
     {
         $ordered = false;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
         $this->tree = $testUtils->testTreeSetup($ordered);
         $this->search = new SearchDepthFirstPreorder(new NodeMap());

@@ -22,14 +22,13 @@ use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 class TreeTest extends TestCase
 {
     protected TreeInterface $tree;
-    protected ValTesterInterface|null $valTester = null;
 
     protected TreenodeConfigurationsFixture $fixture;
 
     public function treeSetup(bool $ordered): void
     {
         $this->fixture = new TreenodeConfigurationsFixture();
-        $testUtils = new TestUtils($this->valTester, $this->fixture);
+        $testUtils = new TestUtils($this->fixture);
         $this->tree = $testUtils->testTreeSetup($ordered);
     }
 

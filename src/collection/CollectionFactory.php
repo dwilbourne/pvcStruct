@@ -16,9 +16,9 @@ class CollectionFactory implements CollectionFactoryInterface
 {
     /**
      * @param array<non-negative-int, ElementType> $elements
-     * @return CollectionInterface<ElementType>
+     * @return Collection<ElementType>
      */
-    public function makeCollection(array $elements = []): CollectionInterface
+    public function makeCollection(array $elements = []): Collection
     {
         return new Collection($elements);
     }
