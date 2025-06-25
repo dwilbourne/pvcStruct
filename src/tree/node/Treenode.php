@@ -9,12 +9,9 @@ declare (strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
@@ -47,7 +44,7 @@ use pvc\struct\treesearch\VisitationTrait;
  * @template PayloadType
  * @implements TreenodeInterface<PayloadType>
  */
-class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElementInterface
+class Treenode implements TreenodeInterface
 {
     /**
      * @use PayloadTrait<PayloadType>
@@ -157,6 +154,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
          */
         if (isset($dto->index)) $this->setIndex($dto->index);
         $this->setParent($dto->parentId);
+        $this->setPayload($dto->payload);
     }
 
     protected function setNodeId(int $nodeId): void
