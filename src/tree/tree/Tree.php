@@ -18,11 +18,11 @@ use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\NoRootFoundException;
 use pvc\struct\tree\err\TreeNotInitializedException;
-use pvc\struct\tree\node\Treenode;
-use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @class Tree
+ * @template PayloadType
+ * @implements TreeInterface<PayloadType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Tree implements TreeInterface
@@ -38,12 +38,12 @@ class Tree implements TreeInterface
     protected int $treeId;
 
     /**
-     * @var TreenodeInterface|null
+     * @var TreenodeInterface<PayloadType>|null
      */
     protected TreenodeInterface|null $root;
 
     /**
-     * @var array<TreenodeInterface>
+     * @var array<TreenodeInterface<PayloadType>>
      */
     protected array $nodes = [];
 
@@ -53,7 +53,7 @@ class Tree implements TreeInterface
     protected $treenodeDtoComparator = null;
 
     /**
-     * @param TreenodeFactoryInterface $treenodeFactory
+     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
      */
     public function __construct(protected TreenodeFactoryInterface $treenodeFactory)
     {
@@ -131,7 +131,7 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @return TreenodeFactoryInterface
+     * @return TreenodeFactoryInterface<PayloadType>
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {
@@ -144,7 +144,7 @@ class Tree implements TreeInterface
     /**
      * rootTest
      * encapsulate logic for testing whether something is or can be the root
-     * @param TreenodeInterface|(DtoInterface&TreenodeDtoShape) $nodeItem
+     * @param TreenodeInterface<PayloadType>|(DtoInterface&TreenodeDtoShape) $nodeItem
      * @return bool
      */
     public function rootTest(TreenodeInterface|DtoInterface $nodeItem): bool
@@ -158,7 +158,7 @@ class Tree implements TreeInterface
 
     /**
      * @function getRoot
-     * @return TreenodeInterface|null
+     * @return TreenodeInterface<PayloadType>|null
      */
     public function getRoot(): TreenodeInterface|null
     {
@@ -167,7 +167,7 @@ class Tree implements TreeInterface
 
     /**
      * @function setRoot sets a reference to the root node of the tree
-     * @param TreenodeInterface $node
+     * @param TreenodeInterface<PayloadType> $node
      * @throws AlreadySetRootException
      */
     protected function setRoot(TreenodeInterface $node): void
@@ -194,7 +194,7 @@ class Tree implements TreeInterface
 
     /**
      * @function getNodes
-     * @return array<TreenodeInterface>
+     * @return array<TreenodeInterface<PayloadType>>
      */
     public function getNodes(): array
     {
@@ -204,7 +204,7 @@ class Tree implements TreeInterface
     /**
      * @function getNode
      * @param non-negative-int|null $nodeId
-     * @return TreenodeInterface|null
+     * @return TreenodeInterface<PayloadType>|null
      */
     public function getNode(?int $nodeId): ?TreenodeInterface
     {
@@ -364,7 +364,7 @@ class Tree implements TreeInterface
 
     /**
      * @function deleteNodeRecurse does the actual work of deleting the node / branch
-     * @param TreenodeInterface $node
+     * @param TreenodeInterface<PayloadType> $node
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
      */

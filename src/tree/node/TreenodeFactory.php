@@ -22,16 +22,19 @@ use pvc\struct\tree\tree\Tree;
  * TreenodeFactory first without its tree dependency, use TreenodeFactory in the construction of a new tree,
  * and then go back and set the tree property in TreenodeFactory.  Tree factory does all this in the method
  * makeTree.
+ *
+ * @template PayloadType
+ * @implements TreenodeFactoryInterface<PayloadType>
  */
 class TreenodeFactory implements TreenodeFactoryInterface
 {
     /**
-     * @var TreeInterface
+     * @var TreeInterface<PayloadType>
      */
     protected TreeInterface $tree;
 
     /**
-     * @param CollectionFactoryInterface<TreenodeInterface> $treenodeCollectionFactory
+     * @param CollectionFactoryInterface<TreenodeInterface<PayloadType>> $treenodeCollectionFactory
      */
     public function __construct(
         protected CollectionFactoryInterface $treenodeCollectionFactory,
@@ -44,7 +47,7 @@ class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @param Tree $tree
+     * @param Tree<PayloadType> $tree
      * @return void
      */
     public function initialize(TreeInterface $tree): void
@@ -53,7 +56,7 @@ class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return CollectionFactoryInterface<TreenodeInterface>
+     * @return CollectionFactoryInterface<TreenodeInterface<PayloadType>>
      */
     public function getTreenodeCollectionFactory(): CollectionFactoryInterface
     {
@@ -64,7 +67,7 @@ class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return Treenode
+     * @return Treenode<PayloadType>
      * @throws ChildCollectionException|TreenodeFactoryNotInitializedException
      */
     public function makeNode(): TreenodeInterface

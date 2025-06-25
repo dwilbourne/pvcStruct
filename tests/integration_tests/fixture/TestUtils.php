@@ -84,6 +84,7 @@ class TestUtils
             $arr['nodeId'] = $row[0];
             $arr['parentId'] = $row[1];
             $arr['treeId'] = null;
+            $arr['payload'] = null;
             if ($ordered) {
                 $arr['index'] = $row[2];
             }

@@ -20,13 +20,13 @@ readonly class TreenodeDtoOrdered extends TreenodeDtoUnordered
         int   $nodeId,
         ?int  $parentId,
         ?int  $treeId,
-
+        mixed $payload,
         /**
          * @var non-negative-int
          */
         public int   $index,
     )
     {
-        parent::__construct($nodeId, $parentId, $treeId);
+        parent::__construct($nodeId, $parentId, $treeId, $payload);
     }
 }

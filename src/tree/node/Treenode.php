@@ -11,10 +11,12 @@ namespace pvc\struct\tree\node;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
+use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
 use pvc\struct\collection\Collection;
+use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -24,7 +26,6 @@ use pvc\struct\tree\err\InvalidValueException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
-use pvc\struct\tree\tree\Tree;
 use pvc\struct\treesearch\VisitationTrait;
 
 /**
@@ -42,9 +43,17 @@ use pvc\struct\treesearch\VisitationTrait;
  *  important to know that not only does a node keep a reference to its parent, but it also keeps a list of its
  *  children.  So the setParent method is responsible not only for setting the parent property, but it also takes
  *  the parent and adds a node to its child list.
+ *
+ * @template PayloadType
+ * @implements TreenodeInterface<PayloadType>
  */
 class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElementInterface
 {
+    /**
+     * @use PayloadTrait<PayloadType>
+     */
+    use PayloadTrait;
+
     /**
      * implement NodeVisitableInterface, make Treenodes available for iterable depth first search
      */
@@ -58,13 +67,13 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * reference to parent
-     * @var TreenodeInterface|null
+     * @var TreenodeInterface<PayloadType>|null
      */
     protected ?TreenodeInterface $parent;
 
     /**
      * reference to containing tree
-     * @var TreeInterface
+     * @var TreeInterface<PayloadType>
      */
     protected TreeInterface $tree;
 
@@ -74,13 +83,13 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
     protected int $index;
 
     /**
-     * @var CollectionInterface<TreenodeInterface> $children
+     * @var CollectionInterface<TreenodeInterface<PayloadType>> $children
      */
     public CollectionInterface $children;
 
     /**
-     * @param CollectionInterface<TreenodeInterface> $collection
-     * @param TreeInterface $tree
+     * @param CollectionInterface<TreenodeInterface<PayloadType>> $collection
+     * @param TreeInterface<PayloadType> $tree
      * @throws ChildCollectionException
      */
     public function __construct(CollectionInterface $collection, TreeInterface $tree)
@@ -176,7 +185,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
     {
         if (!is_null($parentId)) {
             /**
-             * @var Treenode|null $parent
+             * @var Treenode<PayloadType>|null $parent
              */
             $parent = $this->getTree()->getNode($parentId);
             if (is_null($parent)) {
@@ -241,7 +250,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * @function getParent
-     * @return TreenodeInterface|null
+     * @return TreenodeInterface<PayloadType>|null
      */
     public function getParent(): ?TreenodeInterface
     {
@@ -250,7 +259,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * @function getTree
-     * @return TreeInterface
+     * @return TreeInterface<PayloadType>
      */
     public function getTree(): TreeInterface
     {
@@ -267,7 +276,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
     }
 
     /**
-     * @return CollectionInterface<TreenodeInterface>
+     * @return CollectionInterface<TreenodeInterface<PayloadType>>
      */
     public function getChildren(): CollectionInterface
     {
@@ -276,7 +285,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * getChildrenAsArray
-     * @return array<TreenodeInterface>
+     * @return array<TreenodeInterface<PayloadType>>
      */
     public function getChildrenArray(): array
     {
@@ -295,7 +304,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
     /**
      * @function getChild
      * @param non-negative-int $nodeid
-     * @return TreenodeInterface|null
+     * @return TreenodeInterface<PayloadType>|null
      */
     public function getChild(int $nodeid): ?TreenodeInterface
     {
@@ -310,7 +319,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
     /**
      * getSiblings returns a collection of this node's siblings
      *
-     * @return CollectionInterface<TreenodeInterface>
+     * @return CollectionInterface<TreenodeInterface<PayloadType>>
      */
     public function getSiblings(): CollectionInterface
     {
@@ -319,7 +328,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
          * long way to get to the collection factory so we can make a collection and add this node to it.
          */
         if ($this->getTree()->rootTest($this)) {
-            /** @var Collection<TreenodeInterface> $collection */
+            /** @var Collection<TreenodeInterface<PayloadType>> $collection */
             $collection = $this->getTree()->getTreenodeFactory()->getTreenodeCollectionFactory()->makeCollection([]);
             $collection->add($this->getNodeId(), $this);
         } else {
@@ -340,7 +349,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * @function isAncestorOf
-     * @param Treenode $node
+     * @param Treenode<PayloadType> $node
      * @return bool
      */
     public function isAncestorOf(TreenodeInterface $node): bool
@@ -350,7 +359,7 @@ class Treenode implements TreenodeInterface, NodeVisitableInterface, IndexedElem
 
     /**
      * @function isDescendantOf
-     * @param Treenode $node
+     * @param Treenode<PayloadType> $node
      * @return bool
      */
     public function isDescendantOf(TreenodeInterface $node): bool

@@ -8,12 +8,14 @@ use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @class TreeOrdered
+ * @template PayloadType
+ * @extends Tree<PayloadType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreeOrdered extends Tree
 {
     /**
-     * @param TreenodeFactoryInterface $treenodeFactory
+     * @param TreenodeFactoryInterface<PayloadType> $treenodeFactory
      */
     public function __construct(
         TreenodeFactoryInterface $treenodeFactory,

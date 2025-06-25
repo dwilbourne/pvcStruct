@@ -14,14 +14,11 @@ use pvc\struct\tree\err\InvalidValueException;
 /**
  * Class PayloadTrait
  * @template PayloadType
- *
- * this implementation allows payloads to be nullable only if the payloadtester is set, and it allows null values.
- * Another way to say that is that the default payload tester returns true if the payload is not null.
  */
 trait PayloadTrait
 {
     /**
-     * @var PayloadType|null
+     * @var PayloadType
      */
     protected mixed $payload;
 
