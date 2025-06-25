@@ -20,7 +20,7 @@ trait PayloadTrait
     /**
      * @var PayloadType
      */
-    protected mixed $payload;
+    protected $payload;
 
     /**
      * @var ValTesterInterface<PayloadType>
@@ -29,11 +29,11 @@ trait PayloadTrait
 
     /**
      * getPayload
-     * @return PayloadType|null
+     * @return PayloadType
      */
     public function getPayload()
     {
-        return $this->payload ?? null;
+        return $this->payload;
     }
 
     /**
@@ -41,7 +41,7 @@ trait PayloadTrait
      * @param PayloadType $payload
      * @throws InvalidValueException
      */
-    public function setPayload(mixed $payload): void
+    public function setPayload($payload): void
     {
         if (!$this->getPayloadTester()->testValue($payload)) {
             throw new InvalidValueException();
