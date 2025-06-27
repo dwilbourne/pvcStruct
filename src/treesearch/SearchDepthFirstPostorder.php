@@ -7,10 +7,13 @@ declare(strict_types=1);
 
 namespace pvc\struct\treesearch;
 
+use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
 
 /**
  * Class SearchStrategyDepthFirstPostorder
+ * @template NodeType of NodeVisitableInterface
+ * @extends SearchDepthFirst<NodeType>
  */
 class SearchDepthFirstPostorder extends SearchDepthFirst
 {

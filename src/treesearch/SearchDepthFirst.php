@@ -15,12 +15,13 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchDepthFirst
- * @extends SearchAbstract<NodeVisitableInterface>
+ * @template NodeType of NodeVisitableInterface
+ * @extends SearchAbstract<NodeType>
  */
 abstract class SearchDepthFirst extends SearchAbstract
 {
     /**
-     * @param NodeMapInterface $nodeMap
+     * @param NodeMapInterface<NodeType> $nodeMap
      */
     public function __construct(protected NodeMapInterface $nodeMap)
     {
@@ -48,11 +49,12 @@ abstract class SearchDepthFirst extends SearchAbstract
     /**
      * initializeVisitStatusRecurse
      *
-     * @param  NodeVisitableInterface  $node
+     * @param  NodeType  $node
      */
     protected function initializeVisitStatusRecurse(NodeVisitableInterface $node): void
     {
         $node->initializeVisitStatus();
+        /** @var NodeType $child */
         foreach ($node->getChildrenArray() as $child) {
             $this->initializeVisitStatusRecurse($child);
         }
@@ -108,7 +110,7 @@ abstract class SearchDepthFirst extends SearchAbstract
         /**
          * get the next node (could be null at the end of a search)
          */
-        /** @var NodeVisitableInterface $nextNode */
+        /** @var ?NodeType $nextNode */
         $nextNode = $this->getNextNode($direction);
 
         if (is_null($nextNode)) {
@@ -127,6 +129,11 @@ abstract class SearchDepthFirst extends SearchAbstract
         }
     }
 
+    /**
+     * @param  Direction  $direction
+     *
+     * @return NodeType|null
+     */
     protected function getNextNode(Direction $direction): ?NodeVisitableInterface
     {
         switch ($direction) {
@@ -151,7 +158,7 @@ abstract class SearchDepthFirst extends SearchAbstract
 
     /**
      * getParent
-     * @return NodeVisitableInterface|null
+     * @return NodeType|null
      */
     protected function getParent(): ?NodeVisitableInterface
     {
@@ -176,7 +183,7 @@ abstract class SearchDepthFirst extends SearchAbstract
 
     /**
      * getNextVisitableChild
-     * @return NodeVisitableInterface|null
+     * @return NodeType|null
      */
     protected function getNextVisitableChild(): ?NodeVisitableInterface
     {
@@ -186,6 +193,8 @@ abstract class SearchDepthFirst extends SearchAbstract
         $callback = function(NodeVisitableInterface $child) {
             return ($child->getVisitStatus() != VisitStatus::FULLY_VISITED);
         };
-        return array_find($children, $callback);
+        /** @var ?NodeType $result */
+        $result = array_find($children, $callback);
+        return $result;
     }
 }

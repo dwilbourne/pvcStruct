@@ -19,11 +19,13 @@ use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
  * rewind method of the search. The start node of the search is at depth = 0
  *
  * @phpstan-import-type NodeMapRow from NodeMapInterface
+ * @template NodeType of NodeVisitableInterface
+ * @implements NodeMapInterface<NodeType>
  */
 class NodeMap implements NodeMapInterface
 {
     /**
-     * @var array<non-negative-int, NodeMapRow>
+     * @var array<NodeMapRow>
      */
     protected array $nodes = [];
 
@@ -38,7 +40,7 @@ class NodeMap implements NodeMapInterface
 
     /**
      * setNode
-     * @param NodeVisitableInterface $node
+     * @param NodeType $node
      * @param non-negative-int|null $parentId
      */
     public function setNode(NodeVisitableInterface $node, ?int $parentId): void
@@ -49,7 +51,7 @@ class NodeMap implements NodeMapInterface
     /**
      * getParent
      * @param int $nodeId
-     * @return NodeVisitableInterface|null
+     * @return NodeType|null
      */
     public function getParent(int $nodeId): ?NodeVisitableInterface
     {
@@ -59,7 +61,7 @@ class NodeMap implements NodeMapInterface
     /**
      * getNode
      * @param ?int $nodeId
-     * @return NodeVisitableInterface|null
+     * @return NodeType|null
      */
     public function getNode(?int $nodeId): ?NodeVisitableInterface
     {
@@ -79,10 +81,11 @@ class NodeMap implements NodeMapInterface
     }
 
     /**
-     * @return array<non-negative-int, NodeMapRow>
+     * @return array<NodeMapRow>
      */
     public function getNodeMapArray(): array
     {
+        /** @phpstan-ignore-next-line  */
         return $this->nodes;
     }
 }
