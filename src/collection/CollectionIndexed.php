@@ -233,25 +233,31 @@ class CollectionIndexed extends Collection implements CollectionIndexedInterface
         return $element->getIndex();
     }
 
+    /**
+     * @return ElementType|null
+     */
     public function getFirst()
     {
-        return $this->getElements()[0];
+        return $this->getElements()[0] ?? null;
     }
 
+    /**
+     * @return ElementType|null
+     */
     public function getLast()
     {
-        return $this->getElements()[count($this->getElements()) - 1];
+        return $this->getElements()[count($this->getElements()) - 1] ?? null;
     }
 
     /**
      * @param  non-negative-int  $index
      *
-     * @return ElementType
+     * @return ElementType|null
      */
     public function getNth(int $index)
     {
         $maxIndex = max(0, $this->count() - 1);
         $index = $this->trimIndex($index, $maxIndex);
-        return $this->getElements()[$index];
+        return $this->getElements()[$index] ?? null;
     }
 }
