@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
+use pvc\interfaces\struct\collection\CollectionIndexedInterface;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\struct\collection\err\InvalidKeyException;
@@ -23,9 +24,9 @@ use pvc\struct\collection\err\NonExistentKeyException;
  *
  * @template ElementType of IndexedElementInterface
  * @extends Collection<ElementType>
- * @implements CollectionInterface<ElementType>
+ * @implements CollectionIndexedInterface<ElementType>
  */
-class CollectionIndexed extends Collection implements CollectionInterface
+class CollectionIndexed extends Collection implements CollectionIndexedInterface
 {
     private const int SHUFFLE_UP = 1;
     private const int SHUFFLE_DOWN = -1;
@@ -90,7 +91,7 @@ class CollectionIndexed extends Collection implements CollectionInterface
         /**
          * 'trim' the new index first
          */
-        $newNewIndex = $this->trimIndex($maxIndex, $newIndex);
+        $newIndex = $this->trimIndex($maxIndex, $newIndex);
 
         $this->delete($key);
         $element->setIndex($newIndex);
@@ -230,5 +231,27 @@ class CollectionIndexed extends Collection implements CollectionInterface
         $element = $this->getElement($key);
         assert(!is_null($element));
         return $element->getIndex();
+    }
+
+    public function getFirst()
+    {
+        return $this->getElements()[0];
+    }
+
+    public function getLast()
+    {
+        return $this->getElements()[count($this->getElements()) - 1];
+    }
+
+    /**
+     * @param  non-negative-int  $index
+     *
+     * @return ElementType
+     */
+    public function getNth(int $index)
+    {
+        $maxIndex = max(0, $this->count() - 1);
+        $index = $this->trimIndex($index, $maxIndex);
+        return $this->getElements()[$index];
     }
 }

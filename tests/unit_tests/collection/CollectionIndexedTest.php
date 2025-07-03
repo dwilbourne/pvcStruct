@@ -208,4 +208,33 @@ class CollectionIndexedTest extends TestCase
         self::expectException(NonExistentKeyException::class);
         $this->collection->getIndex($key);
     }
+
+    /**
+     * @return void
+     * @throws InvalidKeyException
+     * @covers \pvc\struct\collection\CollectionIndexed::getFirstElement
+     * @covers \pvc\struct\collection\CollectionIndexed::getLastElement
+     * @covers \pvc\struct\collection\CollectionIndexed::getNthElement
+     */
+    public function testGetFirstLastNthElement(): void
+    {
+        $indexed = true;
+
+        $key = 7;
+        $a = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $key = 10;
+        $b = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $key = 10;
+        $c = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $this->collection = new CollectionIndexed([$a, $b, $c]);
+
+        self::assertSame($a, $this->collection->getFirst());
+        self::assertSame($c, $this->collection->getLast());
+        self::assertSame($b, $this->collection->getNth(1));
+        self::assertSame($c, $this->collection->getNth(2));
+        self::assertSame($c, $this->collection->getNth(4));
+    }
 }
