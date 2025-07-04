@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\CollectionIndexed;
+use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
 use pvcTests\struct\unit_tests\collection\fixtures\CollectionElement;
 use pvcTests\struct\unit_tests\collection\fixtures\CollectionElementFactory;
 use pvcTests\struct\unit_tests\collection\fixtures\CollectionIndexedElement;
 
-class CollectionIndexedTest extends TestCase
+class CollectionOrderedTest extends TestCase
 {
     /**
-     * @var CollectionIndexed<CollectionElement>
+     * @var CollectionOrdered<CollectionElement>
      */
-    protected CollectionIndexed $collection;
+    protected CollectionOrdered $collection;
 
     protected CollectionElementFactory $collectionElementFactory;
 
@@ -36,7 +36,7 @@ class CollectionIndexedTest extends TestCase
     {
         $indexed = true;
         $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray($n, $indexed);
-        $this->collection = new CollectionIndexed($this->collectionElements);
+        $this->collection = new CollectionOrdered($this->collectionElements);
     }
 
     protected function getResultArray(): array
@@ -51,7 +51,7 @@ class CollectionIndexedTest extends TestCase
     /**
      * @return void
      * @throws InvalidKeyException
-     * @covers \pvc\struct\collection\CollectionIndexed::__construct
+     * @covers \pvc\struct\collection\CollectionOrdered::__construct
      */
     public function testConstructReindexesElements(): void
     {
@@ -66,11 +66,12 @@ class CollectionIndexedTest extends TestCase
 
     /**
      * testCrud operations
-     * @covers \pvc\struct\collection\CollectionIndexed::delete
-     * @covers \pvc\struct\collection\CollectionIndexed::add
-     * @covers \pvc\struct\collection\CollectionIndexed::trimIndex
-     * @covers \pvc\struct\collection\CollectionIndexed::shuffleIndices
-     * @covers \pvc\struct\collection\CollectionIndexed::compareIndices
+     *
+     * @covers \pvc\struct\collection\CollectionOrdered::delete
+     * @covers \pvc\struct\collection\CollectionOrdered::add
+     * @covers \pvc\struct\collection\CollectionOrdered::trimIndex
+     * @covers \pvc\struct\collection\CollectionOrdered::shuffleIndices
+     * @covers \pvc\struct\collection\CollectionOrdered::compareIndices
      */
     public function testDeleteThenAddInMiddle(): void
     {
@@ -111,7 +112,7 @@ class CollectionIndexedTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\collection\CollectionIndexed::update
+     * @covers \pvc\struct\collection\CollectionOrdered::update
      */
     public function testUpdate(): void
     {
@@ -136,8 +137,9 @@ class CollectionIndexedTest extends TestCase
     /**
      * testAddPushesNewElementOnEndOfCollectionIfIndexIsGreaterThanCountOfCollection
      * this test also confirms that the shuffle method does nothing if the count of the collection is less than 2
+     *
      * @throws InvalidKeyException
-     * @covers \pvc\struct\collection\CollectionIndexed::add
+     * @covers \pvc\struct\collection\CollectionOrdered::add
      */
     public function testAddPushesNewElementOnEndOfCollectionIfIndexIsGreaterThanCountOfCollection(): void
     {
@@ -147,7 +149,7 @@ class CollectionIndexedTest extends TestCase
         $element->setIndex($proposedNewKeyIndex);
         $expectedNewKeyIndex = 0;
 
-        $this->collection = new CollectionIndexed();
+        $this->collection = new CollectionOrdered();
         self::assertTrue($this->collection->isEmpty());
         $this->collection->add($key, $element);
         self::assertEquals($expectedNewKeyIndex, $this->collection->getElement($key)->getIndex());
@@ -155,7 +157,8 @@ class CollectionIndexedTest extends TestCase
 
     /**
      * testSetIndexThrowsExceptionIfKeyToElementToMoveDoesNotExist
-     * @covers \pvc\struct\collection\CollectionIndexed::setIndex
+     *
+     * @covers \pvc\struct\collection\CollectionOrdered::setIndex
      */
     public function testSetIndexThrowsExceptionIfKeyToElementToMoveDoesNotExist(): void
     {
@@ -166,8 +169,9 @@ class CollectionIndexedTest extends TestCase
 
     /**
      * testSetIndexMovesElementToEndIfNewIndexIsGreaterThanOrEqualToLastIndex
-     * @covers \pvc\struct\collection\CollectionIndexed::setIndex
-     * @covers \pvc\struct\collection\CollectionIndexed::getIndex
+     *
+     * @covers \pvc\struct\collection\CollectionOrdered::setIndex
+     * @covers \pvc\struct\collection\CollectionOrdered::getIndex
      */
     public function testSetIndexMovesElementToEndIfNewIndexIsGreaterThanOrEqualToLastIndex(): void
     {
@@ -185,7 +189,7 @@ class CollectionIndexedTest extends TestCase
      * @return void
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
-     * @covers \pvc\struct\collection\CollectionIndexed::getIndex
+     * @covers \pvc\struct\collection\CollectionOrdered::getIndex
      */
     public function testGetIndexThrowsExceptionWithInvalidKey(): void
     {
@@ -199,7 +203,7 @@ class CollectionIndexedTest extends TestCase
      * @return void
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
-     * @covers \pvc\struct\collection\CollectionIndexed::getIndex
+     * @covers \pvc\struct\collection\CollectionOrdered::getIndex
      */
     public function testGetIndexThrowsExceptionWithNonExistentKey(): void
     {
@@ -212,9 +216,9 @@ class CollectionIndexedTest extends TestCase
     /**
      * @return void
      * @throws InvalidKeyException
-     * @covers \pvc\struct\collection\CollectionIndexed::getFirstElement
-     * @covers \pvc\struct\collection\CollectionIndexed::getLastElement
-     * @covers \pvc\struct\collection\CollectionIndexed::getNthElement
+     * @covers \pvc\struct\collection\CollectionOrdered::getFirstElement
+     * @covers \pvc\struct\collection\CollectionOrdered::getLastElement
+     * @covers \pvc\struct\collection\CollectionOrdered::getNthElement
      */
     public function testGetFirstLastNthElement(): void
     {
@@ -229,7 +233,7 @@ class CollectionIndexedTest extends TestCase
         $key = 10;
         $c = $this->collectionElementFactory->makeElement($key, $indexed);
 
-        $this->collection = new CollectionIndexed([$a, $b, $c]);
+        $this->collection = new CollectionOrdered([$a, $b, $c]);
 
         self::assertSame($a, $this->collection->getFirst());
         self::assertSame($c, $this->collection->getLast());

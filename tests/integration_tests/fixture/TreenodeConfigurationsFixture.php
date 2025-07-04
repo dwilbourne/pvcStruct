@@ -282,6 +282,25 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
+    public function makeUnorderedDepthFirstArrayOfAllNodeIds(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 0;
+        $expectedResult[] = 1;
+        $expectedResult[] = 3;
+        $expectedResult[] = 8;
+        $expectedResult[] = 4;
+        $expectedResult[] = 5;
+        $expectedResult[] = 9;
+        $expectedResult[] = 10;
+        $expectedResult[] = 11;
+        $expectedResult[] = 12;
+        $expectedResult[] = 2;
+        $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        return $expectedResult;
+    }
+
     public function makeTreeWithNonExistentParentData(): array
     {
         $a = [];

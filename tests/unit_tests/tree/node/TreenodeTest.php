@@ -85,20 +85,6 @@ class TreenodeTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\tree\node\Treenode::setIndex
-     * @covers \pvc\struct\tree\node\Treenode::getIndex
-     */
-    public function testSetGetIndex(): void
-    {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
-        $node = new Treenode($this->collection, $this->tree);
-        $testIndex = 8;
-        $node->setIndex($testIndex);
-        self::assertEquals($testIndex, $node->getIndex());
-    }
-
-    /**
-     * @return void
      * @covers \pvc\struct\tree\node\Treenode::hydrate
      */
     public function testHydrateFailsWhenNodeIsAlreadyHydrated(): void
@@ -108,7 +94,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
         $node->hydrate($dto);
 
         self::expectException(NodeNotEmptyHydrationException::class);
@@ -128,7 +114,7 @@ class TreenodeTest extends TestCase
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
 
-        $dto = $this->fixture->makeDTO($badNodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($badNodeId, $parentId);
         self::expectException(InvalidNodeIdException::class);
         $node->hydrate($dto);
     }
@@ -149,7 +135,7 @@ class TreenodeTest extends TestCase
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
 
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
         self::expectException(AlreadySetNodeidException::class);
         $node->hydrate($dto);
     }
@@ -185,7 +171,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         $this->tree->expects($this->exactly(2))->method('getNode')->willReturn(null);
 
@@ -204,7 +190,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         $this->tree->expects($this->exactly(1))->method('getNode')->willReturn(null);
         $this->tree->expects($this->once())->method('getRoot')->willReturn(null);
@@ -223,7 +209,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         $parentNode = $this->createMock(TreenodeInterface::class);
         $parentNode->method('getNodeId')->willReturn($parentId);
@@ -252,7 +238,7 @@ class TreenodeTest extends TestCase
 
         $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         $parentNode = $this->createMock(TreenodeInterface::class);
         $parentNode->method('getNodeId')->willReturn($parentId);
@@ -309,7 +295,7 @@ class TreenodeTest extends TestCase
         $this->collection->method('isEmpty')->willReturn(true);
 
         $node = new Treenode($this->collection, $this->tree);
-        $dto = $this->fixture->makeDTO($nodeId, $parentId);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         self::assertTrue($node->isEmpty());
         $node->hydrate($dto);

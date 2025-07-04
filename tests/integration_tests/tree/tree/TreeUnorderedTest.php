@@ -10,7 +10,6 @@ namespace pvcTests\struct\integration_tests\tree\tree;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
@@ -19,7 +18,7 @@ use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 /**
  * @template PayloadType of HasPayloadInterface
  */
-class TreeTest extends TestCase
+class TreeUnorderedTest extends TestCase
 {
     protected TreeInterface $tree;
 
@@ -65,16 +64,31 @@ class TreeTest extends TestCase
     }
 
     /**
-     * testHydrationOrder
+     * testHydrationOrdered
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
      * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
      */
-    public function testHydrationOrder(): void
+    public function testHydrationOrdered(): void
     {
         $ordered = true;
         $this->treeSetup($ordered);
         $expectedResultArray = $this->fixture->makeOrderedDepthFirstArrayOfAllNodeIds();
+        $actualResultArray = TestUtils::getNodeIdsFromNodeArray($this->tree->getNodes());
+        self::assertEqualsCanonicalizing($expectedResultArray, $actualResultArray);
+    }
+
+    /**
+     * @return void
+     * @covers \pvc\struct\tree\tree\Tree::hydrate
+     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     * @covers \pvc\struct\tree\tree\TreeUnordered::__construct
+     */
+    public function testhydrationUnordered(): void
+    {
+        $ordered = false;
+        $this->treeSetup($ordered);
+        $expectedResultArray = $this->fixture->makeUnorderedDepthFirstArrayOfAllNodeIds();
         $actualResultArray = TestUtils::getNodeIdsFromNodeArray($this->tree->getNodes());
         self::assertEqualsCanonicalizing($expectedResultArray, $actualResultArray);
     }

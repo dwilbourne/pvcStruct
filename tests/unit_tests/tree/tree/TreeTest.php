@@ -16,6 +16,7 @@ use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -28,6 +29,9 @@ use pvc\struct\tree\tree\Tree;
 /**
  * Class AbstractTreeTest
  * @template PayloadType of HasPayloadInterface
+ * @template TreenodeType of TreenodeInterface
+ * @template TreeType of TreeInterface
+ * @template CollectionType of CollectionInterface
  * @phpstan-import-type TreenodeDtoShape from TreenodeDtoUnordered
  */
 class TreeTest extends TestCase
@@ -38,12 +42,12 @@ class TreeTest extends TestCase
     protected int $treeId;
 
     /**
-     * @var Tree<PayloadType>
+     * @var TreeType
      */
     protected Tree $tree;
 
     /**
-     * @var TreenodeFactoryInterface<PayloadType>&MockObject
+     * @var TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType>&MockObject
      */
     protected TreenodeFactoryInterface&MockObject $nodeFactory;
 

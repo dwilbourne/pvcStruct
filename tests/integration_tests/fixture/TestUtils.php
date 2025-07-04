@@ -9,16 +9,16 @@ use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\dto\DtoFactory;
 use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
-use pvc\struct\tree\node\Treenode;
-use pvc\struct\tree\tree\Tree;
+use pvc\struct\tree\node\TreenodeOrdered;
+use pvc\struct\tree\node\TreenodeUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
+use pvc\struct\tree\tree\TreeUnordered;
 use ReflectionException;
 
 /**
@@ -76,8 +76,8 @@ class TestUtils
     {
         $nodeData = $this->fixture->getNodeData();
         $dtoFactory = $ordered ?
-            new DtoFactory(TreenodeDtoOrdered::class, Treenode::class) :
-            new DtoFactory(TreenodeDtoUnordered::class, Treenode::class);
+            new DtoFactory(TreenodeDtoOrdered::class, TreenodeOrdered::class) :
+            new DtoFactory(TreenodeDtoUnordered::class, TreenodeUnordered::class);
 
         $callback = function(array $row) use ($dtoFactory, $ordered) : DtoInterface  {
             $arr = [];
@@ -95,7 +95,7 @@ class TestUtils
 
     public function makeTestTree(bool $ordered): TreeInterface
     {
-        $classString = $ordered ? TreeOrdered::class : Tree::class;
+        $classString = $ordered ? TreeOrdered::class : TreeUnordered::class;
         return $this->container->get($classString);
     }
 }

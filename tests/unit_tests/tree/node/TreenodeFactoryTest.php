@@ -15,7 +15,6 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 use pvc\struct\tree\node\TreenodeFactory;
@@ -48,7 +47,9 @@ class TreenodeFactoryTest extends TestCase
         $this->tree = $this->createMock(TreeInterface::class);
         $this->treeId = 1;
         $this->collectionFactory = $this->createMock(CollectionFactoryInterface::class);
-        $this->factory = new TreenodeFactory($this->collectionFactory);
+        $this->factory = $this->getMockBuilder(TreenodeFactory::class)
+            ->setConstructorArgs([$this->collectionFactory])
+            ->getMockForAbstractClass();
     }
 
     /**
@@ -98,32 +99,5 @@ class TreenodeFactoryTest extends TestCase
     {
         $this->initializeFactory();
         self::assertEquals($this->collectionFactory, $this->factory->getTreenodeCollectionFactory());
-    }
-
-    /**
-     * @return void
-     * @throws ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeFactory::makeNode
-     */
-    public function testMakeNodeFailsTreenodeFactoryIsNotInitialized(): void
-    {
-        self::expectException(TreeNodeFactoryNotInitializedException::class);
-        $node = $this->factory->makeNode();
-        unset($node);
-    }
-
-    /**
-     * @return void
-     * @throws ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeFactory::makeNode
-     */
-    public function testMakeNode(): void
-    {
-        $this->initializeFactory();
-        $this->tree->method('getTreeId')->willReturn(1);
-        $mockCollection = $this->createMock(CollectionInterface::class);
-        $this->collectionFactory->expects(self::once())->method('makeCollection')->willReturn($mockCollection);
-        $mockCollection->expects($this->once())->method('isEmpty')->willReturn(true);
-        self::assertInstanceOf(TreenodeInterface::class, $this->factory->makeNode());
     }
 }

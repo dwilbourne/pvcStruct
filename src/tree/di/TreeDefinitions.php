@@ -7,14 +7,14 @@ namespace pvc\struct\tree\di;
 use League\Container\Definition\Definition;
 use League\Container\Definition\DefinitionInterface;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
-use pvc\struct\collection\CollectionIndexed;
-use pvc\struct\collection\CollectionIndexedFactory;
-use pvc\struct\tree\node\TreenodeFactory;
-use pvc\struct\tree\tree\Tree;
+use pvc\struct\collection\CollectionOrdered;
+use pvc\struct\collection\CollectionOrderedFactory;
+use pvc\struct\tree\node\TreenodeFactoryOrdered;
+use pvc\struct\tree\node\TreenodeFactoryUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
+use pvc\struct\tree\tree\TreeUnordered;
 
 /**
  * @template PayloadType of HasPayloadInterface
@@ -33,18 +33,18 @@ class TreeDefinitions
              */
             (new Definition(Collection::class)),
             (new Definition(CollectionFactory::class)),
-            (new Definition( 'TreenodeFactoryUnordered', TreenodeFactory::class))
+            (new Definition( TreenodeFactoryUnordered::class))
                 ->addArgument(CollectionFactory::class),
-            (new Definition(Tree::class))->addArgument('TreenodeFactoryUnordered'),
+            (new Definition(TreeUnordered::class))->addArgument(TreenodeFactoryUnordered::class),
 
             /**
              * objects necessary to make an ordered tree
              */
-            (new Definition(CollectionIndexed::class)),
-            (new Definition(CollectionIndexedFactory::class)),
-            (new Definition('TreenodeFactoryOrdered', TreenodeFactory::class))
-                ->addArgument(CollectionIndexedFactory::class),
-            (new Definition(TreeOrdered::class))->addArgument('TreenodeFactoryOrdered'),
+            (new Definition(CollectionOrdered::class)),
+            (new Definition(CollectionOrderedFactory::class)),
+            (new Definition(TreenodeFactoryOrdered::class))
+                ->addArgument(CollectionOrderedFactory::class),
+            (new Definition(TreeOrdered::class))->addArgument(TreenodeFactoryOrdered::class),
         ];
     }
 }

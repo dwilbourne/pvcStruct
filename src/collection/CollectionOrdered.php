@@ -8,8 +8,7 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
-use pvc\interfaces\struct\collection\CollectionIndexedInterface;
-use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedInterface;
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
@@ -24,9 +23,9 @@ use pvc\struct\collection\err\NonExistentKeyException;
  *
  * @template ElementType of IndexedElementInterface
  * @extends Collection<ElementType>
- * @implements CollectionIndexedInterface<ElementType>
+ * @implements CollectionOrderedInterface<ElementType>
  */
-class CollectionIndexed extends Collection implements CollectionIndexedInterface
+class CollectionOrdered extends Collection implements CollectionOrderedInterface
 {
     private const int SHUFFLE_UP = 1;
     private const int SHUFFLE_DOWN = -1;

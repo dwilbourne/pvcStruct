@@ -13,6 +13,7 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\Collection;
+use pvc\struct\tree\dto\TreenodeDtoOrdered;
 use pvc\struct\tree\dto\TreenodeDtoUnordered;
 use pvc\struct\tree\node\Treenode;
 use pvc\testingutils\testingTraits\IteratorTrait;
@@ -158,17 +159,17 @@ class TreenodeTestingFixture extends TestCase
          * tree exception' because of the way the callback is structured for the mock tree getNode method.
          */
         $root = new Treenode($this->children, $this->mockTree);
-        $dto = $this->makeDTO($this->rootNodeId, null);
+        $dto = $this->makeDTOUnordered($this->rootNodeId, null);
         $root->hydrate($dto);
         $this->root = $root;
 
         $child = new Treenode($this->grandChildren, $this->mockTree);
-        $dto = $this->makeDTO($this->childNodeId, $this->rootNodeId);
+        $dto = $this->makeDTOUnordered($this->childNodeId, $this->rootNodeId);
         $child->hydrate($dto);
         $this->child = $child;
 
         $grandChild = new Treenode($this->greatGrandChildren, $this->mockTree);
-        $dto = $this->makeDTO($this->grandChildNodeId, $this->childNodeId);
+        $dto = $this->makeDTOUnordered($this->grandChildNodeId, $this->childNodeId);
         $grandChild->hydrate($dto);
         $this->grandChild = $grandChild;
     }
@@ -196,10 +197,17 @@ class TreenodeTestingFixture extends TestCase
      * @param non-negative-int|null $parentId
      * @return TreenodeDtoShape&TreenodeDtoUnordered
      */
-    public function makeDTO(int $nodeId, int|null $parentId): TreenodeDtoUnordered
+    public function makeDTOUnordered(int $nodeId, int|null $parentId): TreenodeDtoUnordered
     {
         $payload = null;
         $dto = new TreenodeDtoUnordered($nodeId, $parentId, $this->treeId, $payload);
+        return $dto;
+    }
+
+    public function makeDTOOrdered(int $nodeId, int|null $parentId, int $index): TreenodeDtoOrdered
+    {
+        $payload = null;
+        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $this->treeId, $payload, $index);
         return $dto;
     }
 

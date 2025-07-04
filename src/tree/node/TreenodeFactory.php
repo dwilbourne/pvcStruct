@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionFactoryInterface;
+use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
@@ -24,17 +25,20 @@ use pvc\struct\tree\tree\Tree;
  * makeTree.
  *
  * @template PayloadType
- * @implements TreenodeFactoryInterface<PayloadType>
+ * @template TreenodeType of TreenodeInterface
+ * @template TreeType of TreeInterface
+ * @template CollectionType of CollectionInterface
+ * @implements TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType>
  */
-class TreenodeFactory implements TreenodeFactoryInterface
+abstract class TreenodeFactory implements TreenodeFactoryInterface
 {
     /**
-     * @var TreeInterface<PayloadType>
+     * @var TreeType
      */
     protected TreeInterface $tree;
 
     /**
-     * @param CollectionFactoryInterface<TreenodeInterface<PayloadType>> $treenodeCollectionFactory
+     * @param CollectionFactoryInterface<TreenodeType, CollectionType> $treenodeCollectionFactory
      */
     public function __construct(
         protected CollectionFactoryInterface $treenodeCollectionFactory,
@@ -47,7 +51,7 @@ class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @param Tree<PayloadType> $tree
+     * @param TreeType $tree
      * @return void
      */
     public function initialize(TreeInterface $tree): void
@@ -56,7 +60,7 @@ class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return CollectionFactoryInterface<TreenodeInterface<PayloadType>>
+     * @return CollectionFactoryInterface<TreenodeType, CollectionType>
      */
     public function getTreenodeCollectionFactory(): CollectionFactoryInterface
     {
@@ -64,18 +68,5 @@ class TreenodeFactory implements TreenodeFactoryInterface
             throw new TreeNodeFactoryNotInitializedException();
         }
         return $this->treenodeCollectionFactory;
-    }
-
-    /**
-     * @return Treenode<PayloadType>
-     * @throws ChildCollectionException|TreenodeFactoryNotInitializedException
-     */
-    public function makeNode(): TreenodeInterface
-    {
-        if (!$this->isInitialized()) {
-            throw new TreeNodeFactoryNotInitializedException();
-        }
-        $treenodeCollection = $this->treenodeCollectionFactory->makeCollection([]);
-        return new Treenode($treenodeCollection, $this->tree);
     }
 }

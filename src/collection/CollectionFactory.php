@@ -10,7 +10,7 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 
 /**
  * @template ElementType
- * @implements CollectionFactoryInterface<ElementType>
+ * @implements CollectionFactoryInterface<ElementType, Collection>
  */
 class CollectionFactory implements CollectionFactoryInterface
 {
