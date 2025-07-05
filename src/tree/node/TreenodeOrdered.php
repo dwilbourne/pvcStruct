@@ -12,6 +12,7 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionOrdered;
@@ -47,7 +48,7 @@ use pvc\struct\treesearch\VisitationTrait;
  * @extends Treenode<PayloadType, TreenodeOrdered, CollectionOrdered>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
-class TreenodeOrdered extends Treenode implements IndexedElementInterface
+class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
 {
     /**
      * @var non-negative-int
@@ -94,5 +95,31 @@ class TreenodeOrdered extends Treenode implements IndexedElementInterface
     public function setIndex(int $index): void
     {
         $this->index = $index;
+    }
+
+    /**
+     * @return TreenodeOrderedInterface|null
+     */
+    public function getFirstChild(): ?TreenodeOrderedInterface
+    {
+        return $this->getChildren()->getFirst();
+    }
+
+    /**
+     * @return TreenodeOrderedInterface|null
+     */
+    public function getLastChild(): ?TreenodeOrderedInterface
+    {
+        return $this->getChildren()->getLast();
+    }
+
+    /**
+     * @param  int  $n
+     *
+     * @return TreenodeOrderedInterface|null
+     */
+    public function getNthChild(int $n): ?TreenodeOrderedInterface
+    {
+        return $this->getChildren()->getNth($n);
     }
 }

@@ -216,9 +216,9 @@ class CollectionOrderedTest extends TestCase
     /**
      * @return void
      * @throws InvalidKeyException
-     * @covers \pvc\struct\collection\CollectionOrdered::getFirstElement
-     * @covers \pvc\struct\collection\CollectionOrdered::getLastElement
-     * @covers \pvc\struct\collection\CollectionOrdered::getNthElement
+     * @covers \pvc\struct\collection\CollectionOrdered::getFirst
+     * @covers \pvc\struct\collection\CollectionOrdered::getLast
+     * @covers \pvc\struct\collection\CollectionOrdered::getNth
      */
     public function testGetFirstLastNthElement(): void
     {
