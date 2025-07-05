@@ -42,7 +42,7 @@ use pvc\struct\treesearch\VisitationTrait;
  *  the parent and adds a node to its child list.
  *
  * @template PayloadType
- * @extends Treenode<PayloadType, Treenode, Tree, Collection>
+ * @extends Treenode<PayloadType, TreenodeUnordered, Collection>
  */
 class TreenodeUnordered extends Treenode
 {

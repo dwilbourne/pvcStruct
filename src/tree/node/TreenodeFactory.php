@@ -26,14 +26,13 @@ use pvc\struct\tree\tree\Tree;
  *
  * @template PayloadType
  * @template TreenodeType of TreenodeInterface
- * @template TreeType of TreeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType>
+ * @implements TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType>
  */
 abstract class TreenodeFactory implements TreenodeFactoryInterface
 {
     /**
-     * @var TreeType
+     * @var TreeInterface<PayloadType, TreenodeType, CollectionType>
      */
     protected TreeInterface $tree;
 
@@ -51,7 +50,7 @@ abstract class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @param TreeType $tree
+     * @param TreeInterface<PayloadType, TreenodeType, CollectionType> $tree
      * @return void
      */
     public function initialize(TreeInterface $tree): void

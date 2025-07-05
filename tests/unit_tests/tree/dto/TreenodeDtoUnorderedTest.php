@@ -3,13 +3,13 @@
 namespace pvcTests\struct\unit_tests\tree\dto;
 
 use PHPUnit\Framework\TestCase;
-use pvc\struct\tree\dto\TreenodeDtoUnordered;
+use pvc\struct\tree\dto\TreenodeDto;
 
 class TreenodeDtoUnorderedTest extends TestCase
 {
     /**
      * @return void
-     * @covers \pvc\struct\tree\dto\TreenodeDtoUnordered::__construct
+     * @covers \pvc\struct\tree\dto\TreenodeDto::__construct
      */
     public function testConstruct()
     {
@@ -17,7 +17,7 @@ class TreenodeDtoUnorderedTest extends TestCase
         $parentId = 2;
         $treeId = 3;
         $payLoad = 4;
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $treeId, $payLoad);
-        self::assertInstanceOf(TreenodeDtoUnordered::class, $dto);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payLoad);
+        self::assertInstanceOf(TreenodeDto::class, $dto);
     }
 }

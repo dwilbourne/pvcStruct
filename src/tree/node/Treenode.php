@@ -9,10 +9,10 @@ declare (strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\payload\PayloadTrait;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -25,8 +25,6 @@ use pvc\struct\tree\err\SetTreeIdException;
 use pvc\struct\treesearch\VisitationTrait;
 
 /**
- * @phpstan-type TreenodeDtoShape object{'nodeId': non-negative-int, 'parentId': ?non-negative-int, 'treeId': ?non-negative-int, 'payload': mixed}
- *
  *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
  *  which is set at construction time.
  *
@@ -42,9 +40,9 @@ use pvc\struct\treesearch\VisitationTrait;
  *
  * @template PayloadType
  * @template TreenodeType of TreenodeInterface
- * @template TreeType of TreeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreenodeInterface<PayloadType, TreenodeType, TreeType, CollectionType>
+ * @implements TreenodeInterface<PayloadType, TreenodeType, CollectionType>
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Treenode implements TreenodeInterface
 {
@@ -72,7 +70,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * reference to containing tree
-     * @var TreeType
+     * @var TreeInterface<PayloadType, TreenodeType, CollectionType>
      */
     protected TreeInterface $tree;
 
@@ -83,7 +81,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @param CollectionType $collection
-     * @param TreeType $tree
+     * @param TreeInterface<PayloadType, TreenodeType, CollectionType> $tree
      * @throws ChildCollectionException
      */
     public function __construct(CollectionInterface $collection, TreeInterface $tree)
@@ -110,7 +108,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param TreenodeDtoShape&DtoInterface $dto
+     * @param TreenodeDtoShape $dto
      * @return void
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
@@ -121,7 +119,7 @@ class Treenode implements TreenodeInterface
      * @throws SetTreeIdException
      * @throws InvalidValueException
      */
-    public function hydrate(DtoInterface $dto): void
+    public function hydrate($dto): void
     {
         /**
          * cannot hydrate a node if it already has been hydrated
@@ -253,7 +251,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @function getTree
-     * @return TreeType
+     * @return TreeInterface<PayloadType, TreenodeType, CollectionType>
      */
     public function getTree(): TreeInterface
     {
@@ -324,6 +322,8 @@ class Treenode implements TreenodeInterface
          * the root has no parent, so there is no existing child collection to get from a parent. We do have to go a
          * long way to get to the collection factory so we can make a collection and add this node to it.
          */
+
+        /** @phpstan-ignore-next-line */
         if ($this->getTree()->rootTest($this)) {
             /** @var CollectionType $collection */
             $collection = $this->getTree()->getTreenodeFactory()->getTreenodeCollectionFactory()->makeCollection([]);

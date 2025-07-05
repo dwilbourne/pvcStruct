@@ -17,7 +17,7 @@ use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\tree\dto\TreenodeDtoUnordered;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
@@ -32,7 +32,7 @@ use pvc\struct\tree\tree\Tree;
  * @template TreenodeType of TreenodeInterface
  * @template TreeType of TreeInterface
  * @template CollectionType of CollectionInterface
- * @phpstan-import-type TreenodeDtoShape from TreenodeDtoUnordered
+ * @phpstan-import-type TreenodeDtoShape from TreenodeDto
  */
 class TreeTest extends TestCase
 {
@@ -142,11 +142,11 @@ class TreeTest extends TestCase
         $payload = null;
 
         $parentId = null;
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
         self::assertTrue($this->tree->rootTest($dto));
 
         $parentId = 1;
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
         self::assertFalse($this->tree->rootTest($dto));
     }
 
@@ -232,7 +232,7 @@ class TreeTest extends TestCase
          * cannot mock a dto
          */
 
-        $dto = new TreenodeDtoUnordered($rootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($rootId, $parentId, $treeId, $payload);
         $this->tree->addNode($dto);
 
         self::assertFalse($this->tree->isEmpty());
@@ -280,7 +280,7 @@ class TreeTest extends TestCase
          * cannot mock a dto - it only has properties
          * @var TreenodeDtoShape $dto
          */
-        $dto = new TreenodeDtoUnordered($firstRootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($firstRootId, $parentId, $treeId, $payload);
 
         /**
          * first time is fine
@@ -290,7 +290,7 @@ class TreeTest extends TestCase
         /**
          * second time throws an exception
          */
-        $dto = new TreenodeDtoUnordered($secondRootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($secondRootId, $parentId, $treeId, $payload);
         self::expectException(AlreadySetRootException::class);
         $this->tree->addNode($dto);
     }
@@ -343,7 +343,7 @@ class TreeTest extends TestCase
         $treeId = null;
         $payload = null;
 
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
         self::expectException(NoRootFoundException::class);
         $this->tree->initialize($this->treeId, [$dto]);
     }

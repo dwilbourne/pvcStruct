@@ -2,7 +2,7 @@
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
+use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\node\TreenodeFactoryOrdered;
@@ -11,8 +11,8 @@ use pvc\struct\tree\node\TreenodeOrdered;
 /**
  * @class TreeOrdered
  * @template PayloadType
- * @extends Tree<PayloadType, TreenodeOrdered, TreeOrdered, CollectionOrdered>
- * @phpstan-import-type TreenodeOrderedDtoShape from TreenodeOrdered
+ * @extends Tree<PayloadType, TreenodeOrdered, CollectionOrdered>
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreeOrdered extends Tree
 {
@@ -23,12 +23,14 @@ class TreeOrdered extends Tree
         TreenodeFactoryOrdered $treenodeFactory,
     )
     {
-        $this->treenodeDtoComparator = function (mixed $a, mixed $b) {
+        $this->treenodeDtoComparator = function ($a, $b) {
             /**
-             * @var TreenodeOrderedDtoShape $a
-             * @var TreenodeOrderedDtoShape $b
+             * @var TreenodeDtoShape $a
+             * @var TreenodeDtoShape $b
              */
-            return $a->index <=> $b->index;
+            assert(isset($a->index));
+            assert(isset($b->index));
+           return $a->index <=> $b->index;
         };
         parent::__construct($treenodeFactory);
     }

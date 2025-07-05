@@ -14,7 +14,7 @@ use pvc\struct\dto\err\DtoInvalidArrayKeyException;
 use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvc\struct\tree\dto\TreenodeDtoUnordered;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\node\TreenodeOrdered;
 use pvc\struct\tree\node\TreenodeUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
@@ -77,7 +77,7 @@ class TestUtils
         $nodeData = $this->fixture->getNodeData();
         $dtoFactory = $ordered ?
             new DtoFactory(TreenodeDtoOrdered::class, TreenodeOrdered::class) :
-            new DtoFactory(TreenodeDtoUnordered::class, TreenodeUnordered::class);
+            new DtoFactory(TreenodeDto::class, TreenodeUnordered::class);
 
         $callback = function(array $row) use ($dtoFactory, $ordered) : DtoInterface  {
             $arr = [];

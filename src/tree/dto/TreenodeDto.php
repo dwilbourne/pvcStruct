@@ -13,7 +13,7 @@ use pvc\interfaces\struct\dto\DtoInterface;
 /**
  * @template PayloadType
  */
-readonly class TreenodeDtoUnordered implements DtoInterface
+readonly class TreenodeDto implements DtoInterface
 {
     public function __construct(
         /**

@@ -13,6 +13,7 @@ use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
@@ -25,10 +26,9 @@ use pvc\struct\tree\node\Treenode;
  * @class Tree
  * @template PayloadType
  * @template TreenodeType of TreenodeInterface
- * @template TreeType of TreeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreeInterface<PayloadType, TreenodeType, TreeType, CollectionType>
- * @phpstan-import-type TreenodeDtoShape from Treenode
+ * @implements TreeInterface<PayloadType, TreenodeType, CollectionType>
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Tree implements TreeInterface
 {
@@ -58,7 +58,7 @@ class Tree implements TreeInterface
     protected $treenodeDtoComparator = null;
 
     /**
-     * @param TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType> $treenodeFactory
+     * @param TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType> $treenodeFactory
      */
     public function __construct(protected TreenodeFactoryInterface $treenodeFactory)
     {
@@ -78,14 +78,13 @@ class Tree implements TreeInterface
      * initializes the tree, e.g. removes all the nodes, sets the root to null, sets the treeId and
      * initializes the TreenodeFactory
      * @param non-negative-int $treeId
-     * @param array<TreenodeDtoShape&DtoInterface> $dtos
+     * @param array<TreenodeDtoShape> $dtos
      */
     public function initialize(int $treeId, array $dtos = []): void
     {
         $this->nodes = [];
         $this->root = null;
         $this->setTreeId($treeId);
-        /** @phpstan-ignore-next-line */
         $this->treenodeFactory->initialize($this);
         /**
          * at this point the tree is in a valid state and is therefore initialized, even if it does not have
@@ -137,7 +136,7 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @return TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType>
+     * @return TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType>
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {
@@ -150,10 +149,10 @@ class Tree implements TreeInterface
     /**
      * rootTest
      * encapsulate logic for testing whether something is or can be the root
-     * @param TreenodeType|(DtoInterface&TreenodeDtoShape) $nodeItem
+     * @param TreenodeType|TreenodeDtoShape $nodeItem
      * @return bool
      */
-    public function rootTest(TreenodeInterface|DtoInterface $nodeItem): bool
+    public function rootTest($nodeItem): bool
     {
         if ($nodeItem instanceof TreenodeInterface) {
             return is_null($nodeItem->getParentId());
@@ -228,9 +227,9 @@ class Tree implements TreeInterface
 
     /**
      * addNode
-     * @param TreenodeDtoShape&DtoInterface $dto
+     * @param TreenodeDtoShape $dto
      */
-    public function addNode(DtoInterface $dto): void
+    public function addNode($dto): void
     {
         /**
          * external rules that determine whether this node can be added to the
@@ -250,7 +249,7 @@ class Tree implements TreeInterface
 
     /**
      * hydrate
-     * @param array<TreenodeDtoShape&DtoInterface> $dtos
+     * @param array<TreenodeDtoShape> $dtos
      * this metyhod is protected and only called from within the initialize method, which has a required treeId
      * parameter.  That ensures that we can never hydrate the tree without the treeId being set.
      */
@@ -277,7 +276,7 @@ class Tree implements TreeInterface
     /**
      * insertNodeRecurse recursively inserts nodes into the tree using a depth first algorithm
      * @param int $startNodeKey
-     * @param array<TreenodeDtoShape&DtoInterface> $dtos
+     * @param array<TreenodeDtoShape> $dtos
      * @return void
      */
     protected function insertNodeRecurse(int $startNodeKey, array $dtos): void
@@ -292,9 +291,6 @@ class Tree implements TreeInterface
          */
 
         /**
-         * @param DtoInterface $dto
-         * @return bool
-         *
          * filter dto array for children of $node
          *
          * need identity, not equals, because 0 == null.  For example, if the root node has nodeId of 0, then it
@@ -302,11 +298,9 @@ class Tree implements TreeInterface
          * parentId equals 0, the nodeDto for the root returns a parentId of null and if 0 == null, then
          * we try to add the root a second time as a child of itself.....
          */
-        $filter = function (DtoInterface $dto) use ($parentId): bool
+        $filter = function ($dto) use ($parentId): bool
             {
-                /**
-                 * @var TreenodeDtoShape&DtoInterface $dto
-                 */
+                /** @var TreenodeDtoShape $dto */
                 return $parentId === $dto->parentId;
             };
         $childDtos = array_filter($dtos, $filter);

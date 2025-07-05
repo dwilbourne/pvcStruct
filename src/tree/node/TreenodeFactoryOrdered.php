@@ -10,7 +10,7 @@ use pvc\struct\tree\tree\TreeOrdered;
 
 /**
  * @template PayloadType
- * @extends TreenodeFactory<PayloadType, TreenodeOrdered, TreeOrdered, CollectionOrdered>
+ * @extends TreenodeFactory<PayloadType, TreenodeOrdered, CollectionOrdered>
  */
 class TreenodeFactoryOrdered extends TreenodeFactory
 {

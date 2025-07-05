@@ -6,9 +6,9 @@ namespace pvc\struct\tree\dto;
 
 /**
  * @template PayloadType
- * @extends TreenodeDtoUnordered<PayloadType>
+ * @extends TreenodeDto<PayloadType>
  */
-readonly class TreenodeDtoOrdered extends TreenodeDtoUnordered
+readonly class TreenodeDtoOrdered extends TreenodeDto
 {
     /**
      * @param non-negative-int $nodeId

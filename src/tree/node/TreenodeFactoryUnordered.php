@@ -9,7 +9,7 @@ use pvc\struct\tree\tree\TreeUnordered;
 
 /**
  * @template PayloadType
- * @extends TreenodeFactory<PayloadType, TreenodeUnordered, TreeUnordered, Collection>
+ * @extends TreenodeFactory<PayloadType, TreenodeUnordered, Collection>
  */
 class TreenodeFactoryUnordered extends TreenodeFactory
 {

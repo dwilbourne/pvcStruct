@@ -30,8 +30,6 @@ use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\treesearch\VisitationTrait;
 
 /**
- * @phpstan-type TreenodeOrderedDtoShape object{'nodeId': non-negative-int, 'parentId': ?non-negative-int, 'treeId': ?non-negative-int, 'payload': mixed, 'index': non-negative-int}
- *
  *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
  *  which is set at construction time.
  *
@@ -46,7 +44,8 @@ use pvc\struct\treesearch\VisitationTrait;
  *  the parent and adds a node to its child list.
  *
  * @template PayloadType
- * @extends Treenode<PayloadType, TreenodeOrdered, TreeOrdered, CollectionOrdered>
+ * @extends Treenode<PayloadType, TreenodeOrdered, CollectionOrdered>
+ * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreenodeOrdered extends Treenode implements IndexedElementInterface
 {
@@ -56,7 +55,7 @@ class TreenodeOrdered extends Treenode implements IndexedElementInterface
     protected int $index;
 
     /**
-     * @param DtoInterface $dto
+     * @param TreenodeDtoShape $dto
      * @return void
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
@@ -67,10 +66,10 @@ class TreenodeOrdered extends Treenode implements IndexedElementInterface
      * @throws SetTreeIdException
      * @throws InvalidValueException
      */
-    public function hydrate(DtoInterface $dto): void
+    public function hydrate($dto): void
     {
+        assert(isset($dto->index));
         $this->setIndex($dto->index);
-        /** @var TreenodeOrderedDtoShape&DtoInterface $dto */
         parent::hydrate($dto);
     }
 

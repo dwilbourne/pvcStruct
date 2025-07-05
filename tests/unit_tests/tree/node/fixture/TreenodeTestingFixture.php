@@ -14,13 +14,13 @@ use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvc\struct\tree\dto\TreenodeDtoUnordered;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\node\Treenode;
 use pvc\testingutils\testingTraits\IteratorTrait;
 
 /**
  * Class TreenodeTestingFixture
- * @phpstan-import-type TreenodeDtoShape from TreenodeDtoUnordered
+ * @phpstan-import-type TreenodeDtoShape from TreenodeDto
  */
 class TreenodeTestingFixture extends TestCase
 {
@@ -195,12 +195,14 @@ class TreenodeTestingFixture extends TestCase
     /**
      * @param non-negative-int $nodeId
      * @param non-negative-int|null $parentId
-     * @return TreenodeDtoShape&TreenodeDtoUnordered
+     *
+     * @return TreenodeDtoShape&TreenodeDto
      */
-    public function makeDTOUnordered(int $nodeId, int|null $parentId): TreenodeDtoUnordered
+    public function makeDTOUnordered(int $nodeId, int|null $parentId
+    ): TreenodeDto
     {
         $payload = null;
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $this->treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $this->treeId, $payload);
         return $dto;
     }
 
@@ -211,11 +213,12 @@ class TreenodeTestingFixture extends TestCase
         return $dto;
     }
 
-    public function makeDtoWithNonMatchingTreeId(int $nodeId, int|null $parentId): TreenodeDtoUnordered
+    public function makeDtoWithNonMatchingTreeId(int $nodeId, int|null $parentId
+    ): TreenodeDto
     {
         $badTreeId = 100;
         $payload = null;
-        $dto = new TreenodeDtoUnordered($nodeId, $parentId, $badTreeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $badTreeId, $payload);
         return $dto;
     }
 }
