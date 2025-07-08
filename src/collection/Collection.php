@@ -221,15 +221,47 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * @param non-negative-int $key
-     * @return int
+     * @param non-negative-int $proposedIndex
+     * @param non-negative-int $maxIndex
+     * @return non-negative-int
+     *
+     * there are several methods where we need to ensure the index argument
+     * is between 0 and maxIndex.  It is (count - 1) when we are looking for
+     * something and count when we are adding something
      */
-    public function getIndex(int $key): int
+    protected function trimIndex(int $proposedIndex, int $maxIndex): int
     {
-        return -1;
+        $proposedIndex = max($proposedIndex, 0);
+        return min($proposedIndex, $maxIndex);
     }
 
-    public function setIndex(int $key, int $newIndex): void
+
+
+    /**
+     * @return ElementType|null
+     */
+    public function getFirst()
     {
+        return array_values($this->getElements())[0] ?? null;
+    }
+
+    /**
+     * @return ElementType|null
+     */
+    public function getLast()
+    {
+        return array_values($this->getElements())[count($this->getElements()) - 1] ?? null;
+    }
+
+    /**
+     * @param  non-negative-int  $index
+     *
+     * @return ElementType|null
+     */
+    public function getNth(int $index)
+    {
+        $maxIndex = max(0, $this->count() - 1);
+        $index = $this->trimIndex($index, $maxIndex);
+        return $this->getElements()[$index] ?? null;
     }
 }

@@ -102,21 +102,6 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
-     * @param non-negative-int $proposedIndex
-     * @param non-negative-int $maxIndex
-     * @return non-negative-int
-     *
-     * the add method and the setIndex method both need to ensure that the proposed index of the element is >= 0.
-     * If we are adding an element, the max index value is count(). If we are setting the index of an existing
-     * element to a new value, the max index value is count() - 1.
-     */
-    private function trimIndex(int $proposedIndex, int $maxIndex): int
-    {
-        $proposedIndex = max($proposedIndex, 0);
-        return min($proposedIndex, $maxIndex);
-    }
-
-    /**
      * delete
      * @param non-negative-int $key
      *
@@ -230,33 +215,5 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
         $element = $this->getElement($key);
         assert(!is_null($element));
         return $element->getIndex();
-    }
-
-    /**
-     * @return ElementType|null
-     */
-    public function getFirst()
-    {
-        return $this->getElements()[0] ?? null;
-    }
-
-    /**
-     * @return ElementType|null
-     */
-    public function getLast()
-    {
-        return $this->getElements()[count($this->getElements()) - 1] ?? null;
-    }
-
-    /**
-     * @param  non-negative-int  $index
-     *
-     * @return ElementType|null
-     */
-    public function getNth(int $index)
-    {
-        $maxIndex = max(0, $this->count() - 1);
-        $index = $this->trimIndex($index, $maxIndex);
-        return $this->getElements()[$index] ?? null;
     }
 }

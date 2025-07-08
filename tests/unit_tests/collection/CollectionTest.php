@@ -9,6 +9,7 @@ namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\Collection;
+use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
@@ -308,17 +309,30 @@ class CollectionTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\collection\Collection::setIndex
-     * @covers \pvc\struct\collection\Collection::getIndex
+     * @throws InvalidKeyException
+     * @covers \pvc\struct\collection\Collection::getFirst
+     * @covers \pvc\struct\collection\Collection::getLast
+     * @covers \pvc\struct\collection\Collection::getNth
      */
-    public function testSetGetIndex(): void
+    public function testGetFirstLastNthElement(): void
     {
-        /**
-         * collection is unordered, all indices are -1.
-         */
-        $this->addElements(3);
-        self::assertEquals(-1, $this->collection->getIndex(1));
-        $this->collection->setIndex(2, 3);
-        self::assertEquals(-1, $this->collection->getIndex(2));
+        $indexed = false;
+
+        $key = 7;
+        $a = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $key = 10;
+        $b = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $key = 10;
+        $c = $this->collectionElementFactory->makeElement($key, $indexed);
+
+        $this->collection = new Collection([$a, $b, $c]);
+
+        self::assertSame($a, $this->collection->getFirst());
+        self::assertSame($c, $this->collection->getLast());
+        self::assertSame($b, $this->collection->getNth(1));
+        self::assertSame($c, $this->collection->getNth(2));
+        self::assertSame($c, $this->collection->getNth(4));
     }
 }
