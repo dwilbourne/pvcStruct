@@ -8,9 +8,10 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\node;
 
-use pvc\interfaces\struct\collection\CollectionOrderedInterface;
+use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
@@ -34,10 +35,10 @@ use pvc\struct\tree\err\SetTreeIdException;
  *  children.  So the setParent method is responsible not only for setting the parent property, but it also takes
  *  the parent and adds a node to its child list.
  *
- * @extends Treenode<TreenodeOrderedInterface, CollectionOrderedInterface>
+ * @extends Treenode<TreenodeOrdered, CollectionOrdered>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
-class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
+class TreenodeOrdered extends Treenode implements IndexedElementInterface
 {
     /**
      * @var non-negative-int
@@ -84,37 +85,5 @@ class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
     public function setIndex(int $index): void
     {
         $this->index = $index;
-    }
-
-    /**
-     * @return TreenodeOrderedInterface|null
-     */
-    public function getFirstChild(): ?TreenodeOrderedInterface
-    {
-        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
-        $children = $this->getChildren();
-        return $children->getFirst();
-    }
-
-    /**
-     * @return TreenodeOrderedInterface|null
-     */
-    public function getLastChild(): ?TreenodeOrderedInterface
-    {
-        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
-        $children = $this->getChildren();
-        return $children->getLast();
-    }
-
-    /**
-     * @param  non-negative-int  $n
-     *
-     * @return TreenodeOrderedInterface|null
-     */
-    public function getNthChild(int $n): ?TreenodeOrderedInterface
-    {
-        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
-        $children = $this->getChildren();
-        return $children->getNth($n);
     }
 }

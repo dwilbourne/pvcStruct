@@ -267,6 +267,37 @@ class Treenode implements TreenodeInterface
     }
 
     /**
+     * @return TreenodeType|null
+     */
+    public function getFirstChild()
+    {
+        /** @var CollectionType<TreenodeType> $children */
+        $children = $this->getChildren();
+        return $children->getFirst();
+    }
+
+    /**
+     * @return TreenodeType|null
+     */
+    public function getLastChild()
+    {
+        /** @var CollectionType<TreenodeType> $children */
+        $children = $this->getChildren();
+        return $children->getLast();
+    }
+
+    /**
+     * @param non-negative-int $n
+     * @return TreenodeType|null
+     */
+    public function getNthChild(int $n)
+    {
+        /** @var CollectionType<TreenodeType> $children */
+        $children = $this->getChildren();
+        return $children->getNth($n);
+    }
+
+    /**
      * getChildrenAsArray
      * @return array<TreenodeType>
      */

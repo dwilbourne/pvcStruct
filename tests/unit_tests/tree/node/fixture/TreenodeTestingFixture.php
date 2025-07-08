@@ -13,8 +13,8 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\Collection;
-use pvc\struct\tree\dto\TreenodeDtoOrdered;
 use pvc\struct\tree\dto\TreenodeDto;
+use pvc\struct\tree\dto\TreenodeDtoOrdered;
 use pvc\struct\tree\node\Treenode;
 use pvc\testingutils\testingTraits\IteratorTrait;
 

@@ -4,7 +4,6 @@ namespace pvcTests\struct\unit_tests\tree\node;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\collection\CollectionOrderedFactory;
 use pvc\struct\tree\err\ChildCollectionException;

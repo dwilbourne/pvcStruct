@@ -92,48 +92,4 @@ class TreenodeOrderedTest extends TestCase
         $node->hydrate($dto);
         self::assertEquals($index, $node->getIndex());
     }
-
-    /**
-     * @return void
-     * @throws \pvc\struct\tree\err\ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::getFirstChild
-     */
-    public function testGetFirstChild(): void
-    {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
-        $mockChild = $this->createMock(TreenodeOrdered::class);
-        $this->collection->expects($this->once())->method('getFirst')->willReturn($mockChild);
-        $node = new TreenodeOrdered($this->collection, $this->tree);
-        $node->getFirstChild();
-    }
-
-    /**
-     * @return void
-     * @throws \pvc\struct\tree\err\ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::getLastChild
-     */
-    public function testGetLastChild(): void
-    {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
-        $mockChild = $this->createMock(TreenodeOrdered::class);
-        $this->collection->expects($this->once())->method('getLast')->willReturn($mockChild);
-        $node = new TreenodeOrdered($this->collection, $this->tree);
-        $node->getLastChild();
-    }
-
-    /**
-     * @return void
-     * @throws \pvc\struct\tree\err\ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::getNthChild
-     */
-    public function testGetNthChild(): void
-    {
-        $n  = 2;
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
-        $mockChild = $this->createMock(TreenodeOrdered::class);
-        $this->collection->expects($this->once())->method('getNth')->with($n)->willReturn($mockChild);
-        $node = new TreenodeOrdered($this->collection, $this->tree);
-        $node->getNthChild($n);
-    }
-
 }

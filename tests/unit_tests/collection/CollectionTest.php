@@ -9,7 +9,6 @@ namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\Collection;
-use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;

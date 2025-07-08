@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPreorder;

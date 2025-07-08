@@ -2,8 +2,8 @@
 
 namespace pvcTests\struct\unit_tests\tree\node;
 
-use pvc\struct\tree\node\NodeIdFactory;
 use PHPUnit\Framework\TestCase;
+use pvc\struct\tree\node\NodeIdFactory;
 
 class NodeIdFactoryTest extends TestCase
 {

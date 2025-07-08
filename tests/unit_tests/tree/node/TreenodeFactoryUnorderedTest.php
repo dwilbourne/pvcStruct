@@ -3,15 +3,12 @@
 namespace pvcTests\struct\unit_tests\tree\node;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
-use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\node\TreenodeFactoryUnordered;
-use PHPUnit\Framework\TestCase;
 use pvc\struct\tree\node\TreenodeUnordered;
 use pvc\struct\tree\tree\TreeUnordered;
 

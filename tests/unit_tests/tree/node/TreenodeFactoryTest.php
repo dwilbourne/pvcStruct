@@ -11,11 +11,9 @@ namespace pvcTests\struct\unit_tests\tree\node;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionFactoryInterface;
-use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 use pvc\struct\tree\node\TreenodeFactory;
 

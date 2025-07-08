@@ -11,7 +11,6 @@ namespace pvcTests\struct\integration_tests\treesearch;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\SearchBreadthFirst;
 use pvcTests\struct\integration_tests\fixture\TestUtils;

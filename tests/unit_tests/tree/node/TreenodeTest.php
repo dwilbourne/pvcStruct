@@ -319,6 +319,50 @@ class TreenodeTest extends TestCase
     }
 
     /**
+     * @return void
+     * @throws \pvc\struct\tree\err\ChildCollectionException
+     * @covers \pvc\struct\tree\node\Treenode::getFirstChild
+     */
+    public function testGetFirstChild(): void
+    {
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $mockChild = $this->createMock(Treenode::class);
+        $this->collection->expects($this->once())->method('getFirst')->willReturn($mockChild);
+        $node = new Treenode($this->collection, $this->tree);
+        $node->getFirstChild();
+    }
+
+    /**
+     * @return void
+     * @throws \pvc\struct\tree\err\ChildCollectionException
+     * @covers \pvc\struct\tree\node\Treenode::getLastChild
+     */
+    public function testGetLastChild(): void
+    {
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $mockChild = $this->createMock(Treenode::class);
+        $this->collection->expects($this->once())->method('getLast')->willReturn($mockChild);
+        $node = new Treenode($this->collection, $this->tree);
+        $node->getLastChild();
+    }
+
+    /**
+     * @return void
+     * @throws \pvc\struct\tree\err\ChildCollectionException
+     * @covers \pvc\struct\tree\node\Treenode::getNthChild
+     */
+    public function testGetNthChild(): void
+    {
+        $n  = 2;
+        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $mockChild = $this->createMock(Treenode::class);
+        $this->collection->expects($this->once())->method('getNth')->with($n)->willReturn($mockChild);
+        $node = new Treenode($this->collection, $this->tree);
+        $node->getNthChild($n);
+    }
+
+
+    /**
      * testGetChildrenAsArray
      * @covers \pvc\struct\tree\node\Treenode::getChildrenArray
      */
