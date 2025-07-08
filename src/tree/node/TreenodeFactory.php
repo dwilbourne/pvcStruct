@@ -24,15 +24,14 @@ use pvc\struct\tree\tree\Tree;
  * and then go back and set the tree property in TreenodeFactory.  Tree factory does all this in the method
  * makeTree.
  *
- * @template PayloadType
  * @template TreenodeType of TreenodeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType>
+ * @implements TreenodeFactoryInterface<TreenodeType, CollectionType>
  */
 abstract class TreenodeFactory implements TreenodeFactoryInterface
 {
     /**
-     * @var TreeInterface<PayloadType, TreenodeType, CollectionType>
+     * @var TreeInterface<TreenodeType, CollectionType>
      */
     protected TreeInterface $tree;
 
@@ -50,7 +49,7 @@ abstract class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @param TreeInterface<PayloadType, TreenodeType, CollectionType> $tree
+     * @param TreeInterface<TreenodeType, CollectionType> $tree
      * @return void
      */
     public function initialize(TreeInterface $tree): void

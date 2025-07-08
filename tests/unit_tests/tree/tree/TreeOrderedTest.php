@@ -4,15 +4,11 @@ namespace pvcTests\struct\unit_tests\tree\tree;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\node\TreenodeFactoryOrdered;
 use pvc\struct\tree\node\TreenodeOrdered;
 use pvc\struct\tree\tree\TreeOrdered;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TreeOrderedTest extends TestCase
 {
     /**
@@ -26,7 +22,7 @@ class TreeOrderedTest extends TestCase
     protected TreeOrdered $tree;
 
     /**
-     * @var TreenodeFactoryOrdered<PayloadType, TreenodeOrdered, TreeOrdered, CollectionOrdered>&MockObject
+     * @var TreenodeFactoryOrdered<TreenodeOrdered, TreeOrdered, CollectionOrdered>&MockObject
      */
     protected TreenodeFactoryOrdered&MockObject $nodeFactory;
 

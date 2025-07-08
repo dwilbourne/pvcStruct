@@ -6,7 +6,6 @@ use League\Container\Container;
 use League\Container\Definition\DefinitionAggregate;
 use League\Container\ReflectionContainer;
 use pvc\interfaces\struct\dto\DtoInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\dto\DtoFactory;
@@ -21,9 +20,6 @@ use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\tree\TreeUnordered;
 use ReflectionException;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TestUtils
 {
     protected Container $container;
@@ -84,7 +80,6 @@ class TestUtils
             $arr['nodeId'] = $row[0];
             $arr['parentId'] = $row[1];
             $arr['treeId'] = null;
-            $arr['payload'] = null;
             if ($ordered) {
                 $arr['index'] = $row[2];
             }

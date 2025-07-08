@@ -13,7 +13,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
@@ -28,7 +27,6 @@ use pvc\struct\tree\tree\Tree;
 
 /**
  * Class AbstractTreeTest
- * @template PayloadType of HasPayloadInterface
  * @template TreenodeType of TreenodeInterface
  * @template TreeType of TreeInterface
  * @template CollectionType of CollectionInterface
@@ -139,14 +137,13 @@ class TreeTest extends TestCase
          */
         $nodeId = 1;
         $treeId = null;
-        $payload = null;
 
         $parentId = null;
-        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId);
         self::assertTrue($this->tree->rootTest($dto));
 
         $parentId = 1;
-        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId);
         self::assertFalse($this->tree->rootTest($dto));
     }
 
@@ -221,7 +218,6 @@ class TreeTest extends TestCase
         $rootId = 0;
         $parentId = null;
         $treeId = null;
-        $payload = null;
 
         $root = $this->createMockRoot($rootId);
         $this->nodeFactory->method('makeNode')->willReturn($root);
@@ -232,7 +228,7 @@ class TreeTest extends TestCase
          * cannot mock a dto
          */
 
-        $dto = new TreenodeDto($rootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($rootId, $parentId, $treeId);
         $this->tree->addNode($dto);
 
         self::assertFalse($this->tree->isEmpty());
@@ -259,7 +255,6 @@ class TreeTest extends TestCase
 
         $parentId = null;
         $treeId = null;
-        $payload = null;
 
         $firstRoot = $this->createMockRoot($firstRootId);
         $secondRoot = $this->createMockRoot($secondRootId);
@@ -280,7 +275,7 @@ class TreeTest extends TestCase
          * cannot mock a dto - it only has properties
          * @var TreenodeDtoShape $dto
          */
-        $dto = new TreenodeDto($firstRootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($firstRootId, $parentId, $treeId);
 
         /**
          * first time is fine
@@ -290,7 +285,7 @@ class TreeTest extends TestCase
         /**
          * second time throws an exception
          */
-        $dto = new TreenodeDto($secondRootId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($secondRootId, $parentId, $treeId);
         self::expectException(AlreadySetRootException::class);
         $this->tree->addNode($dto);
     }
@@ -341,9 +336,8 @@ class TreeTest extends TestCase
         $nodeId = 2;
         $parentId = 1;
         $treeId = null;
-        $payload = null;
 
-        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId);
         self::expectException(NoRootFoundException::class);
         $this->tree->initialize($this->treeId, [$dto]);
     }

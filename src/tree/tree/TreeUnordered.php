@@ -8,13 +8,12 @@ use pvc\struct\tree\node\TreenodeUnordered;
 
 /**
  * @class TreeOrdered
- * @template PayloadType
- * @extends Tree<PayloadType, TreenodeUnordered, Collection>
+ * @extends Tree<TreenodeUnordered, Collection>
  */
 class TreeUnordered extends Tree
 {
     /**
-     * @param TreenodeFactoryUnordered<PayloadType> $treenodeFactory
+     * @param TreenodeFactoryUnordered $treenodeFactory
      */
     public function __construct(
         TreenodeFactoryUnordered $treenodeFactory,

@@ -12,7 +12,6 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\payload\PayloadTrait;
-use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -38,19 +37,13 @@ use pvc\struct\treesearch\VisitationTrait;
  *  children.  So the setParent method is responsible not only for setting the parent property, but it also takes
  *  the parent and adds a node to its child list.
  *
- * @template PayloadType
  * @template TreenodeType of TreenodeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreenodeInterface<PayloadType, TreenodeType, CollectionType>
+ * @implements TreenodeInterface<TreenodeType, CollectionType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Treenode implements TreenodeInterface
 {
-    /**
-     * @use PayloadTrait<PayloadType>
-     */
-    use PayloadTrait;
-
     /**
      * implement NodeVisitableInterface, make Treenodes available for iterable depth first search
      */
@@ -70,7 +63,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * reference to containing tree
-     * @var TreeInterface<PayloadType, TreenodeType, CollectionType>
+     * @var TreeInterface<TreenodeType, CollectionType>
      */
     protected TreeInterface $tree;
 
@@ -81,7 +74,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @param CollectionType $collection
-     * @param TreeInterface<PayloadType, TreenodeType, CollectionType> $tree
+     * @param TreeInterface<TreenodeType, CollectionType> $tree
      * @throws ChildCollectionException
      */
     public function __construct(CollectionInterface $collection, TreeInterface $tree)
@@ -148,7 +141,6 @@ class Treenode implements TreenodeInterface
          * parent.
          */
         $this->setParent($dto->parentId);
-        $this->setPayload($dto->payload);
     }
 
     protected function setNodeId(int $nodeId): void
@@ -251,7 +243,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @function getTree
-     * @return TreeInterface<PayloadType, TreenodeType, CollectionType>
+     * @return TreeInterface<TreenodeType, CollectionType>
      */
     public function getTree(): TreeInterface
     {

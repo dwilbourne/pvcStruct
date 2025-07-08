@@ -8,17 +8,10 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\node;
 
-use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\collection\IndexedElementInterface;
-use pvc\interfaces\struct\dto\DtoInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
-use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\collection\Collection;
-use pvc\struct\collection\CollectionOrdered;
-use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
-use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
 use pvc\struct\tree\err\InvalidParentNodeException;
@@ -26,9 +19,6 @@ use pvc\struct\tree\err\InvalidValueException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeIdException;
-use pvc\struct\tree\tree\Tree;
-use pvc\struct\tree\tree\TreeOrdered;
-use pvc\struct\treesearch\VisitationTrait;
 
 /**
  *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
@@ -44,8 +34,7 @@ use pvc\struct\treesearch\VisitationTrait;
  *  children.  So the setParent method is responsible not only for setting the parent property, but it also takes
  *  the parent and adds a node to its child list.
  *
- * @template PayloadType
- * @extends Treenode<PayloadType, TreenodeOrdered, CollectionOrdered>
+ * @extends Treenode<TreenodeOrderedInterface, CollectionOrderedInterface>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
@@ -102,7 +91,9 @@ class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
      */
     public function getFirstChild(): ?TreenodeOrderedInterface
     {
-        return $this->getChildren()->getFirst();
+        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
+        $children = $this->getChildren();
+        return $children->getFirst();
     }
 
     /**
@@ -110,16 +101,20 @@ class TreenodeOrdered extends Treenode implements TreenodeOrderedInterface
      */
     public function getLastChild(): ?TreenodeOrderedInterface
     {
-        return $this->getChildren()->getLast();
+        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
+        $children = $this->getChildren();
+        return $children->getLast();
     }
 
     /**
-     * @param  int  $n
+     * @param  non-negative-int  $n
      *
      * @return TreenodeOrderedInterface|null
      */
     public function getNthChild(int $n): ?TreenodeOrderedInterface
     {
-        return $this->getChildren()->getNth($n);
+        /** @var CollectionOrderedInterface<TreenodeOrderedInterface> $children */
+        $children = $this->getChildren();
+        return $children->getNth($n);
     }
 }

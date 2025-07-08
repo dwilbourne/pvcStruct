@@ -8,16 +8,12 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\tree\tree;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
 use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TreeUnorderedTest extends TestCase
 {
     protected TreeInterface $tree;

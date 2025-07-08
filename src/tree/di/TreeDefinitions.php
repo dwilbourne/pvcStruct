@@ -6,7 +6,6 @@ namespace pvc\struct\tree\di;
 
 use League\Container\Definition\Definition;
 use League\Container\Definition\DefinitionInterface;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\collection\CollectionOrdered;
@@ -16,9 +15,6 @@ use pvc\struct\tree\node\TreenodeFactoryUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\tree\TreeUnordered;
 
-/**
- * @template PayloadType of HasPayloadInterface
- */
 class TreeDefinitions
 {
     /**

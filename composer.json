@@ -24,7 +24,7 @@
 	},
 	"minimum-stability": "dev",
 	"require": {
-		"pvc/interfaces": "*",
+		"pvc/interfaces": "dev-remove_payload",
 		"pvc/err": "*",
 		"league/container": "*"
 

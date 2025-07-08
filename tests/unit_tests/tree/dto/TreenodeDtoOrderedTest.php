@@ -16,9 +16,8 @@ class TreenodeDtoOrderedTest extends TestCase
         $nodeId = 1;
         $parentId = 2;
         $treeId = 3;
-        $payLoad = 4;
         $index = 5;
-        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $treeId, $payLoad, $index);
+        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $treeId, $index);
         self::assertInstanceOf(TreenodeDtoOrdered::class, $dto);
     }
 }

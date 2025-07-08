@@ -10,9 +10,6 @@ namespace pvc\struct\tree\dto;
 
 use pvc\interfaces\struct\dto\DtoInterface;
 
-/**
- * @template PayloadType
- */
 readonly class TreenodeDto implements DtoInterface
 {
     public function __construct(
@@ -35,11 +32,6 @@ readonly class TreenodeDto implements DtoInterface
          * treeid from the containing tree.
          */
         public ?int  $treeId,
-
-        /**
-         * @var PayloadType|null
-         */
-        public mixed $payload,
     )
     {
     }

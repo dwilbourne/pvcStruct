@@ -10,14 +10,13 @@ use pvc\struct\tree\node\TreenodeOrdered;
 
 /**
  * @class TreeOrdered
- * @template PayloadType
- * @extends Tree<PayloadType, TreenodeOrdered, CollectionOrdered>
+ * @extends Tree<TreenodeOrdered, CollectionOrdered>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class TreeOrdered extends Tree
 {
     /**
-     * @param TreenodeFactoryOrdered<PayloadType> $treenodeFactory
+     * @param TreenodeFactoryOrdered $treenodeFactory
      */
     public function __construct(
         TreenodeFactoryOrdered $treenodeFactory,

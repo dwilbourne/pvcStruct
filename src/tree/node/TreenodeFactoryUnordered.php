@@ -2,19 +2,20 @@
 
 namespace pvc\struct\tree\node;
 
+use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 use pvc\struct\tree\tree\TreeUnordered;
 
 /**
- * @template PayloadType
- * @extends TreenodeFactory<PayloadType, TreenodeUnordered, Collection>
+ * @extends TreenodeFactory<TreenodeUnordered, Collection>
  */
 class TreenodeFactoryUnordered extends TreenodeFactory
 {
     /**
-     * @return TreenodeUnordered<PayloadType>
+     * @return TreenodeUnordered
      * @throws ChildCollectionException|TreenodeFactoryNotInitializedException
      */
     public function makeNode(): TreenodeUnordered
@@ -22,10 +23,9 @@ class TreenodeFactoryUnordered extends TreenodeFactory
         if (!$this->isInitialized()) {
             throw new TreeNodeFactoryNotInitializedException();
         }
-        /** @var Collection<TreenodeUnordered<PayloadType>> $treenodeCollection */
+        /** @var Collection<TreenodeUnordered> $treenodeCollection */
         $treenodeCollection = $this->treenodeCollectionFactory->makeCollection([]);
-        /** @var TreenodeUnordered<PayloadType> $node */
-        $node = new TreenodeUnordered($treenodeCollection, $this->tree);
-        return $node;
+
+        return new TreenodeUnordered($treenodeCollection, $this->tree);
     }
 }

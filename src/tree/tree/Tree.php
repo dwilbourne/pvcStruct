@@ -9,25 +9,21 @@ declare (strict_types=1);
 namespace pvc\struct\tree\tree;
 
 use pvc\interfaces\struct\collection\CollectionInterface;
-use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeNotInTreeException;
 use pvc\struct\tree\err\NoRootFoundException;
 use pvc\struct\tree\err\TreeNotInitializedException;
-use pvc\struct\tree\node\Treenode;
 
 /**
  * @class Tree
- * @template PayloadType
  * @template TreenodeType of TreenodeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreeInterface<PayloadType, TreenodeType, CollectionType>
+ * @implements TreeInterface<TreenodeType, CollectionType>
  * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
  */
 class Tree implements TreeInterface
@@ -58,7 +54,7 @@ class Tree implements TreeInterface
     protected $treenodeDtoComparator = null;
 
     /**
-     * @param TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType> $treenodeFactory
+     * @param TreenodeFactoryInterface<TreenodeType, CollectionType> $treenodeFactory
      */
     public function __construct(protected TreenodeFactoryInterface $treenodeFactory)
     {
@@ -136,7 +132,7 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @return TreenodeFactoryInterface<PayloadType, TreenodeType, CollectionType>
+     * @return TreenodeFactoryInterface<TreenodeType, CollectionType>
      */
     public function getTreenodeFactory(): TreenodeFactoryInterface
     {

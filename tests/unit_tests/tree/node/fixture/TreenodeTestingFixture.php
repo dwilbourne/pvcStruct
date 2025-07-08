@@ -201,15 +201,13 @@ class TreenodeTestingFixture extends TestCase
     public function makeDTOUnordered(int $nodeId, int|null $parentId
     ): TreenodeDto
     {
-        $payload = null;
-        $dto = new TreenodeDto($nodeId, $parentId, $this->treeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $this->treeId);
         return $dto;
     }
 
     public function makeDTOOrdered(int $nodeId, int|null $parentId, int $index): TreenodeDtoOrdered
     {
-        $payload = null;
-        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $this->treeId, $payload, $index);
+        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $this->treeId, $index);
         return $dto;
     }
 
@@ -217,8 +215,7 @@ class TreenodeTestingFixture extends TestCase
     ): TreenodeDto
     {
         $badTreeId = 100;
-        $payload = null;
-        $dto = new TreenodeDto($nodeId, $parentId, $badTreeId, $payload);
+        $dto = new TreenodeDto($nodeId, $parentId, $badTreeId);
         return $dto;
     }
 }

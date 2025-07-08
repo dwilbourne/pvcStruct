@@ -2,20 +2,22 @@
 
 namespace pvc\struct\tree\node;
 
+use pvc\interfaces\struct\collection\CollectionOrderedInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
+use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 use pvc\struct\tree\tree\TreeOrdered;
 
 /**
- * @template PayloadType
- * @extends TreenodeFactory<PayloadType, TreenodeOrdered, CollectionOrdered>
+ * @extends TreenodeFactory<TreenodeOrdered, CollectionOrdered>
  */
 class TreenodeFactoryOrdered extends TreenodeFactory
 {
     /**
-     * @return TreenodeOrdered<PayloadType>
+     * @return TreenodeOrdered
      * @throws ChildCollectionException|TreenodeFactoryNotInitializedException
      */
     public function makeNode(): TreenodeOrdered
@@ -23,11 +25,19 @@ class TreenodeFactoryOrdered extends TreenodeFactory
         if (!$this->isInitialized()) {
             throw new TreeNodeFactoryNotInitializedException();
         }
-        /** @var CollectionOrdered<TreenodeOrdered<PayloadType>> $treenodeCollection */
+
+        /** @var CollectionOrdered<TreenodeOrdered> $treenodeCollection */
         $treenodeCollection = $this->treenodeCollectionFactory->makeCollection([]);
-        /** @var TreenodeOrdered<PayloadType> $node */
-        $node = new TreenodeOrdered($treenodeCollection, $this->tree);
-        return $node;
+
+        /**
+         * at the moment, I am not experienced enough to understand why the tree needs to be type hinted below. Without
+         * the type hint, phpstan complains about the tree argument and refers to the template-covariant documentation.
+         * TODO: in the phpstan sandbox, understand why it thinks the tree is covariant (in a contravariant position)
+         */
+        /** @var TreeInterface<TreenodeOrderedInterface, CollectionOrderedInterface<TreenodeOrderedInterface>> $tree */
+        $tree = $this->tree;
+
+        return new TreenodeOrdered($treenodeCollection, $tree);
     }
 
 }
