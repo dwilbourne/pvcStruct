@@ -160,6 +160,8 @@ class Tree implements TreeInterface
     /**
      * @function getRoot
      * @return TreenodeType|null
+     * leave the return type unspecified because when we extend this class we
+     * want to be able to get a covariant return type
      */
     public function getRoot()
     {
