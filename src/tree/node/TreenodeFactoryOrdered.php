@@ -3,13 +3,11 @@
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionOrderedInterface;
-use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
-use pvc\struct\tree\tree\TreeOrdered;
 
 /**
  * @extends TreenodeFactory<TreenodeOrdered, CollectionOrdered>

@@ -2,7 +2,6 @@
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\node\TreenodeFactoryOrdered;

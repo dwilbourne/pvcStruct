@@ -6,7 +6,6 @@ declare(strict_types=1);
 namespace pvc\struct\collection;
 
 use pvc\interfaces\struct\collection\CollectionFactoryInterface;
-use pvc\interfaces\struct\collection\CollectionInterface;
 
 /**
  * @template ElementType
