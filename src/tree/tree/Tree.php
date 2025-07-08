@@ -161,7 +161,7 @@ class Tree implements TreeInterface
      * @function getRoot
      * @return TreenodeType|null
      */
-    public function getRoot(): TreenodeInterface|null
+    public function getRoot()
     {
         return $this->root ?? null;
     }
