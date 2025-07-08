@@ -11,7 +11,6 @@ namespace pvc\struct\tree\node;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\payload\PayloadTrait;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -236,7 +235,7 @@ class Treenode implements TreenodeInterface
      * @function getParent
      * @return TreenodeType|null
      */
-    public function getParent(): ?TreenodeInterface
+    public function getParent()
     {
         return $this->parent ?? null;
     }
@@ -292,7 +291,7 @@ class Treenode implements TreenodeInterface
      * @param non-negative-int $nodeid
      * @return TreenodeType|null
      */
-    public function getChild(int $nodeid): ?TreenodeInterface
+    public function getChild(int $nodeid)
     {
         /** @var TreenodeType $child */
         foreach ($this->getChildren() as $child) {
