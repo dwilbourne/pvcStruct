@@ -12,7 +12,6 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
 
 /**
  * Class TreenodeFactory
