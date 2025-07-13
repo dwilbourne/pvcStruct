@@ -24,7 +24,7 @@
 	},
 	"minimum-stability": "dev",
 	"require": {
-		"pvc/interfaces": "dev-cleaner_tree",
+		"pvc/interfaces": "*",
 		"pvc/err": "*",
 		"league/container": "*"
 
