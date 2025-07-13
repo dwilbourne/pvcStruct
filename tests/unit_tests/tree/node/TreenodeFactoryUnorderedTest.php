@@ -55,7 +55,7 @@ class TreenodeFactoryUnorderedTest extends TestCase
     {
         $this->tree->method('getTreeId')->willReturn($this->treeId);
         $this->tree->method('isInitialized')->willReturn(true);
-        $this->factory->initialize($this->tree);
+        $this->factory->setTree($this->tree);
     }
 
     /**
@@ -77,11 +77,12 @@ class TreenodeFactoryUnorderedTest extends TestCase
      */
     public function testMakeNode(): void
     {
-        $this->initializeFactory();
+
         $this->tree->method('getTreeId')->willReturn(1);
         $mockCollection = $this->createMock(Collection::class);
         $this->collectionFactory->expects(self::once())->method('makeCollection')->willReturn($mockCollection);
         $mockCollection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->initializeFactory();
         self::assertInstanceOf(TreenodeUnordered::class, $this->factory->makeNode());
     }
 

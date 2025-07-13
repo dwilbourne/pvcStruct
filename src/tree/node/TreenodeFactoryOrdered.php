@@ -17,7 +17,7 @@ class TreenodeFactoryOrdered extends TreenodeFactory
      */
     public function makeNode(): TreenodeOrdered
     {
-        if (!$this->isInitialized()) {
+        if (!isset($this->tree)) {
             throw new TreeNodeFactoryNotInitializedException();
         }
 

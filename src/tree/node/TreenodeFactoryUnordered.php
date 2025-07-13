@@ -17,7 +17,7 @@ class TreenodeFactoryUnordered extends TreenodeFactory
      */
     public function makeNode(): TreenodeUnordered
     {
-        if (!$this->isInitialized()) {
+        if (!isset($this->tree)) {
             throw new TreeNodeFactoryNotInitializedException();
         }
         /** @var Collection<TreenodeUnordered> $treenodeCollection */

@@ -442,10 +442,7 @@ class TreenodeTest extends TestCase
         $mockTreenodeCollectionFactory = $this->createMock(CollectionFactoryInterface::class);
         $mockTreenodeCollectionFactory->expects($this->once())->method('makeCollection')->willReturn($this->fixture->rootSiblingsCollection);
 
-        $mockTreenodeFactory = $this->createMock(TreenodeFactory::class);
-        $mockTreenodeFactory->expects($this->once())->method('getTreenodeCollectionFactory')->willReturn($mockTreenodeCollectionFactory);
-
-        $this->fixture->mockTree->method('getTreenodeFactory')->willReturn($mockTreenodeFactory);
+        $this->fixture->mockTree->method('getCollectionFactory')->willReturn($mockTreenodeCollectionFactory);
 
         $siblings = $this->fixture->root->getSiblings();
         self::assertInstanceOf(CollectionInterface::class, $siblings);

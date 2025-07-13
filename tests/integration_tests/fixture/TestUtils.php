@@ -57,7 +57,8 @@ class TestUtils
         $treeId = 1;
         $dtoArray = $this->makeDtoArray($ordered);
         $tree = $this->makeTestTree($ordered);
-        $tree->initialize($treeId, $dtoArray);
+        $tree->initialize($treeId);
+        $tree->hydrate($dtoArray);
         return $tree;
     }
 

@@ -11,6 +11,7 @@ namespace pvcTests\struct\unit_tests\tree\tree;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\struct\collection\CollectionFactoryInterface;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
@@ -45,7 +46,7 @@ class TreeTest extends TestCase
     protected Tree $tree;
 
     /**
-     * @var TreenodeFactoryInterface<PayloadType, TreenodeType, TreeType, CollectionType>&MockObject
+     * @var TreenodeFactoryInterface<TreenodeType, TreeType, CollectionType>&MockObject
      */
     protected TreenodeFactoryInterface&MockObject $nodeFactory;
 
@@ -79,7 +80,7 @@ class TreeTest extends TestCase
     public function testIsInitialized() : void
     {
         self::assertFalse($this->tree->isInitialized());
-        $this->nodeFactory->expects(self::once())->method('initialize')->with($this->tree);
+        $this->nodeFactory->expects(self::once())->method('setTree')->with($this->tree);
         $this->tree->initialize($this->treeId);
         self::assertTrue($this->tree->isInitialized());
         self::assertEquals($this->treeId, $this->tree->getTreeId());
@@ -105,25 +106,15 @@ class TreeTest extends TestCase
     }
 
     /**
-     * @return void
-     * @throws TreeNotInitializedException
-     * @covers \pvc\struct\tree\tree\Tree::getTreenodeFactory
+     * testGetCollectionFactory
+     * @covers \pvc\struct\tree\tree\Tree::getCollectionFactory
      */
-    public function testGetTreenodeFactoryFailsIfTreeNotInitialized() : void
-    {
-        self::expectException(TreeNotInitializedException::class);
-        $z = $this->tree->getTreenodeFactory();
-        unset($z);
-    }
-
-    /**
-     * testGetTreenodeFactory
-     * @covers \pvc\struct\tree\tree\Tree::getTreenodeFactory
-     */
-    public function testGetTreenodeFactory(): void
+    public function testGetCollectionFactory(): void
     {
         $this->tree->initialize($this->treeId);
-        self::assertEquals($this->nodeFactory, $this->tree->getTreenodeFactory());
+        $collectionFactory = $this->createMock(CollectionFactoryInterface::class);
+        $this->nodeFactory->expects($this->once())->method('getTreenodeCollectionFactory')->willReturn($collectionFactory);
+        self::assertEquals($collectionFactory, $this->tree->getCollectionFactory());
     }
 
     /**
@@ -228,8 +219,7 @@ class TreeTest extends TestCase
          * cannot mock a dto
          */
 
-        $dto = new TreenodeDto($rootId, $parentId, $treeId);
-        $this->tree->addNode($dto);
+        $this->tree->addNode($root);
 
         self::assertFalse($this->tree->isEmpty());
         self::assertEquals(1, $this->tree->nodeCount());
@@ -253,9 +243,6 @@ class TreeTest extends TestCase
         $firstRootId = 0;
         $secondRootId = 1;
 
-        $parentId = null;
-        $treeId = null;
-
         $firstRoot = $this->createMockRoot($firstRootId);
         $secondRoot = $this->createMockRoot($secondRootId);
 
@@ -272,22 +259,15 @@ class TreeTest extends TestCase
         $this->nodeFactory->method('makeNode')->willReturnCallback($callback);
 
         /**
-         * cannot mock a dto - it only has properties
-         * @var TreenodeDtoShape $dto
-         */
-        $dto = new TreenodeDto($firstRootId, $parentId, $treeId);
-
-        /**
          * first time is fine
          */
-        $this->tree->addNode($dto);
+        $this->tree->addNode($firstRoot);
 
         /**
          * second time throws an exception
          */
-        $dto = new TreenodeDto($secondRootId, $parentId, $treeId);
         self::expectException(AlreadySetRootException::class);
-        $this->tree->addNode($dto);
+        $this->tree->addNode($secondRoot);
     }
 
     /**
@@ -308,12 +288,8 @@ class TreeTest extends TestCase
         $this->nodeFactory->method('makeNode')->willReturnOnConsecutiveCalls($root, $node);
         $this->tree->initialize($this->treeId);
 
-        /**
-         * @var TreenodeDtoShape $dto
-         */
-        $dto = $this->createMock(DtoInterface::class);
-        $this->tree->addNode($dto);
-        $this->tree->addNode($dto);
+        $this->tree->addNode($root);
+        $this->tree->addNode($node);
 
         self::assertFalse($this->tree->isEmpty());
         self::assertEquals(2, $this->tree->nodeCount());
@@ -336,10 +312,36 @@ class TreeTest extends TestCase
         $nodeId = 2;
         $parentId = 1;
         $treeId = null;
-
         $dto = new TreenodeDto($nodeId, $parentId, $treeId);
+
+        $this->tree->initialize($this->treeId);
         self::expectException(NoRootFoundException::class);
-        $this->tree->initialize($this->treeId, [$dto]);
+        $this->tree->hydrate([$dto]);
+    }
+
+    /**
+     * @return void
+     * @throws NoRootFoundException
+     * @throws TreeNotInitializedException
+     * @covers \pvc\struct\tree\tree\Tree::hydrate
+     */
+    public function testHydrateThrowsExceptionWhenTreeNotInitialized(): void
+    {
+        self::expectException(TreeNotInitializedException::class);
+        $this->tree->hydrate([]);
+    }
+
+    /**
+     * @return void
+     * @throws NoRootFoundException
+     * @throws TreeNotInitializedException
+     * @covers \pvc\struct\tree\tree\Tree::hydrate
+     */
+    public function testHydrateDoesNothingWithEmptyParameter(): void
+    {
+        $this->nodeFactory->expects($this->never())->method('makeNode');
+        $this->tree->initialize($this->treeId);
+        $this->tree->hydrate([]);
     }
 
     /**
@@ -367,11 +369,10 @@ class TreeTest extends TestCase
         $root = $this->createMockRoot($rootId);
         $root->method('hasChildren')->willReturn(true);
 
-        $dto = $this->createMock(DTOInterface::class);
         $this->nodeFactory->method('makeNode')->willReturn($root);
         $this->tree->initialize($this->treeId);
 
-        $this->tree->addNode($dto);
+        $this->tree->addNode($root);
         $this->expectException(DeleteInteriorNodeException::class);
         $deleteBranch = false;
         $this->tree->deleteNode($rootId, $deleteBranch);
@@ -393,10 +394,9 @@ class TreeTest extends TestCase
         $collection->method('getElements')->willReturn([]);
         $root->method('getChildren')->willReturn($collection);
 
-        $dto = $this->createMock(DtoInterface::class);
         $this->nodeFactory->method('makeNode')->willReturn($root);
         $this->tree->initialize($this->treeId);
-        $this->tree->addNode($dto);
+        $this->tree->addNode($root);
 
         $deleteBranch = false;
         $this->tree->deleteNode($rootId, $deleteBranch);

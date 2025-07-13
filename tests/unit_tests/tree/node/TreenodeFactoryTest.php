@@ -61,32 +61,13 @@ class TreenodeFactoryTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\tree\node\TreenodeFactory::isInitialized
-     * @covers \pvc\struct\tree\node\TreenodeFactory::initialize
+     * @covers \pvc\struct\tree\node\TreenodeFactory::setTree
+     * @covers \pvc\struct\tree\node\TreenodeFactory::getTree
      */
-    public function testIsInitialized(): void
+    public function testSetGetTree(): void
     {
-        self::assertFalse($this->factory->isInitialized());
-        $this->initializeFactory();
-        self::assertTrue($this->factory->isInitialized());
-    }
-
-    protected function initializeFactory(): void
-    {
-        $this->tree->method('getTreeId')->willReturn($this->treeId);
-        $this->tree->method('isInitialized')->willReturn(true);
-        $this->factory->initialize($this->tree);
-    }
-
-    /**
-     * @return void
-     * @throws TreenodeFactoryNotInitializedException
-     * @covers \pvc\struct\tree\node\TreenodeFactory::getTreenodeCollectionFactory
-     */
-    public function testGetCollectionFactoryThrowsExceptionIfTreenodeFactoryNotInitialized(): void
-    {
-        self::expectException(TreenodeFactoryNotInitializedException::class);
-        $collectionFactory = $this->factory->getTreenodeCollectionFactory();
+        $this->factory->setTree($this->tree);
+        self::assertEquals($this->tree, $this->factory->getTree());
     }
 
     /**
@@ -95,7 +76,6 @@ class TreenodeFactoryTest extends TestCase
      */
     public function testGetCollectionFactory(): void
     {
-        $this->initializeFactory();
         self::assertEquals($this->collectionFactory, $this->factory->getTreenodeCollectionFactory());
     }
 }

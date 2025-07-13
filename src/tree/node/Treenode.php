@@ -348,7 +348,7 @@ class Treenode implements TreenodeInterface
         /** @phpstan-ignore-next-line */
         if ($this->getTree()->rootTest($this)) {
             /** @var CollectionType $collection */
-            $collection = $this->getTree()->getTreenodeFactory()->getTreenodeCollectionFactory()->makeCollection([]);
+            $collection = $this->getTree()->getCollectionFactory()->makeCollection([]);
             $collection->add($this->getNodeId(), $this);
         } else {
             $parent = $this->getParent();

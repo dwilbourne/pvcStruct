@@ -41,18 +41,18 @@ abstract class TreenodeFactory implements TreenodeFactoryInterface
     ) {
     }
 
-    public function isInitialized(): bool
-    {
-        return isset($this->tree);
-    }
-
     /**
      * @param TreeInterface<TreenodeType, CollectionType> $tree
      * @return void
      */
-    public function initialize(TreeInterface $tree): void
+    public function setTree(TreeInterface $tree): void
     {
         $this->tree = $tree;
+    }
+
+    public function getTree(): TreeInterface
+    {
+        return $this->tree;
     }
 
     /**
@@ -60,9 +60,6 @@ abstract class TreenodeFactory implements TreenodeFactoryInterface
      */
     public function getTreenodeCollectionFactory(): CollectionFactoryInterface
     {
-        if (!$this->isInitialized()) {
-            throw new TreeNodeFactoryNotInitializedException();
-        }
         return $this->treenodeCollectionFactory;
     }
 }

@@ -8,6 +8,7 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\tree;
 
+use pvc\interfaces\struct\collection\CollectionFactoryInterface;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
@@ -74,20 +75,18 @@ class Tree implements TreeInterface
      * initializes the tree, e.g. removes all the nodes, sets the root to null, sets the treeId and
      * initializes the TreenodeFactory
      * @param non-negative-int $treeId
-     * @param array<TreenodeDtoShape> $dtos
      */
-    public function initialize(int $treeId, array $dtos = []): void
+    public function initialize(int $treeId): void
     {
         $this->nodes = [];
         $this->root = null;
         $this->setTreeId($treeId);
-        $this->treenodeFactory->initialize($this);
+        $this->treenodeFactory->setTree($this);
         /**
          * at this point the tree is in a valid state and is therefore initialized, even if it does not have
          * nodes yet
          */
         $this->isInitialized = true;
-        $this->hydrate($dtos);
     }
 
     /**
@@ -132,14 +131,11 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @return TreenodeFactoryInterface<TreenodeType, CollectionType>
+     * @return CollectionFactoryInterface<TreenodeType, CollectionType>
      */
-    public function getTreenodeFactory(): TreenodeFactoryInterface
+    public function getCollectionFactory(): CollectionFactoryInterface
     {
-        if (!$this->isInitialized()) {
-            throw new TreeNotInitializedException();
-        }
-        return $this->treenodeFactory;
+        return $this->treenodeFactory->getTreenodeCollectionFactory();
     }
 
     /**
@@ -225,19 +221,10 @@ class Tree implements TreeInterface
 
     /**
      * addNode
-     * @param TreenodeDtoShape $dto
+     * @param TreenodeType $node
      */
-    public function addNode($dto): void
+    public function addNode($node): void
     {
-        /**
-         * external rules that determine whether this node can be added to the
-         * tree are more easily enforced if the node is incorporated into the
-         * tree first.  If it is incompatible, then remove it and throw an
-         * exception
-         */
-        $node = $this->treenodeFactory->makeNode();
-        $node->hydrate($dto);
-
         $this->nodes[$node->getNodeId()] = $node;
 
         if ($this->rootTest($node)) {
@@ -248,11 +235,13 @@ class Tree implements TreeInterface
     /**
      * hydrate
      * @param array<TreenodeDtoShape> $dtos
-     * this metyhod is protected and only called from within the initialize method, which has a required treeId
-     * parameter.  That ensures that we can never hydrate the tree without the treeId being set.
      */
-    protected function hydrate(array $dtos): void
+    public function hydrate(array $dtos): void
     {
+        if (!$this->isInitialized) {
+            throw new TreeNotInitializedException();
+        }
+
         /**
          * Check for this because the insertNodeRecurse method assumes a non-empty Collection to
          * work on.  If empty, just return - nothing to do.
@@ -280,8 +269,9 @@ class Tree implements TreeInterface
     protected function insertNodeRecurse(int $startNodeKey, array $dtos): void
     {
         $dto = $dtos[$startNodeKey];
-        $this->addNode($dto);
-        $parentId = $dto->nodeId;
+        $node = $this->treenodeFactory->makeNode();
+        $node->hydrate($dto);
+        $this->addNode($node);
 
         /**
          * use a collection here instead of an array so that the children are added to the node's child collection
@@ -296,6 +286,8 @@ class Tree implements TreeInterface
          * parentId equals 0, the nodeDto for the root returns a parentId of null and if 0 == null, then
          * we try to add the root a second time as a child of itself.....
          */
+
+        $parentId = $dto->nodeId;
         $filter = function ($dto) use ($parentId): bool
             {
                 /** @var TreenodeDtoShape $dto */

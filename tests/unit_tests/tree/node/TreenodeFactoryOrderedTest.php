@@ -15,9 +15,9 @@ use pvc\struct\tree\tree\TreeOrdered;
 class TreenodeFactoryOrderedTest extends TestCase
 {
     /**
-     * @var CollectionOrderedFactory<TreenodeOrdered>|MockObject
+     * @var CollectionOrderedFactory<TreenodeOrdered, CollectionOrdered>&MockObject
      */
-    protected CollectionOrderedFactory|MockObject $collectionFactory;
+    protected CollectionOrderedFactory&MockObject $collectionFactory;
 
     /**
      * @var TreeOrdered&MockObject
@@ -55,7 +55,7 @@ class TreenodeFactoryOrderedTest extends TestCase
     {
         $this->tree->method('getTreeId')->willReturn($this->treeId);
         $this->tree->method('isInitialized')->willReturn(true);
-        $this->factory->initialize($this->tree);
+        $this->factory->setTree($this->tree);
     }
 
     /**
@@ -77,11 +77,11 @@ class TreenodeFactoryOrderedTest extends TestCase
      */
     public function testMakeNode(): void
     {
-        $this->initializeFactory();
-        $this->tree->method('getTreeId')->willReturn(1);
+        $this->tree->method('isInitialized')->willReturn(true);
         $mockCollection = $this->createMock(CollectionOrdered::class);
         $this->collectionFactory->expects(self::once())->method('makeCollection')->willReturn($mockCollection);
         $mockCollection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->initializeFactory();
         self::assertInstanceOf(TreenodeOrdered::class, $this->factory->makeNode());
     }
 
