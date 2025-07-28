@@ -159,7 +159,9 @@ class Tree implements TreeInterface
         /**
          * node id cannot already exist in the tree
          */
-        if ($this->getNode($node->getNodeId()) !== null) {
+        /** @var non-negative-int $nodeId */
+        $nodeId = $node->getNodeId();
+        if ($this->getNode($nodeId) !== null) {
             throw new AlreadySetNodeidException($node->getNodeId());
         }
 
@@ -247,7 +249,11 @@ class Tree implements TreeInterface
         (
             $parentId
         ): bool {
-            return $parentId === $nodeDto->getParentId();
+            if ($nodeDto instanceof TreenodeInterface) {
+                return $parentId == $nodeDto->getParent()?->getNodeId();
+            } else {
+                return $parentId === $nodeDto->getParentId();
+            }
         };
         $children = array_filter($array, $filter);
 
