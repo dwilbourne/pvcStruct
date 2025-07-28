@@ -169,11 +169,12 @@ class Tree implements TreeInterface
         $node->setTree($this);
 
         /**
-         * set the parent reference.  This has to happen after the tree is set
-         * because the node will use the tree reference to get the parent
-         * referenced by the node's parentId property
+         * set the parent reference. When the argument to setParent is null,
+         * setParent will look at the node's parentId property to determine
+         * whether it should go get the parent from the tree or whether we
+         * really are setting up the root node.
          */
-        $node->setParent($node->getParentId());
+        $node->setParent(null);
 
         $this->nodes[$node->getNodeId()] = $node;
 
@@ -270,11 +271,11 @@ class Tree implements TreeInterface
     /**
      * @function getNode
      *
-     * @param  non-negative-int|null  $nodeId
+     * @param  non-negative-int  $nodeId
      *
      * @return TreenodeType|null
      */
-    public function getNode(?int $nodeId): ?TreenodeInterface
+    public function getNode(int $nodeId): ?TreenodeInterface
     {
         return $this->nodes[$nodeId] ?? null;
     }
@@ -289,7 +290,12 @@ class Tree implements TreeInterface
      */
     public function rootTest($nodeItem): bool
     {
-        return is_null($nodeItem->getParentId());
+        if ($nodeItem instanceof TreenodeInterface) {
+            $parent = $nodeItem->getParent();
+        } else {
+            $parent = $nodeItem->getParentId();
+        }
+        return is_null($parent);
     }
 
     /**

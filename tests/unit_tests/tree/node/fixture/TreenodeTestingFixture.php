@@ -118,7 +118,7 @@ class TreenodeTestingFixture extends TestCase
         };
 
         $rootTestCallback = function (TreenodeInterface $node) {
-            return (is_null($node->getParentId()));
+            return (is_null($node->getParent()));
         };
 
         $this->mockTree = $this->createMock(TreeInterface::class);
@@ -174,28 +174,28 @@ class TreenodeTestingFixture extends TestCase
          * don't set the value of $this->root until after the node is hydrated or you generate a 'node already in the
          * tree exception' because of the way the callback is structured for the mock tree getNode method.
          */
-        $root = new Treenode($this->children, $this->mockTree);
+        $root = new Treenode($this->children);
         $dto = $this->makeDTOUnordered($this->rootNodeId, null);
         $root->hydrate($dto);
         $root->setTree($this->mockTree);
         // $root->setParent(null);
         $this->root = $root;
 
-        $child = new Treenode($this->grandChildren, $this->mockTree);
+        $child = new Treenode($this->grandChildren);
         $dto = $this->makeDTOUnordered($this->childNodeId, $this->rootNodeId);
         $child->hydrate($dto);
         $child->setTree($this->mockTree);
-        $child->setParent($this->rootNodeId);
+        $child->setParent(null);
         $this->child = $child;
 
-        $grandChild = new Treenode($this->greatGrandChildren, $this->mockTree);
+        $grandChild = new Treenode($this->greatGrandChildren);
         $dto = $this->makeDTOUnordered(
             $this->grandChildNodeId,
             $this->childNodeId
         );
         $grandChild->hydrate($dto);
         $grandChild->setTree($this->mockTree);
-        $grandChild->setParent($this->childNodeId);
+        $grandChild->setParent(null);
         $this->grandChild = $grandChild;
     }
 

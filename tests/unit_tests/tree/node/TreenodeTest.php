@@ -233,7 +233,7 @@ class TreenodeTest extends TestCase
      * @throws SetTreeException
      * @covers \pvc\struct\tree\node\Treenode::setTree
      */
-    public function testSetTreeAdoptsTreeIdFromTreeIfTreeIdIsNotSet(): void
+    public function testSetTreeSucceedsIfTreeIdIsNotSet(): void
     {
         $nodeId = 0;
         $parentId = null;
@@ -245,7 +245,7 @@ class TreenodeTest extends TestCase
         $dto = new TreenodeDto($nodeId, $parentId, $treeId);
         $node->hydrate($dto);
         $node->setTree($this->tree);
-        self::assertEquals($this->tree->getTreeId(), $node->getTreeId());
+        self::assertSame($this->tree, $node->getTree());
     }
 
     /**
@@ -298,7 +298,47 @@ class TreenodeTest extends TestCase
             ->willReturn(null);
 
         self::expectException(InvalidParentNodeIdException::class);
-        $node->setParent($parentId);
+        $node->setParent(null);
+    }
+
+    /**
+     * @return void
+     * @throws ChildCollectionException
+     * @throws CircularGraphException
+     * @throws InvalidNodeIdException
+     * @throws InvalidParentNodeIdException
+     * @throws InvalidTreeidException
+     * @throws RootCannotBeMovedException
+     * @throws SetTreeException
+     * @covers \pvc\struct\tree\node\Treenode::setParent
+     */
+    public function testSetParentFailsWithNonNullParentThatDoesNotExistInTree(): void
+    {
+        $nodeId = 0;
+        $parentId = 1;
+
+        /**
+         * set up a basic node
+         */
+        $this->collection->expects($this->once())->method('isEmpty')
+            ->willReturn(true);
+        $node = new Treenode($this->collection);
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
+        $node->hydrate($dto);
+        $node->setTree($this->tree);
+
+        /**
+         * create a parent node that does not exist in the tree
+         */
+        $parentNode = $this->createMock(TreenodeInterface::class);
+        $parentNode->method('getNodeId')->willReturn($parentId);
+
+        $this->tree->expects($this->once())->method('getNode')->with($parentId)
+            ->willReturn(null);
+
+        self::expectException(InvalidParentNodeIdException::class);
+        $node->setParent($parentNode);
+
     }
 
     /**
@@ -334,6 +374,9 @@ class TreenodeTest extends TestCase
         $nodeId = 0;
         $parentId = 1;
 
+        /**
+         * set up a basic node
+         */
         $this->collection->expects($this->once())->method('isEmpty')
             ->willReturn(true);
         $node = new Treenode($this->collection);
@@ -341,6 +384,9 @@ class TreenodeTest extends TestCase
         $node->hydrate($dto);
         $node->setTree($this->tree);
 
+        /**
+         * create a parent node that is a descendant of node
+         */
         $parentNode = $this->createMock(TreenodeInterface::class);
         $parentNode->method('getNodeId')->willReturn($parentId);
         $parentNode->method('isDescendantOf')->with($node)->willReturn(true);
@@ -349,7 +395,7 @@ class TreenodeTest extends TestCase
             ->willReturn($parentNode);
 
         self::expectException(CircularGraphException::class);
-        $node->setParent($parentId);
+        $node->setParent($parentNode);
     }
 
     /**
@@ -363,26 +409,32 @@ class TreenodeTest extends TestCase
         $parentId = null;
         $newParentId = 1;
 
+        /**
+         * set up node as a root
+         */
         $this->collection->expects($this->once())->method('isEmpty')
             ->willReturn(true);
-        $node = new Treenode($this->collection, $this->tree);
+        $node = new Treenode($this->collection);
         $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
         $node->hydrate($dto);
         $node->setTree($this->tree);
+        $this->tree->expects($this->once())->method('getRoot')->willReturn(
+            $node
+        );
 
+        /**
+         * set up a new node which will try to be the parent of the root
+         */
         $parentNode = $this->createMock(TreenodeInterface::class);
         $parentNode->method('getNodeId')->willReturn($newParentId);
         $parentNode->method('isDescendantOf')->with($node)->willReturn(false);
 
-        $this->tree->expects($this->once())->method('getRoot')->willReturn(
-            $node
-        );
         $this->tree->expects($this->once())->method('getNode')->with(
             $newParentId
         )->willReturn($parentNode);
         self::expectException(RootCannotBeMovedException::class);
 
-        $node->setParent($newParentId);
+        $node->setParent($parentNode);
     }
 
     /**
@@ -392,9 +444,7 @@ class TreenodeTest extends TestCase
      * @covers \pvc\struct\tree\node\Treenode::hydrate
      * @covers \pvc\struct\tree\node\Treenode::isEmpty
      * @covers \pvc\struct\tree\node\Treenode::getNodeId
-     * @covers \pvc\struct\tree\node\Treenode::getParentId
      * @covers \pvc\struct\tree\node\Treenode::getParent
-     * @covers \pvc\struct\tree\node\Treenode::getTreeId
      * @covers \pvc\struct\tree\node\Treenode::getTree
      * @covers \pvc\struct\tree\node\Treenode::getChildren
      */
@@ -423,23 +473,22 @@ class TreenodeTest extends TestCase
 
         $this->collection->method('isEmpty')->willReturn(true);
 
-        $node = new Treenode($this->collection, $this->tree);
+        $node = new Treenode($this->collection);
         $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
 
         self::assertTrue($node->isEmpty());
         $node->hydrate($dto);
         self::assertFalse($node->isEmpty());
         $node->setTree($this->tree);
-        $node->setParent($parentId);
+        $node->setParent($mockRoot);
 
-        self::assertEquals($mockRoot, $node->getParent());
+
 
         /**
          * test all the getters
          */
         self::assertEquals($nodeId, $node->getNodeId());
-        self::assertEquals($parentId, $node->getParentId());
-        self::assertEquals($this->fixture->treeId, $node->getTreeId());
+        self::assertEquals($mockRoot, $node->getParent());
         self::assertEquals($this->tree, $node->getTree());
         self::assertEquals($this->fixture->grandChildren, $node->getChildren());
     }

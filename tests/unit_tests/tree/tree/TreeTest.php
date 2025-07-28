@@ -166,7 +166,7 @@ class TreeTest extends TestCase
     public function testRootTestOnNode(): void
     {
         $node = $this->createMock(TreenodeInterface::class);
-        $node->method('getParentId')->willReturnOnConsecutiveCalls(null, 2);
+        $node->method('getParent')->willReturnOnConsecutiveCalls(null, $node);
         self::assertTrue($this->tree->rootTest($node));
         self::assertFalse($this->tree->rootTest($node));
     }
@@ -254,7 +254,7 @@ class TreeTest extends TestCase
     {
         $root = $this->createMock(TreenodeInterface::class);
         $root->method('getNodeId')->willReturn($rootId);
-        $root->method('getParentId')->willReturn(null);
+        $root->method('getParent')->willReturn(null);
         // $root->expects($this->once())->method('hydrate');
         return $root;
     }
@@ -316,7 +316,7 @@ class TreeTest extends TestCase
         $root = $this->createMockRoot($rootId);
 
         $nodeId = 1;
-        $node = $this->createMockNodeWithRootAsParent($nodeId, $rootId);
+        $node = $this->createMockNodeWithRootAsParent($nodeId, $root);
 
         $this->tree->initialize($this->treeId);
 
@@ -340,11 +340,11 @@ class TreeTest extends TestCase
      */
     public function createMockNodeWithRootAsParent(
         int $nodeId,
-        int $rootId
+        TreenodeInterface $root
     ): TreenodeInterface&MockObject {
         $node = $this->createMock(TreenodeInterface::class);
         $node->method('getNodeId')->willReturn($nodeId);
-        $node->method('getParentId')->willReturn($rootId);
+        $node->method('getParent')->willReturn($root);
         return $node;
     }
 

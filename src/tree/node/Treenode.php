@@ -147,26 +147,12 @@ class Treenode implements TreenodeInterface
         $this->nodeid = $nodeId;
     }
 
-    /**
-     * @function getParentId
-     * @return non-negative-int|null
-     */
-    public function getParentId(): ?int
-    {
-        return $this->parentId ?? null;
-    }
-
     protected function setParentId(?int $parentId): void
     {
         if (($parentId !== null) && ($parentId < 0)) {
             throw new InvalidParentNodeIdException($parentId);
         }
         $this->parentId = $parentId;
-    }
-
-    public function getTreeId(): int
-    {
-        return $this->treeId;
     }
 
     protected function setTreeId(?int $treeId): void
@@ -314,7 +300,7 @@ class Treenode implements TreenodeInterface
         /**
          * ensure the treeId from the node matches the one from the tree
          */
-        if ($this->getTreeId() != $tree->getTreeId()) {
+        if ($this->treeId != $tree->getTreeId()) {
             throw new SetTreeException($this->getNodeId());
         }
 
@@ -327,6 +313,10 @@ class Treenode implements TreenodeInterface
     /**
      * @function getParent
      * @return TreenodeType|null
+     * the parent reference is a convenience, a shortcut because we could
+     * always go to the tree and get the parent from the tree via the
+     * node's parentId property.  In a large tree, this reference could save
+     * a few cpu cycles....
      */
     public function getParent()
     {
@@ -334,7 +324,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param ?non-negative-int  $parentId
+     * @param ?TreenodeType  $parent
      *
      * @return void
      *
@@ -345,16 +335,31 @@ class Treenode implements TreenodeInterface
      * In this case, the parent is already set and the argument is intended
      * to be the new parent.
      */
-    public function setParent(?int $parentId): void
+    public function setParent(?TreenodeInterface $parent): void
     {
-        /** @var TreenodeType|null $parent */
-        $parent = $this->tree->getNode($parentId);
+        /**
+         * if parent is null, see if a parent node can be determined from the parentId
+         * property via the tree.  If not, throw an exception
+         */
+        if ($parent === null && $this->parentId !== null) {
+            /** @var TreenodeType|null $parent */
+            $parent = $this->tree->getNode($this->parentId);
+            if (!$parent) {
+                throw new InvalidParentNodeIdException($this->parentId);
+            }
+        }
 
         /**
-         * if parentId is not null, ensure parent is in the tree
+         * if parent is not null, ensure parent is in the tree.  phpstan
+         * does not quite process this correctly unless it is written in a
+         * clumsy fashion with the typehint which appears redundant
          */
-        if (($parentId !== null) && is_null($parent)) {
-            throw new InvalidParentNodeIdException($parentId);
+        if ($parent) {
+            /** @var non-negative-int $parentId */
+            $parentId = $parent->getNodeId();
+            if ($this->tree->getNode($parentId) === null) {
+                throw new InvalidParentNodeIdException($parentId);
+            }
         }
 
         /**
@@ -383,7 +388,7 @@ class Treenode implements TreenodeInterface
          * set the parent and the parentId
          */
         $this->parent = $parent;
-        $this->setParentId($parentId);
+        $this->setParentId($parent?->getNodeId());
     }
 
     /**
