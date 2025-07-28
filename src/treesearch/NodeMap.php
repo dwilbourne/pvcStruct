@@ -40,17 +40,23 @@ class NodeMap implements NodeMapInterface
 
     /**
      * setNode
-     * @param NodeType $node
-     * @param non-negative-int|null $parentId
+     *
+     * @param  NodeType  $node
+     * @param  non-negative-int|null  $parentId
      */
     public function setNode(NodeVisitableInterface $node, ?int $parentId): void
     {
-        $this->nodes[$node->getNodeId()] = ['parentId' => $parentId, 'node' => $node];
+        $this->nodes[$node->getNodeId()] = [
+            'parentId' => $parentId,
+            'node'     => $node
+        ];
     }
 
     /**
      * getParent
-     * @param int $nodeId
+     *
+     * @param  int  $nodeId
+     *
      * @return NodeType|null
      */
     public function getParent(int $nodeId): ?NodeVisitableInterface
@@ -60,7 +66,9 @@ class NodeMap implements NodeMapInterface
 
     /**
      * getNode
-     * @param ?int $nodeId
+     *
+     * @param ?int  $nodeId
+     *
      * @return NodeType|null
      */
     public function getNode(?int $nodeId): ?NodeVisitableInterface
@@ -71,7 +79,9 @@ class NodeMap implements NodeMapInterface
 
     /**
      * getParentId
-     * @param int $nodeId
+     *
+     * @param  int  $nodeId
+     *
      * @return non-negative-int|null
      */
     public function getParentId(int $nodeId): ?int
@@ -85,7 +95,7 @@ class NodeMap implements NodeMapInterface
      */
     public function getNodeMapArray(): array
     {
-        /** @phpstan-ignore-next-line  */
+        /** @phpstan-ignore-next-line */
         return $this->nodes;
     }
 }

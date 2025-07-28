@@ -27,8 +27,10 @@ class SearchAbstractTest extends TestCase
     public function setUp(): void
     {
         $this->search = $this->getMockBuilder(SearchAbstract::class)
-                             ->getMockForAbstractClass();
-        $this->startNodeMock = $this->createMock(NodeSearchableInterface::class);
+            ->getMockForAbstractClass();
+        $this->startNodeMock = $this->createMock(
+            NodeSearchableInterface::class
+        );
     }
 
     /**
@@ -42,6 +44,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testSetMaxLevelsFailsWithBadParameter
+     *
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchAbstract::setMaxLevels
      */
@@ -54,6 +57,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testSetGetMaxLevels
+     *
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchAbstract::setMaxLevels
      * @covers \pvc\struct\treesearch\SearchAbstract::getMaxLevels
@@ -68,6 +72,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testRewindThrowsExceptionWithStartNodeNotSet
+     *
      * @throws StartNodeUnsetException
      * @covers \pvc\struct\treesearch\SearchAbstract::rewind()
      */
@@ -79,6 +84,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testGetStartNodeThrowsExceptionWhenStartNodeNotSet
+     *
      * @throws StartNodeUnsetException
      * @covers \pvc\struct\treesearch\SearchAbstract::getStartNode
      */
@@ -90,6 +96,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testSetGetStartNode
+     *
      * @covers \pvc\struct\treesearch\SearchAbstract::getStartNode
      * @covers \pvc\struct\treesearch\SearchAbstract::setStartNode
      */
@@ -110,6 +117,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testSetGetCurrentNode
+     *
      * @covers \pvc\struct\treesearch\SearchAbstract::setCurrent
      * @covers \pvc\struct\treesearch\SearchAbstract::current
      * @covers \pvc\struct\treesearch\SearchAbstract::key
@@ -138,6 +146,7 @@ class SearchAbstractTest extends TestCase
 
     /**
      * testRewind
+     *
      * @covers \pvc\struct\treesearch\SearchAbstract::rewind
      */
     public function testRewind(): void

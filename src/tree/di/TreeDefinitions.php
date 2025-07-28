@@ -29,9 +29,11 @@ class TreeDefinitions
              */
             (new Definition(Collection::class)),
             (new Definition(CollectionFactory::class)),
-            (new Definition( TreenodeFactoryUnordered::class))
+            (new Definition(TreenodeFactoryUnordered::class))
                 ->addArgument(CollectionFactory::class),
-            (new Definition(TreeUnordered::class))->addArgument(TreenodeFactoryUnordered::class),
+            (new Definition(TreeUnordered::class))->addArgument(
+                TreenodeFactoryUnordered::class
+            ),
 
             /**
              * objects necessary to make an ordered tree
@@ -40,7 +42,9 @@ class TreeDefinitions
             (new Definition(CollectionOrderedFactory::class)),
             (new Definition(TreenodeFactoryOrdered::class))
                 ->addArgument(CollectionOrderedFactory::class),
-            (new Definition(TreeOrdered::class))->addArgument(TreenodeFactoryOrdered::class),
+            (new Definition(TreeOrdered::class))->addArgument(
+                TreenodeFactoryOrdered::class
+            ),
         ];
     }
 }

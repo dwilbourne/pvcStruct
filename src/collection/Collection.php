@@ -18,6 +18,7 @@ use pvc\struct\collection\err\NonExistentKeyException;
 /**
  * Class Collection
  * @template ElementType
+ *
  * @extends IteratorIterator<non-negative-int, ElementType, ArrayIterator>
  * @implements CollectionInterface<ElementType>
  *
@@ -37,27 +38,21 @@ class Collection extends IteratorIterator implements CollectionInterface
     protected $comparator = null;
 
     /**
-     * @param array<non-negative-int, ElementType> $elements
-     * @param callable(ElementType, ElementType):int|null $comparator
+     * @param  array<non-negative-int, ElementType>  $elements
+     * @param  callable(ElementType, ElementType):int|null  $comparator
      */
-    public function __construct(array $elements = [], callable|null $comparator = null)
-    {
+    public function __construct(
+        array $elements = [],
+        callable|null $comparator = null
+    ) {
         $this->iterator = new ArrayIterator($elements);
         $this->comparator = $comparator;
         parent::__construct($this->iterator);
     }
 
     /**
-     * count
-     * @return non-negative-int
-     */
-    public function count(): int
-    {
-        return $this->iterator->count();
-    }
-
-    /**
      * isEmpty returns whether the collection is empty or not
+     *
      * @return bool
      */
     public function isEmpty(): bool
@@ -66,38 +61,20 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * validateKey encapsulates the logic that all keys must be non-negative integers
-     * @param int $key
-     * @return bool
+     * count
+     *
+     * @return non-negative-int
      */
-    protected function validateKey(int $key): bool
+    public function count(): int
     {
-        return $key >= 0;
-    }
-
-    /**
-     * validateExistingKey ensures that the key is both valid and exists in the collection
-     * @param int $key
-     * @throws InvalidKeyException
-     * @throws NonExistentKeyException
-     */
-    public function validateExistingKey(int $key): bool
-    {
-        return $this->iterator->offsetExists($key);
-    }
-
-    /**
-     * validateNewKey ensures that the key does not exist in the collection
-     * @param int $key
-     */
-    public function validateNewKey(int $key): bool
-    {
-        return !$this->iterator->offsetExists($key);
+        return $this->iterator->count();
     }
 
     /**
      * getElement
-     * @param non-negative-int $key
+     *
+     * @param  non-negative-int  $key
+     *
      * @return ElementType
      */
     public function getElement(int $key): mixed
@@ -117,6 +94,46 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
+     * validateKey encapsulates the logic that all keys must be non-negative integers
+     *
+     * @param  int  $key
+     *
+     * @return bool
+     */
+    protected function validateKey(int $key): bool
+    {
+        return $key >= 0;
+    }
+
+    /**
+     * validateExistingKey ensures that the key is both valid and exists in the collection
+     *
+     * @param  int  $key
+     *
+     * @throws InvalidKeyException
+     * @throws NonExistentKeyException
+     */
+    public function validateExistingKey(int $key): bool
+    {
+        return $this->iterator->offsetExists($key);
+    }
+
+    /**
+     * @function getKey
+     *
+     * @param  ElementType  $element
+     * @param  bool  $strict
+     *
+     * @return non-negative-int|false
+     */
+    public function getKey($element, bool $strict = true): int|false
+    {
+        $key = array_search($element, $this->getElements(), $strict);
+        assert((is_int($key) && ($key >= 0)) || $key === false);
+        return $key;
+    }
+
+    /**
      * now implement methods explicitly defined in the interface
      */
 
@@ -133,23 +150,11 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * @function getKey
-     * @param ElementType $element
-     * @param bool $strict
-     * @return non-negative-int|false
-     */
-    public function getKey($element, bool $strict = true): int|false
-    {
-        $key = array_search($element, $this->getElements(), $strict);
-        assert((is_int($key) && ($key >= 0)) || $key === false);
-        return $key;
-    }
-
-    /**
      * getKeys returns all the keys in the collection where the corresponding element equals $element.
      *
-     * @param ElementType $element
-     * @param bool $strict
+     * @param  ElementType  $element
+     * @param  bool  $strict
+     *
      * @return array<non-negative-int>
      */
     public function getKeys($element, bool $strict = true): array
@@ -165,8 +170,9 @@ class Collection extends IteratorIterator implements CollectionInterface
      * Unlike when you are dealing with a raw array, using an existing key will throw an exception instead
      * of overwriting an existing entry in the array.  Use update to be explicit about updating an entry.
      *
-     * @param non-negative-int $key
-     * @param ElementType $element
+     * @param  non-negative-int  $key
+     * @param  ElementType  $element
+     *
      * @throws DuplicateKeyException
      * @throws InvalidKeyException
      */
@@ -182,10 +188,21 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
+     * validateNewKey ensures that the key does not exist in the collection
+     *
+     * @param  int  $key
+     */
+    public function validateNewKey(int $key): bool
+    {
+        return !$this->iterator->offsetExists($key);
+    }
+
+    /**
      * update assigns a new element to the entry with index $key
      *
-     * @param non-negative-int $key
-     * @param ElementType $element
+     * @param  non-negative-int  $key
+     * @param  ElementType  $element
+     *
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
@@ -204,7 +221,8 @@ class Collection extends IteratorIterator implements CollectionInterface
      * delete removes an element from the collection.  Unlike unset, this operation throws an exception if the
      * key does not exist.
      *
-     * @param non-negative-int $key
+     * @param  non-negative-int  $key
+     *
      * @return void
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
@@ -221,23 +239,6 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * @param non-negative-int $proposedIndex
-     * @param non-negative-int $maxIndex
-     * @return non-negative-int
-     *
-     * there are several methods where we need to ensure the index argument
-     * is between 0 and maxIndex.  It is (count - 1) when we are looking for
-     * something and count when we are adding something
-     */
-    protected function trimIndex(int $proposedIndex, int $maxIndex): int
-    {
-        $proposedIndex = max($proposedIndex, 0);
-        return min($proposedIndex, $maxIndex);
-    }
-
-
-
-    /**
      * @return ElementType|null
      */
     public function getFirst()
@@ -250,7 +251,8 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getLast()
     {
-        return array_values($this->getElements())[count($this->getElements()) - 1] ?? null;
+        return array_values($this->getElements())[count($this->getElements())
+        - 1] ?? null;
     }
 
     /**
@@ -263,5 +265,21 @@ class Collection extends IteratorIterator implements CollectionInterface
         $maxIndex = max(0, $this->count() - 1);
         $index = $this->trimIndex($index, $maxIndex);
         return $this->getElements()[$index] ?? null;
+    }
+
+    /**
+     * @param  non-negative-int  $proposedIndex
+     * @param  non-negative-int  $maxIndex
+     *
+     * @return non-negative-int
+     *
+     * there are several methods where we need to ensure the index argument
+     * is between 0 and maxIndex.  It is (count - 1) when we are looking for
+     * something and count when we are adding something
+     */
+    protected function trimIndex(int $proposedIndex, int $maxIndex): int
+    {
+        $proposedIndex = max($proposedIndex, 0);
+        return min($proposedIndex, $maxIndex);
     }
 }

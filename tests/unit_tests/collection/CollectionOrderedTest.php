@@ -29,26 +29,6 @@ class CollectionOrderedTest extends TestCase
     }
 
     /**
-     * @param non-negative-int $n
-     * @return void
-     */
-    protected function addElements(int $n): void
-    {
-        $indexed = true;
-        $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray($n, $indexed);
-        $this->collection = new CollectionOrdered($this->collectionElements);
-    }
-
-    protected function getResultArray(): array
-    {
-        $result = [];
-        foreach ($this->collection->getElements() as $key => $element) {
-            $result[$key] = $element->getIndex();
-        }
-        return $result;
-    }
-
-    /**
      * @return void
      * @throws InvalidKeyException
      * @covers \pvc\struct\collection\CollectionOrdered::__construct
@@ -62,6 +42,31 @@ class CollectionOrderedTest extends TestCase
         $expectedIndices = [0, 1, 2, 3];
         $actualIndices = array_values($this->getResultArray());
         self::assertEquals($expectedIndices, $actualIndices);
+    }
+
+    /**
+     * @param  non-negative-int  $n
+     *
+     * @return void
+     */
+    protected function addElements(int $n): void
+    {
+        $indexed = true;
+        $this->collectionElements
+            = $this->collectionElementFactory->makeCollectionElementArray(
+            $n,
+            $indexed
+        );
+        $this->collection = new CollectionOrdered($this->collectionElements);
+    }
+
+    protected function getResultArray(): array
+    {
+        $result = [];
+        foreach ($this->collection->getElements() as $key => $element) {
+            $result[$key] = $element->getIndex();
+        }
+        return $result;
     }
 
     /**
@@ -107,7 +112,10 @@ class CollectionOrderedTest extends TestCase
          * test that the element just added is, in fact, the 'second' in the list and it did not get moved
          * for some reason
          */
-        self::assertEquals(1, $this->collection->getElement($newKey)->getIndex());
+        self::assertEquals(
+            1,
+            $this->collection->getElement($newKey)->getIndex()
+        );
     }
 
     /**
@@ -141,7 +149,8 @@ class CollectionOrderedTest extends TestCase
      * @throws InvalidKeyException
      * @covers \pvc\struct\collection\CollectionOrdered::add
      */
-    public function testAddPushesNewElementOnEndOfCollectionIfIndexIsGreaterThanCountOfCollection(): void
+    public function testAddPushesNewElementOnEndOfCollectionIfIndexIsGreaterThanCountOfCollection(
+    ): void
     {
         $element = new CollectionIndexedElement();
         $key = 10;
@@ -152,7 +161,10 @@ class CollectionOrderedTest extends TestCase
         $this->collection = new CollectionOrdered();
         self::assertTrue($this->collection->isEmpty());
         $this->collection->add($key, $element);
-        self::assertEquals($expectedNewKeyIndex, $this->collection->getElement($key)->getIndex());
+        self::assertEquals(
+            $expectedNewKeyIndex,
+            $this->collection->getElement($key)->getIndex()
+        );
     }
 
     /**
@@ -160,7 +172,8 @@ class CollectionOrderedTest extends TestCase
      *
      * @covers \pvc\struct\collection\CollectionOrdered::setIndex
      */
-    public function testSetIndexThrowsExceptionIfKeyToElementToMoveDoesNotExist(): void
+    public function testSetIndexThrowsExceptionIfKeyToElementToMoveDoesNotExist(
+    ): void
     {
         $this->addElements(6);
         self::expectException(NonExistentKeyException::class);
@@ -173,7 +186,8 @@ class CollectionOrderedTest extends TestCase
      * @covers \pvc\struct\collection\CollectionOrdered::setIndex
      * @covers \pvc\struct\collection\CollectionOrdered::getIndex
      */
-    public function testSetIndexMovesElementToEndIfNewIndexIsGreaterThanOrEqualToLastIndex(): void
+    public function testSetIndexMovesElementToEndIfNewIndexIsGreaterThanOrEqualToLastIndex(
+    ): void
     {
         $this->addElements(3);
 
@@ -182,7 +196,10 @@ class CollectionOrderedTest extends TestCase
         $expectedNewIndex = 2;
 
         $this->collection->setIndex($key, $proposedNewIndex);
-        self::assertEquals($expectedNewIndex, $this->collection->getIndex($key));
+        self::assertEquals(
+            $expectedNewIndex,
+            $this->collection->getIndex($key)
+        );
     }
 
     /**

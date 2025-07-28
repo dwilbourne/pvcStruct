@@ -23,42 +23,28 @@ use pvc\interfaces\struct\tree\tree\TreeInterface;
  *
  * @template TreenodeType of TreenodeInterface
  * @template CollectionType of CollectionInterface
+ * @template TreeType of TreeInterface
  * @implements TreenodeFactoryInterface<TreenodeType, CollectionType>
  */
 abstract class TreenodeFactory implements TreenodeFactoryInterface
 {
     /**
-     * @var TreeInterface<TreenodeType, CollectionType>
-     */
-    protected TreeInterface $tree;
-
-    /**
-     * @param CollectionFactoryInterface<TreenodeType, CollectionType> $treenodeCollectionFactory
+     * @param  CollectionFactoryInterface<TreenodeType, CollectionType>  $collectionFactory
      */
     public function __construct(
-        protected CollectionFactoryInterface $treenodeCollectionFactory,
+        protected CollectionFactoryInterface $collectionFactory,
     ) {
     }
 
     /**
-     * @param TreeInterface<TreenodeType, CollectionType> $tree
-     * @return void
+     * @return CollectionType
      */
-    public function setTree(TreeInterface $tree): void
+    public function makeCollection(): CollectionInterface
     {
-        $this->tree = $tree;
-    }
-
-    public function getTree(): TreeInterface
-    {
-        return $this->tree;
-    }
-
-    /**
-     * @return CollectionFactoryInterface<TreenodeType, CollectionType>
-     */
-    public function getTreenodeCollectionFactory(): CollectionFactoryInterface
-    {
-        return $this->treenodeCollectionFactory;
+        /** @var array<TreenodeType> $array */
+        $array = [];
+        /** @var CollectionType $collection */
+        $collection = $this->collectionFactory->makeCollection($array);
+        return $collection;
     }
 }

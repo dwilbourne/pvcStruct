@@ -50,22 +50,33 @@ class NodeMapTest extends TestCase
         $this->map->setNode($this->childNode, $this->rootNodeId);
         $this->nonExistentNodeId = 100;
         $this->expectedNodeMapArray = [
-            $this->rootNodeId => ['parentId' => null, 'node' => $this->rootNode],
-            $this->childNodeId => ['parentId' => $this->rootNodeId, 'node' => $this->childNode],
+            $this->rootNodeId => [
+                'parentId' => null,
+                'node'     => $this->rootNode
+            ],
+            $this->childNodeId => [
+                'parentId' => $this->rootNodeId,
+                'node'     => $this->childNode
+            ],
         ];
     }
 
     /**
      * testInitialize
+     *
      * @covers \pvc\struct\treesearch\NodeMap::initialize
      */
     public function testInitialize(): void
     {
-        self::assertEquals($this->rootNode, $this->map->getNode($this->rootNodeId));
+        self::assertEquals(
+            $this->rootNode,
+            $this->map->getNode($this->rootNodeId)
+        );
     }
 
     /**
      * testSetGet
+     *
      * @covers \pvc\struct\treesearch\NodeMap::setNode
      * @covers \pvc\struct\treesearch\NodeMap::getNode
      * @covers \pvc\struct\treesearch\NodeMap::getParentId
@@ -73,9 +84,18 @@ class NodeMapTest extends TestCase
      */
     public function testSetGet(): void
     {
-        self::assertEquals($this->rootNode, $this->map->getNode($this->rootNodeId));
-        self::assertEquals($this->rootNodeId, $this->map->getParentId($this->childNodeId));
-        self::assertEquals($this->rootNode, $this->map->getParent($this->childNodeId));
+        self::assertEquals(
+            $this->rootNode,
+            $this->map->getNode($this->rootNodeId)
+        );
+        self::assertEquals(
+            $this->rootNodeId,
+            $this->map->getParentId($this->childNodeId)
+        );
+        self::assertEquals(
+            $this->rootNode,
+            $this->map->getParent($this->childNodeId)
+        );
 
         /**
          * test nulls
@@ -92,6 +112,9 @@ class NodeMapTest extends TestCase
      */
     public function testGetNodeMapArray(): void
     {
-        self::assertEquals($this->expectedNodeMapArray, $this->map->getNodeMapArray());
+        self::assertEquals(
+            $this->expectedNodeMapArray,
+            $this->map->getNodeMapArray()
+        );
     }
 }

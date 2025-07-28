@@ -21,6 +21,7 @@ class RangeIntegerTest extends TestCase
 
     /**
      * testDefaultMinMax
+     *
      * @covers \pvc\struct\range\RangeInteger::getMin
      * @covers \pvc\struct\range\RangeInteger::getMax
      */
@@ -33,6 +34,7 @@ class RangeIntegerTest extends TestCase
 
     /**
      * testGetMinGetMax
+     *
      * @covers \pvc\struct\range\RangeInteger::getMin
      * @covers \pvc\struct\range\RangeInteger::getMax
      */
@@ -42,6 +44,9 @@ class RangeIntegerTest extends TestCase
         $max = 8;
         $this->range->setRange($min, $max);
         $expectedResult = [$min, $max];
-        self::assertEqualsCanonicalizing($expectedResult, $this->range->getRange());
+        self::assertEqualsCanonicalizing(
+            $expectedResult,
+            $this->range->getRange()
+        );
     }
 }

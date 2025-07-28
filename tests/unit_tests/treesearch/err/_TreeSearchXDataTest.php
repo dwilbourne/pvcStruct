@@ -15,6 +15,7 @@ class _TreeSearchXDataTest extends XDataTestMaster
 {
     /**
      * testTreeExceptionLibrary
+     *
      * @covers \pvc\struct\treesearch\err\_TreeSearchXData::getLocalXCodes
      * @covers \pvc\struct\treesearch\err\_TreeSearchXData::getXMessageTemplates
      * @covers \pvc\struct\treesearch\err\SetMaxSearchLevelsException

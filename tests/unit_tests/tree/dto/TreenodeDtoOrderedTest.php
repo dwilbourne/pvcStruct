@@ -10,8 +10,9 @@ class TreenodeDtoOrderedTest extends TestCase
     /**
      * @return void
      * @covers \pvc\struct\tree\dto\TreenodeDtoOrdered::__construct
+     * @covers \pvc\struct\tree\dto\TreenodeDtoOrdered::getIndex
      */
-    public function testConstruct()
+    public function testConstructAndGetters()
     {
         $nodeId = 1;
         $parentId = 2;
@@ -19,5 +20,7 @@ class TreenodeDtoOrderedTest extends TestCase
         $index = 5;
         $dto = new TreenodeDtoOrdered($nodeId, $parentId, $treeId, $index);
         self::assertInstanceOf(TreenodeDtoOrdered::class, $dto);
+
+        self::assertEquals($index, $dto->getIndex());
     }
 }

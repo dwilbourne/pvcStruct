@@ -123,17 +123,27 @@ class TreenodeTestingFixture extends TestCase
 
         $this->mockTree = $this->createMock(TreeInterface::class);
         $this->mockTree->method('getTreeId')->willReturn($this->treeId);
-        $this->mockTree->method('getRoot')->willReturnCallback($getRootCallback);
-        $this->mockTree->method('getNode')->willReturnCallback($getNodeCallback);
-        $this->mockTree->method('rootTest')->willReturnCallback($rootTestCallback);
+        $this->mockTree->method('getRoot')->willReturnCallback(
+            $getRootCallback
+        );
+        $this->mockTree->method('getNode')->willReturnCallback(
+            $getNodeCallback
+        );
+        $this->mockTree->method('rootTest')->willReturnCallback(
+            $rootTestCallback
+        );
     }
 
     public function createCollectionMocks(): void
     {
-        $this->rootSiblingsCollection = $this->createMock(CollectionInterface::class);
+        $this->rootSiblingsCollection = $this->createMock(
+            CollectionInterface::class
+        );
         $this->children = $this->createMock(CollectionInterface::class);
         $this->grandChildren = $this->createMock(CollectionInterface::class);
-        $this->greatGrandChildren = $this->createMock(CollectionInterface::class);
+        $this->greatGrandChildren = $this->createMock(
+            CollectionInterface::class
+        );
 
         $childrenIsEmptyCallback = function () {
             return !isset($this->root);
@@ -147,9 +157,15 @@ class TreenodeTestingFixture extends TestCase
             return true;
         };
 
-        $this->children->method('isEmpty')->willReturnCallback($childrenIsEmptyCallback);
-        $this->grandChildren->method('isEmpty')->willReturnCallback($grandChildrenIsEmptyCallback);
-        $this->greatGrandChildren->method('isEmpty')->willReturnCallback($greatGrandChildrenIsEmptyCallback);
+        $this->children->method('isEmpty')->willReturnCallback(
+            $childrenIsEmptyCallback
+        );
+        $this->grandChildren->method('isEmpty')->willReturnCallback(
+            $grandChildrenIsEmptyCallback
+        );
+        $this->greatGrandChildren->method('isEmpty')->willReturnCallback(
+            $greatGrandChildrenIsEmptyCallback
+        );
     }
 
     public function makeNodes(): void
@@ -161,17 +177,40 @@ class TreenodeTestingFixture extends TestCase
         $root = new Treenode($this->children, $this->mockTree);
         $dto = $this->makeDTOUnordered($this->rootNodeId, null);
         $root->hydrate($dto);
+        $root->setTree($this->mockTree);
+        // $root->setParent(null);
         $this->root = $root;
 
         $child = new Treenode($this->grandChildren, $this->mockTree);
         $dto = $this->makeDTOUnordered($this->childNodeId, $this->rootNodeId);
         $child->hydrate($dto);
+        $child->setTree($this->mockTree);
+        $child->setParent($this->rootNodeId);
         $this->child = $child;
 
         $grandChild = new Treenode($this->greatGrandChildren, $this->mockTree);
-        $dto = $this->makeDTOUnordered($this->grandChildNodeId, $this->childNodeId);
+        $dto = $this->makeDTOUnordered(
+            $this->grandChildNodeId,
+            $this->childNodeId
+        );
         $grandChild->hydrate($dto);
+        $grandChild->setTree($this->mockTree);
+        $grandChild->setParent($this->childNodeId);
         $this->grandChild = $grandChild;
+    }
+
+    /**
+     * @param  non-negative-int  $nodeId
+     * @param  non-negative-int|null  $parentId
+     *
+     * @return TreenodeDtoShape&TreenodeDto
+     */
+    public function makeDTOUnordered(
+        int $nodeId,
+        int|null $parentId
+    ): TreenodeDto {
+        $dto = new TreenodeDto($nodeId, $parentId, $this->treeId);
+        return $dto;
     }
 
     public function makeChildCollectionMocksIterable(): void
@@ -184,36 +223,37 @@ class TreenodeTestingFixture extends TestCase
         $this->children->method('getElements')->willReturn([$this->child]);
 
         $grandChildrenArray = [$this->grandChild];
-        $this->makeMockIterableOverArray($this->grandChildren, $grandChildrenArray);
-        $this->grandChildren->method('getElements')->willReturn([$this->grandChild]);
+        $this->makeMockIterableOverArray(
+            $this->grandChildren,
+            $grandChildrenArray
+        );
+        $this->grandChildren->method('getElements')->willReturn(
+            [$this->grandChild]
+        );
 
         $greatGrandChildrenArray = [];
-        $this->makeMockIterableOverArray($this->greatGrandChildren, $greatGrandChildrenArray);
+        $this->makeMockIterableOverArray(
+            $this->greatGrandChildren,
+            $greatGrandChildrenArray
+        );
         $this->greatGrandChildren->method('getElements')->willReturn([]);
     }
 
-    /**
-     * @param non-negative-int $nodeId
-     * @param non-negative-int|null $parentId
-     *
-     * @return TreenodeDtoShape&TreenodeDto
-     */
-    public function makeDTOUnordered(int $nodeId, int|null $parentId
-    ): TreenodeDto
-    {
-        $dto = new TreenodeDto($nodeId, $parentId, $this->treeId);
+    public function makeDTOOrdered(
+        int $nodeId,
+        int|null $parentId,
+        int $index
+    ): TreenodeDtoOrdered {
+        $dto = new TreenodeDtoOrdered(
+            $nodeId, $parentId, $this->treeId, $index
+        );
         return $dto;
     }
 
-    public function makeDTOOrdered(int $nodeId, int|null $parentId, int $index): TreenodeDtoOrdered
-    {
-        $dto = new TreenodeDtoOrdered($nodeId, $parentId, $this->treeId, $index);
-        return $dto;
-    }
-
-    public function makeDtoWithNonMatchingTreeId(int $nodeId, int|null $parentId
-    ): TreenodeDto
-    {
+    public function makeDtoWithNonMatchingTreeId(
+        int $nodeId,
+        int|null $parentId
+    ): TreenodeDto {
         $badTreeId = 100;
         $dto = new TreenodeDto($nodeId, $parentId, $badTreeId);
         return $dto;

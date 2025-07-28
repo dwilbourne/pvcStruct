@@ -17,7 +17,7 @@ class NodeIdFactory
     /**
      * @return non-negative-int
      */
-    public static function getNextNodeId() : int
+    public static function getNextNodeId(): int
     {
         if (!isset(self::$instance)) {
             self::$instance = new NodeIdFactory();

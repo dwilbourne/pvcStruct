@@ -29,7 +29,7 @@ class TreeUnorderedTest extends TestCase
     /**
      * setUp
      */
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->treeId = 0;
         $this->nodeFactory = $this->createMock(TreenodeFactoryUnordered::class);
@@ -38,9 +38,10 @@ class TreeUnorderedTest extends TestCase
 
     /**
      * testConstruct
+     *
      * @covers \pvc\struct\tree\tree\TreeUnordered::__construct
      */
-    public function testConstruct() : void
+    public function testConstruct(): void
     {
         self::assertInstanceOf(TreeUnordered::class, $this->tree);
     }

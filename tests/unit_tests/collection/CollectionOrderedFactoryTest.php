@@ -11,7 +11,7 @@ class CollectionOrderedFactoryTest extends TestCase
 {
     protected CollectionOrderedFactory $collectionIndexedFactory;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->collectionIndexedFactory = new CollectionOrderedFactory();
     }
@@ -34,7 +34,8 @@ class CollectionOrderedFactoryTest extends TestCase
     public function testMakeCollectionWithArray(): void
     {
         $element = $this->createMock(IndexedElementInterface::class);
-        $collection = $this->collectionIndexedFactory->makeCollection([$element]);
+        $collection = $this->collectionIndexedFactory->makeCollection([$element]
+        );
         self::assertInstanceOf(CollectionOrdered::class, $collection);
         self::assertEquals(1, $collection->count());
     }

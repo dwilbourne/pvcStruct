@@ -30,6 +30,7 @@ trait VisitationTrait
 
     /**
      * getVisitStatus
+     *
      * @return VisitStatus
      */
     public function getVisitStatus(): VisitStatus
@@ -39,7 +40,8 @@ trait VisitationTrait
 
     /**
      * setVisitStatus
-     * @param VisitStatus $status
+     *
+     * @param  VisitStatus  $status
      */
     public function setVisitStatus(VisitStatus $status): void
     {

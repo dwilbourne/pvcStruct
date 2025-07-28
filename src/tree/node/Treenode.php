@@ -9,26 +9,22 @@ declare (strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
-use pvc\struct\tree\err\InvalidParentNodeException;
-use pvc\struct\tree\err\InvalidValueException;
+use pvc\struct\tree\err\InvalidParentNodeIdException;
+use pvc\struct\tree\err\InvalidTreeidException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
-use pvc\struct\tree\err\SetTreeIdException;
+use pvc\struct\tree\err\SetTreeException;
 use pvc\struct\treesearch\VisitationTrait;
 
 /**
- *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
+ *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the treeId property,
  *  which is set at construction time.
- *
- *  This means that there are no setters for these properties.  Together, these two design points ensure that nodes
- *  cannot be hydrated except in the context of belonging to a tree.  That in turn makes it a bit easier to enforce the
- *  design point that all nodeids in a tree must be unique.
  *
  *  The same is almost true for the parent property, but the difference is that the nodes are allowed to move around
  *  within the same tree, e.g. you can change a node's parent as long as the new parent is in the same tree. It is
@@ -38,8 +34,8 @@ use pvc\struct\treesearch\VisitationTrait;
  *
  * @template TreenodeType of TreenodeInterface
  * @template CollectionType of CollectionInterface
- * @implements TreenodeInterface<TreenodeType, CollectionType>
- * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
+ * @template TreeType of TreeInterface
+ * @implements TreenodeInterface<TreenodeType, CollectionType, TreeType>
  */
 class Treenode implements TreenodeInterface
 {
@@ -49,34 +45,42 @@ class Treenode implements TreenodeInterface
     use VisitationTrait;
 
     /**
+     * @var CollectionType $children
+     */
+    public CollectionInterface $children;
+    /**
      * unique id for this node
+     *
      * @var non-negative-int $nodeid
      */
     protected int $nodeid;
-
+    /**
+     * @var non-negative-int|null
+     */
+    protected ?int $parentId = null;
+    /**
+     * @var non-negative-int
+     */
+    protected int $treeId;
     /**
      * reference to parent
+     *
      * @var TreenodeType|null
      */
     protected ?TreenodeInterface $parent;
-
     /**
      * reference to containing tree
-     * @var TreeInterface<TreenodeType, CollectionType>
+     *
+     * @var TreeType
      */
     protected TreeInterface $tree;
 
     /**
-     * @var CollectionType $children
-     */
-    public CollectionInterface $children;
-
-    /**
-     * @param CollectionType $collection
-     * @param TreeInterface<TreenodeType, CollectionType> $tree
+     * @param  CollectionType  $collection
+     *
      * @throws ChildCollectionException
      */
-    public function __construct(CollectionInterface $collection, TreeInterface $tree)
+    public function __construct(CollectionInterface $collection)
     {
         /**
          * set the child collection
@@ -86,12 +90,11 @@ class Treenode implements TreenodeInterface
         } else {
             $this->children = $collection;
         }
-
-        $this->tree = $tree;
     }
 
     /**
      * isEmpty
+     *
      * @return bool
      */
     public function isEmpty(): bool
@@ -100,18 +103,13 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param TreenodeDtoShape $dto
-     * @return void
-     * @throws AlreadySetNodeidException
-     * @throws CircularGraphException
+     * @param  TreenodeDtoInterface  $dto
+     *
      * @throws InvalidNodeIdException
-     * @throws InvalidParentNodeException
-     * @throws NodeNotEmptyHydrationException
-     * @throws RootCannotBeMovedException
-     * @throws SetTreeIdException
-     * @throws InvalidValueException
+     * @throws InvalidParentNodeIdException
+     * @throws InvalidTreeidException
      */
-    public function hydrate($dto): void
+    public function hydrate(TreenodeDtoInterface $dto): void
     {
         /**
          * cannot hydrate a node if it already has been hydrated
@@ -121,96 +119,11 @@ class Treenode implements TreenodeInterface
         }
 
         /**
-         * set the nodeId
+         * set the nodeId, $parentId and $treeId
          */
-        $this->setNodeId($dto->nodeId);
-
-        /**
-         * recall that the node is constructed such that the reference to its containing tree is already set.
-         * If the treeId of the dto is not null, verify that the dto tree id matches the tree id of the containing tree.
-         */
-        if (!is_null($dto->treeId) && ($dto->treeId != $this->getTreeId())) {
-            throw new SetTreeIdException();
-        }
-
-        /**
-         * setParent also sets the "reciprocal pointer" by adding this node to the child collection of the parent.
-         * We have to set the index first (if it is in the dto) because in the case of ordered collections,
-         * the collection will need to know what index to use when adding this node to the child collection of the
-         * parent.
-         */
-        $this->setParent($dto->parentId);
-    }
-
-    protected function setNodeId(int $nodeId): void
-    {
-        /**
-         * nodeid must be non-negative.
-         */
-        if ($nodeId < 0) {
-            throw new InvalidNodeIdException($nodeId);
-        }
-
-        /**
-         * node id cannot already exist in the tree
-         */
-        if ($this->getTree()->getNode($nodeId)) {
-            throw new AlreadySetNodeidException($nodeId);
-        }
-        $this->nodeid = $nodeId;
-    }
-
-    /**
-     * @function setParent
-     * @param non-negative-int|null $parentId
-     */
-    public function setParent(?int $parentId): void
-    {
-        if (!is_null($parentId)) {
-            /**
-             * @var TreenodeType|null $parent
-             */
-            $parent = $this->getTree()->getNode($parentId);
-            if (is_null($parent)) {
-                /**
-                 * parent id is not null but there is no existing node in the tree with node id == parent id
-                 */
-                throw new InvalidParentNodeException($parentId);
-            }
-        } else {
-            /**
-             * parent id is null so parent is also null - it thinks it is the root node.  It is up to the containing
-             * tree to decide whether it really is or is not. See the setRoot method in Tree
-             */
-            $parent = null;
-        }
-
-        /**
-         * make sure we are not creating a circular graph
-         */
-        if ($parent && $parent->isDescendantOf($this)) {
-            throw new CircularGraphException($parent->getNodeId());
-        }
-
-        /**
-         * setParent is not just for construction - it is used to move nodes around in the tree as well.  If this
-         * node is the root node, then it cannot be moved in the tree
-         */
-        if ($this->tree->getRoot()?->getNodeId() === $this->getNodeId()) {
-            throw new RootCannotBeMovedException();
-        }
-
-        /**
-         * if parent is not null, add this node to the parent's child collection
-         */
-        if ($childCollection = $parent?->getChildren()) {
-            $childCollection->add($this->getNodeId(), $this);
-        }
-
-        /**
-         * set the parent
-         */
-        $this->parent = $parent;
+        $this->setNodeId($dto->getNodeId());
+        $this->setParentId($dto->getParentId());
+        $this->setTreeId($dto->getTreeId());
     }
 
     /**
@@ -222,48 +135,53 @@ class Treenode implements TreenodeInterface
         return $this->nodeid;
     }
 
+    protected function setNodeId(int $nodeId): void
+    {
+        /**
+         * nodeid must be non-negative.
+         */
+        if ($nodeId < 0) {
+            throw new InvalidNodeIdException($nodeId);
+        }
+
+        $this->nodeid = $nodeId;
+    }
+
     /**
      * @function getParentId
      * @return non-negative-int|null
      */
     public function getParentId(): ?int
     {
-        return $this->getParent()?->getNodeId();
+        return $this->parentId ?? null;
     }
 
-    /**
-     * @function getParent
-     * @return TreenodeType|null
-     */
-    public function getParent()
+    protected function setParentId(?int $parentId): void
     {
-        return $this->parent ?? null;
+        if (($parentId !== null) && ($parentId < 0)) {
+            throw new InvalidParentNodeIdException($parentId);
+        }
+        $this->parentId = $parentId;
     }
 
-    /**
-     * @function getTree
-     * @return TreeInterface<TreenodeType, CollectionType>
-     */
-    public function getTree(): TreeInterface
-    {
-        return $this->tree;
-    }
-
-    /**
-     * getTreeId
-     * @return non-negative-int
-     */
     public function getTreeId(): int
     {
-        return $this->getTree()->getTreeId();
+        return $this->treeId;
     }
 
-    /**
-     * @return CollectionType
-     */
-    public function getChildren(): CollectionInterface
+    protected function setTreeId(?int $treeId): void
     {
-        return $this->children;
+        if ($treeId !== null) {
+            if ($treeId < 0) {
+                throw new InvalidTreeidException($treeId);
+            }
+            $this->treeId = $treeId;
+        }
+    }
+
+    public function getIndex(): ?int
+    {
+        return null;
     }
 
     /**
@@ -287,7 +205,8 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param non-negative-int $n
+     * @param  non-negative-int  $n
+     *
      * @return TreenodeType|null
      */
     public function getNthChild(int $n)
@@ -299,11 +218,12 @@ class Treenode implements TreenodeInterface
 
     /**
      * getChildrenAsArray
+     *
      * @return array<TreenodeType>
      */
     public function getChildrenArray(): array
     {
-        /** @var array<TreenodeType> $result*/
+        /** @var array<TreenodeType> $result */
         $result = $this->getChildren()->getElements();
         return $result;
     }
@@ -319,7 +239,9 @@ class Treenode implements TreenodeInterface
 
     /**
      * @function getChild
-     * @param non-negative-int $nodeid
+     *
+     * @param  non-negative-int  $nodeid
+     *
      * @return TreenodeType|null
      */
     public function getChild(int $nodeid)
@@ -345,10 +267,9 @@ class Treenode implements TreenodeInterface
          * long way to get to the collection factory so we can make a collection and add this node to it.
          */
 
-        /** @phpstan-ignore-next-line */
         if ($this->getTree()->rootTest($this)) {
             /** @var CollectionType $collection */
-            $collection = $this->getTree()->getCollectionFactory()->makeCollection([]);
+            $collection = $this->getTree()->makeCollection();
             $collection->add($this->getNodeId(), $this);
         } else {
             $parent = $this->getParent();
@@ -360,26 +281,116 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @return bool
+     * @function getTree
+     * @return TreeType
      */
-    public function isRoot(): bool
+    public function getTree(): TreeInterface
     {
-        return ($this->tree->getRoot() === $this);
+        return $this->tree;
     }
 
     /**
-     * @function isAncestorOf
-     * @param TreenodeType $node
-     * @return bool
+     * @param  TreeType  $tree
+     *
+     * @return void
+     * @throws SetTreeException
      */
-    public function isAncestorOf(TreenodeInterface $node): bool
+    public function setTree(TreeInterface $tree): void
     {
-        return $node->isDescendantOf($this);
+        /**
+         * tree property is immutable
+         */
+        if (isset($this->tree)) {
+            throw new SetTreeException($this->getNodeId());
+        }
+        /**
+         * if this node was hydrated from a dto, the treeId property might not
+         * be set.  if it is not, then adopt the treeId from the tree.
+         */
+        if (!isset($this->treeId)) {
+            $this->treeId = $tree->getTreeId();
+        }
+
+        /**
+         * ensure the treeId from the node matches the one from the tree
+         */
+        if ($this->getTreeId() != $tree->getTreeId()) {
+            throw new SetTreeException($this->getNodeId());
+        }
+
+        /**
+         * set the reference
+         */
+        $this->tree = $tree;
+    }
+
+    /**
+     * @function getParent
+     * @return TreenodeType|null
+     */
+    public function getParent()
+    {
+        return $this->parent ?? null;
+    }
+
+    /**
+     * @param ?non-negative-int  $parentId
+     *
+     * @return void
+     *
+     * two cases:  the first is this is called as part of this node being added
+     * to the tree.  In this case, the parent property is currently null.
+     *
+     * The second case is when you are trying to move this node within the tree.
+     * In this case, the parent is already set and the argument is intended
+     * to be the new parent.
+     */
+    public function setParent(?int $parentId): void
+    {
+        /** @var TreenodeType|null $parent */
+        $parent = $this->tree->getNode($parentId);
+
+        /**
+         * if parentId is not null, ensure parent is in the tree
+         */
+        if (($parentId !== null) && is_null($parent)) {
+            throw new InvalidParentNodeIdException($parentId);
+        }
+
+        /**
+         * ensure we are not creating a circular graph
+         */
+        if ($parent && $parent->isDescendantOf($this)) {
+            throw new CircularGraphException($parent->getNodeId());
+        }
+
+        /**
+         * setParent is not just for construction - it is used to move nodes around in the tree as well.  If this
+         * node is the root node, then it cannot be moved in the tree
+         */
+        if ($this->tree->getRoot()?->getNodeId() === $this->getNodeId()) {
+            throw new RootCannotBeMovedException();
+        }
+
+        /**
+         * if parent is not null, add this node to the parent's child collection
+         */
+        if ($childCollection = $parent?->getChildren()) {
+            $childCollection->add($this->getNodeId(), $this);
+        }
+
+        /**
+         * set the parent and the parentId
+         */
+        $this->parent = $parent;
+        $this->setParentId($parentId);
     }
 
     /**
      * @function isDescendantOf
-     * @param TreenodeType $node
+     *
+     * @param  TreenodeType  $node
+     *
      * @return bool
      */
     public function isDescendantOf(TreenodeInterface $node): bool
@@ -392,6 +403,34 @@ class Treenode implements TreenodeInterface
         } else {
             return $this->getParent()->isDescendantOf($node);
         }
+    }
+
+    /**
+     * @return CollectionType
+     */
+    public function getChildren(): CollectionInterface
+    {
+        return $this->children;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRoot(): bool
+    {
+        return ($this->tree->getRoot() === $this);
+    }
+
+    /**
+     * @function isAncestorOf
+     *
+     * @param  TreenodeType  $node
+     *
+     * @return bool
+     */
+    public function isAncestorOf(TreenodeInterface $node): bool
+    {
+        return $node->isDescendantOf($this);
     }
 
     /**

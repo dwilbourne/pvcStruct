@@ -21,6 +21,7 @@ class RangeFloatTest extends TestCase
 
     /**
      * testDefaultMinMax
+     *
      * @covers \pvc\struct\range\RangeFloat::getMin
      * @covers \pvc\struct\range\RangeFloat::getMax
      */
@@ -33,6 +34,7 @@ class RangeFloatTest extends TestCase
 
     /**
      * testGetMinGetMax
+     *
      * @covers \pvc\struct\range\RangeFloat::getMin
      * @covers \pvc\struct\range\RangeFloat::getMax
      */
@@ -42,6 +44,9 @@ class RangeFloatTest extends TestCase
         $max = 8.9;
         $this->range->setRange($min, $max);
         $expectedResult = [$min, $max];
-        self::assertEqualsCanonicalizing($expectedResult, $this->range->getRange());
+        self::assertEqualsCanonicalizing(
+            $expectedResult,
+            $this->range->getRange()
+        );
     }
 }

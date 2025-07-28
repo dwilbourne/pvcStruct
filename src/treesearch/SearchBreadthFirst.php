@@ -13,12 +13,14 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchStrategyBreadthFirst
+ *
  * @extends SearchAbstract<NodeSearchableInterface>
  */
 class SearchBreadthFirst extends SearchAbstract
 {
     /**
      * array of nodes in the "current level" of the tree
+     *
      * @var array<NodeSearchableInterface>
      */
     private array $currentLevelNodes;
@@ -32,6 +34,7 @@ class SearchBreadthFirst extends SearchAbstract
 
     /**
      * rewind
+     *
      * @throws StartNodeUnsetException
      */
     public function rewind(): void
@@ -65,7 +68,8 @@ class SearchBreadthFirst extends SearchAbstract
          * if we still have more nodes in the current level left, set the current node, increment the index
          */
         if (isset($this->currentLevelNodes[$this->currentIndex])) {
-            $this->currentNode = $this->currentLevelNodes[$this->currentIndex++];
+            $this->currentNode
+                = $this->currentLevelNodes[$this->currentIndex++];
             return;
         }
 
@@ -76,9 +80,7 @@ class SearchBreadthFirst extends SearchAbstract
 
         if ($this->atMaxLevels()) {
             $this->invalidate();
-        }
-
-        /**
+        } /**
          * otherwise populate $currentLevelNodes with the next level of nodes
          */
         else {
@@ -97,19 +99,23 @@ class SearchBreadthFirst extends SearchAbstract
 
     /**
      * getNextLevelOfNodes
+     *
      * @return array<NodeSearchableInterface>
      */
     protected function getNextLevelOfNodes(): array
     {
         /**
-         * @param NodeSearchableInterface $node
+         * @param  NodeSearchableInterface  $node
          *
          * @return array<NodeSearchableInterface>
          */
         $getChildrenCallback = function (NodeSearchableInterface $node): array {
             return $node->getChildrenArray();
         };
-        $childArrays = array_map($getChildrenCallback, $this->currentLevelNodes);
+        $childArrays = array_map(
+            $getChildrenCallback,
+            $this->currentLevelNodes
+        );
         /**
          * splat operator is required to unpack the outer array
          */

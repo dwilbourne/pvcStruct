@@ -5,6 +5,15 @@ namespace pvcTests\struct\unit_tests\tree\node;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\CollectionOrdered;
+use pvc\struct\tree\err\AlreadySetNodeidException;
+use pvc\struct\tree\err\ChildCollectionException;
+use pvc\struct\tree\err\CircularGraphException;
+use pvc\struct\tree\err\InvalidNodeIdException;
+use pvc\struct\tree\err\InvalidParentNodeIdException;
+use pvc\struct\tree\err\InvalidValueException;
+use pvc\struct\tree\err\NodeNotEmptyHydrationException;
+use pvc\struct\tree\err\RootCannotBeMovedException;
+use pvc\struct\tree\err\SetTreeException;
 use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\node\TreenodeOrdered;
 use pvc\struct\tree\tree\TreeOrdered;
@@ -43,11 +52,13 @@ class TreenodeOrderedTest extends TestCase
 
     /**
      * testConstruct
+     *
      * @covers \pvc\struct\tree\node\TreenodeOrdered::__construct
      */
     public function testConstruct(): void
     {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->collection->expects($this->once())->method('isEmpty')
+            ->willReturn(true);
         $node = new TreenodeOrdered($this->collection, $this->tree);
         self::assertInstanceOf(TreenodeOrdered::class, $node);
     }
@@ -59,7 +70,8 @@ class TreenodeOrderedTest extends TestCase
      */
     public function testSetGetIndex(): void
     {
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->collection->expects($this->once())->method('isEmpty')
+            ->willReturn(true);
         $node = new TreenodeOrdered($this->collection, $this->tree);
         $testIndex = 8;
         $node->setIndex($testIndex);
@@ -69,15 +81,15 @@ class TreenodeOrderedTest extends TestCase
 
     /**
      * @return void
-     * @throws \pvc\struct\tree\err\AlreadySetNodeidException
-     * @throws \pvc\struct\tree\err\ChildCollectionException
-     * @throws \pvc\struct\tree\err\CircularGraphException
-     * @throws \pvc\struct\tree\err\InvalidNodeIdException
-     * @throws \pvc\struct\tree\err\InvalidParentNodeException
-     * @throws \pvc\struct\tree\err\InvalidValueException
-     * @throws \pvc\struct\tree\err\NodeNotEmptyHydrationException
-     * @throws \pvc\struct\tree\err\RootCannotBeMovedException
-     * @throws \pvc\struct\tree\err\SetTreeIdException
+     * @throws AlreadySetNodeidException
+     * @throws ChildCollectionException
+     * @throws CircularGraphException
+     * @throws InvalidNodeIdException
+     * @throws InvalidParentNodeIdException
+     * @throws InvalidValueException
+     * @throws NodeNotEmptyHydrationException
+     * @throws RootCannotBeMovedException
+     * @throws SetTreeException
      * @covers \pvc\struct\tree\node\TreenodeOrdered::hydrate
      */
     public function testHydrateSetsIndex(): void
@@ -87,7 +99,8 @@ class TreenodeOrderedTest extends TestCase
         $index = 3;
         $dto = $this->fixture->makeDTOOrdered($nodeId, $parentId, $index);
 
-        $this->collection->expects($this->once())->method('isEmpty')->willReturn(true);
+        $this->collection->expects($this->once())->method('isEmpty')
+            ->willReturn(true);
         $node = new TreenodeOrdered($this->collection, $this->tree);
         $node->hydrate($dto);
         self::assertEquals($index, $node->getIndex());

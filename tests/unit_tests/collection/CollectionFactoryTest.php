@@ -11,7 +11,7 @@ class CollectionFactoryTest extends TestCase
 {
     protected CollectionFactory $collectionFactory;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->collectionFactory = new CollectionFactory();
     }
@@ -33,7 +33,8 @@ class CollectionFactoryTest extends TestCase
      */
     public function testMakeCollectionWithArray(): void
     {
-        $collection = $this->collectionFactory->makeCollection([new stdClass()]);
+        $collection = $this->collectionFactory->makeCollection([new stdClass()]
+        );
         self::assertInstanceOf(Collection::class, $collection);
         self::assertEquals(1, $collection->count());
     }

@@ -46,6 +46,7 @@ class CollectionTest extends TestCase
 
     /**
      * testIsEmpty
+     *
      * @covers \pvc\struct\collection\Collection::isEmpty
      */
     public function testIsEmpty(): void
@@ -57,17 +58,20 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * @param non-negative-int $n
+     * @param  non-negative-int  $n
+     *
      * @return void
      */
     protected function addElements(int $n): void
     {
-        $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray($n);
+        $this->collectionElements
+            = $this->collectionElementFactory->makeCollectionElementArray($n);
         $this->collection = new Collection($this->collectionElements);
     }
 
     /**
      * testIteration
+     *
      * @coversNothing
      */
     public function testIteration(): void
@@ -76,7 +80,10 @@ class CollectionTest extends TestCase
 
         foreach ($this->collection as $i => $element) {
             self::assertEquals($i, $this->collection->key());
-            self::assertEquals($this->collectionElements[$i++], $this->collection->current());
+            self::assertEquals(
+                $this->collectionElements[$i++],
+                $this->collection->current()
+            );
             self::assertTrue($this->collection->valid());
         }
         self::assertFalse($this->collection->valid());
@@ -86,17 +93,22 @@ class CollectionTest extends TestCase
 
     /**
      * testCount
+     *
      * @covers \pvc\struct\collection\Collection::count
      */
     public function testCount(): void
     {
         $this->addElements(3);
-        
-        self::assertEquals(count($this->collectionElements), count($this->collection));
+
+        self::assertEquals(
+            count($this->collectionElements),
+            count($this->collection)
+        );
     }
 
     /**
      * testGetElementThrowsExceptionWithInvalidKey
+     *
      * @covers \pvc\struct\collection\Collection::getElement
      * @covers \pvc\struct\collection\Collection::validateExistingKey
      */
@@ -109,6 +121,7 @@ class CollectionTest extends TestCase
 
     /**
      * testGetElementThrowsExceptionWithNonExistentKey
+     *
      * @covers \pvc\struct\collection\Collection::getElement
      * @covers \pvc\struct\collection\Collection::validateKey
      * @covers \pvc\struct\collection\Collection::validateExistingKey
@@ -123,17 +136,22 @@ class CollectionTest extends TestCase
 
     /**
      * testGetElement
+     *
      * @covers \pvc\struct\collection\Collection::getElement
      */
     public function testGetElementReturnsCorrectValue(): void
     {
         $this->addElements(3);
-        
-        self::assertEquals($this->collectionElements[0], $this->collection->getElement(0));
+
+        self::assertEquals(
+            $this->collectionElements[0],
+            $this->collection->getElement(0)
+        );
     }
 
     /**
      * testGetElements
+     *
      * @covers \pvc\struct\collection\Collection::getElements
      */
     public function testGetElements(): void
@@ -163,6 +181,7 @@ class CollectionTest extends TestCase
 
     /**
      * testGetKeyReturnsNullIfValueNotInList
+     *
      * @covers \pvc\struct\collection\Collection::getKey
      */
     public function testGetKeyReturnsFalseIfValueNotInList(): void
@@ -174,12 +193,13 @@ class CollectionTest extends TestCase
 
     /**
      * testGetKeysReturnsEmptyArrayIfValueNotFound
+     *
      * @covers \pvc\struct\collection\Collection::getKeys
      */
     public function testGetKeysReturnsEmptyArrayIfValueNotFound(): void
     {
         $this->addElements(3);
-        
+
         $needle = 'foo';
         $result = $this->collection->getKeys($needle);
         self::assertIsArray($result);
@@ -188,6 +208,7 @@ class CollectionTest extends TestCase
 
     /**
      * testAddThrowsExceptionWithInvalidKey
+     *
      * @covers \pvc\struct\collection\Collection::add
      * @covers \pvc\struct\collection\Collection::validateKey
      * @covers \pvc\struct\collection\Collection::validateNewKey
@@ -195,7 +216,7 @@ class CollectionTest extends TestCase
     public function testAddThrowsExceptionWithInvalidKey(): void
     {
         $this->addElements(3);
-        
+
         $badKey = -1;
         $this->expectException(InvalidKeyException::class);
         $this->collection->add($badKey, 'some payload');
@@ -203,25 +224,28 @@ class CollectionTest extends TestCase
 
     /**
      * testAddThrowsExceptionsWithDuplicateKey
+     *
      * @covers \pvc\struct\collection\Collection::add
      * @covers \pvc\struct\collection\Collection::validateNewKey
      */
     public function testAddThrowsExceptionsWithDuplicateKey(): void
     {
         $this->addElements(3);
-        
+
         $this->expectException(DuplicateKeyException::class);
         $this->collection->add(0, 'cannot add because key already exists');
     }
 
     /**
      * testAdd
+     *
      * @covers \pvc\struct\collection\Collection::add
      */
     public function testAdd(): void
     {
         $this->collection = new Collection();
-        $this->collectionElements = $this->collectionElementFactory->makeCollectionElementArray(3);
+        $this->collectionElements
+            = $this->collectionElementFactory->makeCollectionElementArray(3);
         foreach ($this->collectionElements as $key => $value) {
             $this->collection->add($key, $value);
             self::assertEquals($value, $this->collection->getElement($key));
@@ -230,6 +254,7 @@ class CollectionTest extends TestCase
 
     /**
      * testUpdateThrowsExceptionWithInvalidKey
+     *
      * @covers \pvc\struct\collection\Collection::update
      */
     public function testUpdateThrowsExceptionWithInvalidKey(): void
@@ -242,6 +267,7 @@ class CollectionTest extends TestCase
 
     /**
      * testUpdateThrowsExceptionWithNonExistentKey
+     *
      * @covers \pvc\struct\collection\Collection::update
      */
     public function testUpdateThrowsExceptionWithNonExistentKey(): void
@@ -253,6 +279,7 @@ class CollectionTest extends TestCase
 
     /**
      * testUpdate
+     *
      * @covers \pvc\struct\collection\Collection::update
      */
     public function testUpdate(): void
@@ -262,11 +289,15 @@ class CollectionTest extends TestCase
         $testKey = 1;
         $this->collection->update($testKey, $newElement);
 
-        static::assertSame($newElement, $this->collection->getElement($testKey));
+        static::assertSame(
+            $newElement,
+            $this->collection->getElement($testKey)
+        );
     }
 
     /**
      * testDeleteThrowsExceptionWithInvalidKey
+     *
      * @covers \pvc\struct\collection\Collection::delete
      */
     public function testDeleteThrowsExceptionWithInvalidKey(): void
@@ -279,6 +310,7 @@ class CollectionTest extends TestCase
 
     /**
      * testDeleteThrowsExceptionWithNonExistentKey
+     *
      * @covers \pvc\struct\collection\Collection::delete
      */
     public function testDeleteThrowsExceptionWithNonExistentKey(): void
@@ -290,6 +322,7 @@ class CollectionTest extends TestCase
 
     /**
      * testDelete
+     *
      * @covers \pvc\struct\collection\Collection::delete
      */
     public function testDelete(): void

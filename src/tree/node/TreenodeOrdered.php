@@ -9,17 +9,17 @@ declare (strict_types=1);
 namespace pvc\struct\tree\node;
 
 use pvc\interfaces\struct\collection\IndexedElementInterface;
-use pvc\interfaces\struct\tree\node\TreenodeInterface;
-use pvc\interfaces\struct\tree\node\TreenodeOrderedInterface;
+use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\CircularGraphException;
 use pvc\struct\tree\err\InvalidNodeIdException;
-use pvc\struct\tree\err\InvalidParentNodeException;
+use pvc\struct\tree\err\InvalidParentNodeIdException;
 use pvc\struct\tree\err\InvalidValueException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
-use pvc\struct\tree\err\SetTreeIdException;
+use pvc\struct\tree\err\SetTreeException;
+use pvc\struct\tree\tree\TreeOrdered;
 
 /**
  *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
@@ -35,8 +35,7 @@ use pvc\struct\tree\err\SetTreeIdException;
  *  children.  So the setParent method is responsible not only for setting the parent property, but it also takes
  *  the parent and adds a node to its child list.
  *
- * @extends Treenode<TreenodeOrdered, CollectionOrdered>
- * @phpstan-import-type TreenodeDtoShape from TreenodeInterface
+ * @extends Treenode<TreenodeOrdered, CollectionOrdered, TreeOrdered>
  */
 class TreenodeOrdered extends Treenode implements IndexedElementInterface
 {
@@ -46,21 +45,22 @@ class TreenodeOrdered extends Treenode implements IndexedElementInterface
     protected int $index;
 
     /**
-     * @param TreenodeDtoShape $dto
+     * @param  TreenodeDtoInterface  $dto
+     *
      * @return void
      * @throws AlreadySetNodeidException
      * @throws CircularGraphException
      * @throws InvalidNodeIdException
-     * @throws InvalidParentNodeException
+     * @throws InvalidParentNodeIdException
      * @throws NodeNotEmptyHydrationException
      * @throws RootCannotBeMovedException
-     * @throws SetTreeIdException
+     * @throws SetTreeException
      * @throws InvalidValueException
      */
-    public function hydrate($dto): void
+    public function hydrate(TreenodeDtoInterface $dto): void
     {
-        assert(isset($dto->index));
-        $this->setIndex($dto->index);
+        assert(!is_null($dto->getIndex()));
+        $this->setIndex($dto->getIndex());
         parent::hydrate($dto);
     }
 
@@ -80,7 +80,8 @@ class TreenodeOrdered extends Treenode implements IndexedElementInterface
      * a direct way - they need to ask the parent for the sibling collection
      *
      * @function setIndex
-     * @param non-negative-int $index
+     *
+     * @param  non-negative-int  $index
      */
     public function setIndex(int $index): void
     {

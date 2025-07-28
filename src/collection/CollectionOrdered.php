@@ -37,11 +37,11 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     protected $comparator;
 
     /**
-     * @param array<non-negative-int, ElementType> $array
+     * @param  array<non-negative-int, ElementType>  $array
      */
     public function __construct(array $array = [])
     {
-        $comparator = function($a, $b) {
+        $comparator = function ($a, $b) {
             /**
              * @var ElementType $a
              * @var ElementType $b
@@ -65,6 +65,26 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
+     * getIndex returns the index which corresponds to $key
+     *
+     * @param  non-negative-int  $key
+     *
+     * @return non-negative-int
+     */
+    public function getIndex(int $key): int
+    {
+        if (!$this->validateKey($key)) {
+            throw new InvalidKeyException($key);
+        }
+        if (!$this->validateExistingKey($key)) {
+            throw new NonExistentKeyException($key);
+        }
+        $element = $this->getElement($key);
+        assert(!is_null($element));
+        return $element->getIndex();
+    }
+
+    /**
      * setIndex allows you to move an existing element from one ordinal position in the collection to another.
      *
      * If $newIndex is greater than the largest index in the collection, then we adjust it to be the last index in
@@ -73,8 +93,8 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
      * Rather than explicitly shuffling some indices down and some indices up, this algorithm just deletes the
      * element and adds it back with the new index.
      *
-     * @param non-negative-int $key
-     * @param non-negative-int $newIndex
+     * @param  non-negative-int  $key
+     * @param  non-negative-int  $newIndex
      */
     public function setIndex(int $key, int $newIndex): void
     {
@@ -103,7 +123,8 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
 
     /**
      * delete
-     * @param non-negative-int $key
+     *
+     * @param  non-negative-int  $key
      *
      * note that we do not need to sort the elements array after deleting an element - it is already in order.
      */
@@ -115,8 +136,9 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
-     * @param non-negative-int $startIndex
-     * @param int<-1, 1> $direction
+     * @param  non-negative-int  $startIndex
+     * @param  int<-1, 1>  $direction
+     *
      * @return void
      */
     private function shuffleIndices(int $startIndex, int $direction): void
@@ -129,11 +151,13 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
                 /**
                  * make space before adding a new element at $startIndex
                  */
-                ($direction == self::SHUFFLE_UP && $existingIndex >= $startIndex) ||
-                /**
+                ($direction == self::SHUFFLE_UP
+                    && $existingIndex >= $startIndex)
+                || /**
                  * remove space after deleting an element at $startIndex
                  */
-                ($direction == self::SHUFFLE_DOWN && $existingIndex > $startIndex)
+                ($direction == self::SHUFFLE_DOWN
+                    && $existingIndex > $startIndex)
             ) {
                 $element->setIndex($newIndex);
             }
@@ -142,8 +166,10 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
 
     /**
      * add
-     * @param non-negative-int $key
-     * @param ElementType $element
+     *
+     * @param  non-negative-int  $key
+     * @param  ElementType  $element
+     *
      * @throws InvalidKeyException
      *
      * in order to keep the elements array in the proper order, we need to sort it by index so that iteration
@@ -171,8 +197,9 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
-     * @param non-negative-int $key
+     * @param  non-negative-int  $key
      * @param $element
+     *
      * @return void
      * @throws InvalidKeyException
      *
@@ -189,31 +216,13 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
-     * @param ElementType $a
-     * @param ElementType $b
+     * @param  ElementType  $a
+     * @param  ElementType  $b
+     *
      * @return int
      */
     protected function compareIndices(mixed $a, mixed $b): int
     {
         return $a->getIndex() <=> $b->getIndex();
-    }
-
-    /**
-     * getIndex returns the index which corresponds to $key
-     *
-     * @param non-negative-int $key
-     * @return non-negative-int
-     */
-    public function getIndex(int $key): int
-    {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
-        if (!$this->validateExistingKey($key)) {
-            throw new NonExistentKeyException($key);
-        }
-        $element = $this->getElement($key);
-        assert(!is_null($element));
-        return $element->getIndex();
     }
 }

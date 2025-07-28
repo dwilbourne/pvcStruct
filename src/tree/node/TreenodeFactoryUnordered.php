@@ -4,25 +4,22 @@ namespace pvc\struct\tree\node;
 
 use pvc\struct\collection\Collection;
 use pvc\struct\tree\err\ChildCollectionException;
-use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
+use pvc\struct\tree\tree\TreeUnordered;
 
 /**
- * @extends TreenodeFactory<TreenodeUnordered, Collection>
+ * @extends TreenodeFactory<TreenodeUnordered, Collection, TreeUnordered>
  */
 class TreenodeFactoryUnordered extends TreenodeFactory
 {
     /**
      * @return TreenodeUnordered
-     * @throws ChildCollectionException|TreenodeFactoryNotInitializedException
+     * @throws ChildCollectionException
      */
     public function makeNode(): TreenodeUnordered
     {
-        if (!isset($this->tree)) {
-            throw new TreeNodeFactoryNotInitializedException();
-        }
         /** @var Collection<TreenodeUnordered> $treenodeCollection */
-        $treenodeCollection = $this->treenodeCollectionFactory->makeCollection([]);
+        $treenodeCollection = $this->collectionFactory->makeCollection([]);
 
-        return new TreenodeUnordered($treenodeCollection, $this->tree);
+        return new TreenodeUnordered($treenodeCollection);
     }
 }

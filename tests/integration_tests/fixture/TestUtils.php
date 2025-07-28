@@ -5,17 +5,11 @@ namespace pvcTests\struct\integration_tests\fixture;
 use League\Container\Container;
 use League\Container\Definition\DefinitionAggregate;
 use League\Container\ReflectionContainer;
-use pvc\interfaces\struct\dto\DtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
-use pvc\struct\dto\DtoFactory;
-use pvc\struct\dto\err\DtoInvalidArrayKeyException;
-use pvc\struct\dto\err\DtoInvalidEntityGetterException;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvc\struct\tree\node\TreenodeOrdered;
-use pvc\struct\tree\node\TreenodeUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\tree\TreeUnordered;
 use ReflectionException;
@@ -28,7 +22,9 @@ class TestUtils
 
     public function __construct(TreenodeConfigurationsFixture $fixture)
     {
-        $aggregate = new DefinitionAggregate(TreeDefinitions::makeDefinitions());
+        $aggregate = new DefinitionAggregate(
+            TreeDefinitions::makeDefinitions()
+        );
         $this->container = new Container($aggregate);
         /**
          * enable autowiring, which recursively evaluates arguments inside the definitions
@@ -40,19 +36,23 @@ class TestUtils
 
     /**
      * getNodeIdsFromNodeArray
-     * @param TreenodeInterface $nodeArray
+     *
+     * @param  TreenodeInterface  $nodeArray
+     *
      * @return array<int>
      */
     public static function getNodeIdsFromNodeArray(array $nodeArray): array
     {
-        $callback = function (TreenodeInterface $node) { return $node->getNodeId(); };
+        $callback = function (TreenodeInterface $node) {
+            return $node->getNodeId();
+        };
         /**
          * array_map will preserve keys so just return the array values
          */
         return array_values(array_map($callback, $nodeArray));
     }
 
-    public function testTreeSetup(bool $ordered) : TreeInterface
+    public function testTreeSetup(bool $ordered): TreeInterface
     {
         $treeId = 1;
         $dtoArray = $this->makeDtoArray($ordered);
@@ -63,28 +63,34 @@ class TestUtils
     }
 
     /**
-     * @param int $treeId
-     * @return array
+     * @param  int  $treeId
+     *
+     * @return array<TreenodeDto>|array<TreenodeDtoOrdered>
      * @throws ReflectionException
-     * @throws DtoInvalidArrayKeyException
-     * @throws DtoInvalidEntityGetterException
      */
-    public function makeDtoArray(bool $ordered) : array
+    public function makeDtoArray(bool $ordered): array
     {
         $nodeData = $this->fixture->getNodeData();
-        $dtoFactory = $ordered ?
-            new DtoFactory(TreenodeDtoOrdered::class, TreenodeOrdered::class) :
-            new DtoFactory(TreenodeDto::class, TreenodeUnordered::class);
-
-        $callback = function(array $row) use ($dtoFactory, $ordered) : DtoInterface  {
-            $arr = [];
-            $arr['nodeId'] = $row[0];
-            $arr['parentId'] = $row[1];
-            $arr['treeId'] = null;
+        $callback = function (array $row) use ($ordered
+        ): TreenodeDto|TreenodeDtoOrdered {
+            $nodeId = $row[0];
+            $parentId = $row[1];
+            $treeId = null;
             if ($ordered) {
-                $arr['index'] = $row[2];
+                $index = $row[2];
             }
-            return $dtoFactory->makeDto($arr);
+
+            if ($ordered) {
+                $dto = new TreenodeDtoOrdered(
+                    $nodeId,
+                    $parentId,
+                    $treeId,
+                    $index
+                );
+            } else {
+                $dto = new TreenodeDto($nodeId, $parentId, $treeId);
+            }
+            return $dto;
         };
         return array_map($callback, $nodeData);
     }

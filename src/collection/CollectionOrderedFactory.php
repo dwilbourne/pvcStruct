@@ -16,7 +16,8 @@ use pvc\interfaces\struct\collection\IndexedElementInterface;
 class CollectionOrderedFactory implements CollectionFactoryInterface
 {
     /**
-     * @param array<non-negative-int, ElementType> $elements
+     * @param  array<non-negative-int, ElementType>  $elements
+     *
      * @return CollectionType<ElementType>
      */
     public function makeCollection(array $elements = [])

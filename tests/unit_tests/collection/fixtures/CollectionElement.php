@@ -15,7 +15,8 @@ class CollectionElement
     }
 
     /**
-     * @param int $value
+     * @param  int  $value
+     *
      * @return void
      */
     public function setValue(int $value): void

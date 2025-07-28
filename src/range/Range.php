@@ -31,20 +31,8 @@ abstract class Range implements RangeInterface
     protected $max;
 
     /**
-     * getMin
-     * @return RangeElementDataType
-     */
-    abstract protected function getMin(): mixed;
-
-    /**
-     * getMax
-     * @return RangeElementDataType
-     */
-    abstract protected function getMax(): mixed;
-
-    /**
-     * @param RangeElementDataType $min
-     * @param RangeElementDataType $max
+     * @param  RangeElementDataType  $min
+     * @param  RangeElementDataType  $max
      */
     public function setRange($min, $max): void
     {
@@ -54,6 +42,7 @@ abstract class Range implements RangeInterface
 
     /**
      * getRange
+     *
      * @return array<RangeElementDataType>
      */
     public function getRange(): array
@@ -62,8 +51,24 @@ abstract class Range implements RangeInterface
     }
 
     /**
+     * getMin
+     *
+     * @return RangeElementDataType
+     */
+    abstract protected function getMin(): mixed;
+
+    /**
+     * getMax
+     *
+     * @return RangeElementDataType
+     */
+    abstract protected function getMax(): mixed;
+
+    /**
      * isInRange
-     * @param RangeElementDataType $x
+     *
+     * @param  RangeElementDataType  $x
+     *
      * @return bool
      */
     public function isInRange($x): bool

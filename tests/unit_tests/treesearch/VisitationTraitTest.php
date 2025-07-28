@@ -23,6 +23,7 @@ class VisitationTraitTest extends TestCase
 
     /**
      * testSetGetStatus
+     *
      * @covers \pvc\struct\treesearch\VisitationTrait::getVisitStatus
      * @covers \pvc\struct\treesearch\VisitationTrait::setVisitStatus
      * @covers \pvc\struct\treesearch\VisitationTrait::initializeVisitStatus
@@ -33,6 +34,9 @@ class VisitationTraitTest extends TestCase
         $this->mock->setVisitStatus($status);
         self::assertEquals($status, $this->mock->getVisitStatus());
         $this->mock->initializeVisitStatus();
-        self::assertEquals(VisitStatus::NEVER_VISITED, $this->mock->getVisitStatus());
+        self::assertEquals(
+            VisitStatus::NEVER_VISITED,
+            $this->mock->getVisitStatus()
+        );
     }
 }

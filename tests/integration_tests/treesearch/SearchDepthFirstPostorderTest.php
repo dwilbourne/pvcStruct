@@ -45,19 +45,25 @@ class SearchDepthFirstPostorderTest extends TestCase
 
     /**
      * testIteratorPostOrder
+     *
      * @covers \pvc\struct\treesearch\SearchDepthFirstPostorder
      * @covers \pvc\struct\treesearch\SearchAbstract::getNodes
      */
     public function testIteratorPostOrder(): void
     {
         $this->search->setStartNode($this->tree->getRoot());
-        $expectedResult = $this->fixture->makeUnorderedPostOrderDepthFirstArrayOfAllNodeIds();
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $expectedResult
+            = $this->fixture->makeUnorderedPostOrderDepthFirstArrayOfAllNodeIds(
+        );
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         self::assertEquals($expectedResult, $actualResult);
     }
 
     /**
      * testMaxLevelsPostOrder
+     *
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchAbstract::getNodes
      * @covers \pvc\struct\treesearch\SearchDepthFirstPostorder
@@ -65,9 +71,13 @@ class SearchDepthFirstPostorderTest extends TestCase
     public function testMaxLevelsPostOrder(): void
     {
         $this->search->setStartNode($this->tree->getRoot());
-        $expectedResult = $this->fixture->makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
+        $expectedResult
+            = $this->fixture->makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+        );
         $this->search->setMaxLevels(3);
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         self::assertEquals($expectedResult, $actualResult);
     }
 }

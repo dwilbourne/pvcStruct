@@ -20,6 +20,7 @@ class SearchDepthFirstPreorder extends SearchDepthFirst
 {
     /**
      * getMovementDirection
+     *
      * @return Direction
      *
      * returns MOVE_DOWN if we should keep iterating by recursing down through child nodes,
@@ -40,7 +41,6 @@ class SearchDepthFirstPreorder extends SearchDepthFirst
         assert(!is_null($this->current()));
 
         switch ($this->current()->getVisitStatus()) {
-
             /**
              * in preorder mode, stop when we first encounter a node.  There's an initialization condition to
              * account for:  rewind is called in the first iteration and next for all subsequent iterations.
@@ -48,8 +48,11 @@ class SearchDepthFirstPreorder extends SearchDepthFirst
              * returned, so we do not want to return it again.
              */
             case VisitStatus::NEVER_VISITED:
-                $this->current()->setVisitStatus(VisitStatus::PARTIALLY_VISITED);
-                $direction = ($this->current() == $this->getStartNode()) ? Direction::MOVE_DOWN : Direction::DONT_MOVE;
+                $this->current()->setVisitStatus(
+                    VisitStatus::PARTIALLY_VISITED
+                );
+                $direction = ($this->current() == $this->getStartNode())
+                    ? Direction::MOVE_DOWN : Direction::DONT_MOVE;
                 break;
 
             /**
@@ -61,7 +64,9 @@ class SearchDepthFirstPreorder extends SearchDepthFirst
             case VisitStatus::PARTIALLY_VISITED:
             default:
                 if ($this->allChildrenFullyVisited() || $this->atMaxLevels()) {
-                    $this->current()->setVisitStatus(VisitStatus::FULLY_VISITED);
+                    $this->current()->setVisitStatus(
+                        VisitStatus::FULLY_VISITED
+                    );
                     $direction = Direction::MOVE_UP;
                 } else {
                     $direction = Direction::MOVE_DOWN;

@@ -16,6 +16,7 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 /**
  * Class SearchAbstract
  * @template NodeType of NodeSearchableInterface
+ *
  * @implements SearchInterface<NodeType>
  */
 abstract class SearchAbstract implements SearchInterface
@@ -44,6 +45,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * key
+     *
      * @return non-negative-int|null
      */
     public function key(): int|null
@@ -53,6 +55,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * current
+     *
      * @return NodeType|null
      */
     public function current(): mixed
@@ -62,6 +65,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * valid
+     *
      * @return bool
      */
     public function valid(): bool
@@ -71,6 +75,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * rewind
+     *
      * @throws StartNodeUnsetException
      */
     public function rewind(): void
@@ -81,7 +86,8 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * setCurrent
-     * @param NodeType|null $currentNode
+     *
+     * @param  NodeType|null  $currentNode
      * nullable because you want to set the current node to null at the end of a search, after the last node has been
      * returned and have it initialized as null
      */
@@ -92,6 +98,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * getStartNode
+     *
      * @return NodeType
      * startNode must be set before the class can do anything so throw an exception if it is not set
      * @throws StartNodeUnsetException
@@ -106,7 +113,8 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * setStartNode
-     * @param NodeType $startNode
+     *
+     * @param  NodeType  $startNode
      */
     public function setStartNode($startNode): void
     {
@@ -144,6 +152,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * getCurrentLevel
+     *
      * @return int<-1, max>
      *
      * it is conceivable someone could want to know what level of the nodes the search is currently on while
@@ -155,7 +164,8 @@ abstract class SearchAbstract implements SearchInterface
     }
 
     /**
-     * @param Direction $direction
+     * @param  Direction  $direction
+     *
      * @return void
      * we only want subclasses to be able to modify the current level of the search
      */
@@ -175,6 +185,7 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * getMaxLevels
+     *
      * @return int
      */
     public function getMaxLevels(): int
@@ -184,7 +195,9 @@ abstract class SearchAbstract implements SearchInterface
 
     /**
      * setMaxLevels
-     * @param int $maxLevels
+     *
+     * @param  int  $maxLevels
+     *
      * @throws SetMaxSearchLevelsException
      *
      * it is easy to get confused about this, but startNode is at level 0, meaning that current level uses

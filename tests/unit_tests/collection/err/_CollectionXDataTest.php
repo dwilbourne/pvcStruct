@@ -18,6 +18,7 @@ class _CollectionXDataTest extends XDataTestMaster
 {
     /**
      * testListExceptionLibrary
+     *
      * @covers \pvc\struct\collection\err\_CollectionXData::getLocalXCodes
      * @covers \pvc\struct\collection\err\_CollectionXData::getXMessageTemplates
      * @covers \pvc\struct\collection\err\DuplicateKeyException::__construct

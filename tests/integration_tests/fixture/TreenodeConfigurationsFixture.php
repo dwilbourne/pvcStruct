@@ -58,17 +58,20 @@ class TreenodeConfigurationsFixture
         return $a;
     }
 
-    public function makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively(): array
+    public function makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively(
+    ): array
     {
         return [0, 2, 6, 7];
     }
 
-    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneUnordered(): array
+    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneUnordered(
+    ): array
     {
         return [3, 4, 5];
     }
 
-    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneOrdered(): array
+    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneOrdered(
+    ): array
     {
         return [5, 3, 4];
     }
@@ -132,7 +135,8 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makeUnorderedBreadthFirstArrayTwoLevelsStartingAtRoot(): array
+    public function makeUnorderedBreadthFirstArrayTwoLevelsStartingAtRoot(
+    ): array
     {
         $expectedResult = [];
         for ($i = 0; $i <= 7; $i++) {
@@ -141,7 +145,8 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot(): array
+    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot(
+    ): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
@@ -157,10 +162,12 @@ class TreenodeConfigurationsFixture
 
     /**
      * makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes
+     *
      * @return array
      * let's say that 0 is an even number for the moment
      */
-    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes(): array
+    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes(
+    ): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
@@ -170,7 +177,8 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(): array
+    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+    ): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
@@ -184,7 +192,8 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(): array
+    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(
+    ): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
@@ -194,7 +203,8 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(): array
+    public function makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+    ): array
     {
         $expectedResult = [];
         $expectedResult[] = 3;
@@ -205,16 +215,6 @@ class TreenodeConfigurationsFixture
         $expectedResult[] = 7;
         $expectedResult[] = 2;
         $expectedResult[] = 0;
-        return $expectedResult;
-    }
-
-
-    public function makeUnorderedDepthFirstArrayOfBranchAtNodeid2(): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 2;
-        $expectedResult[] = 6;
-        $expectedResult[] = 7;
         return $expectedResult;
     }
 
@@ -224,6 +224,14 @@ class TreenodeConfigurationsFixture
         return $this->makeUnorderedDepthFirstArrayOfBranchAtNodeid2();
     }
 
+    public function makeUnorderedDepthFirstArrayOfBranchAtNodeid2(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 2;
+        $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        return $expectedResult;
+    }
 
     public function makeUnorderedPreorderDepthFirstArrayOfAllNodeIds(): array
     {

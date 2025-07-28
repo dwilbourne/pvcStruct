@@ -13,7 +13,7 @@ use Throwable;
 /**
  * Class InvalidParentNodeException
  */
-class InvalidParentNodeException extends LogicException
+class InvalidParentNodeIdException extends LogicException
 {
     public function __construct(int $parentid, ?Throwable $prev = null)
     {

@@ -15,6 +15,7 @@ class RangeFloat extends Range
 {
     /**
      * getMin
+     *
      * @return float
      */
     protected function getMin(): mixed
@@ -24,6 +25,7 @@ class RangeFloat extends Range
 
     /**
      * getMax
+     *
      * @return float
      */
     protected function getMax(): mixed

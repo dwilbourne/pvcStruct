@@ -48,6 +48,7 @@ class SearchBreadthFirstTest extends TestCase
 
     /**
      * testGetFullTree
+     *
      * @covers \pvc\struct\treesearch\SearchBreadthFirst::rewind
      * @covers \pvc\struct\treesearch\SearchBreadthFirst::next
      * @covers \pvc\struct\treesearch\SearchBreadthFirst::getNextLevelOfNodes
@@ -56,8 +57,11 @@ class SearchBreadthFirstTest extends TestCase
     public function testGetFullTree(): void
     {
         $this->search->setStartNode($this->tree->getRoot());
-        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayOfAllNodeIds();
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $expectedResult
+            = $this->fixture->makeOrderedBreadthFirstArrayOfAllNodeIds();
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         /**
          * ordered search so do not canonicalize the results
          */
@@ -66,6 +70,7 @@ class SearchBreadthFirstTest extends TestCase
 
     /**
      * testMaxLevels
+     *
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchAbstract::setMaxLevels
      * @covers \pvc\struct\treesearch\SearchAbstract::atMaxLevels
@@ -80,8 +85,12 @@ class SearchBreadthFirstTest extends TestCase
         $this->search->setStartNode($this->tree->getRoot());
         $this->search->setMaxLevels($maxLevels);
 
-        $expectedResult = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot();
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $expectedResult
+            = $this->fixture->makeOrderedBreadthFirstArrayThreeLevelsStartingAtRoot(
+        );
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
 
         /**
          * ordered search so do not canonicalize the results

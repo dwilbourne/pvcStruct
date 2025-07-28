@@ -16,7 +16,8 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 class CollectionFactory implements CollectionFactoryInterface
 {
     /**
-     * @param array<non-negative-int, ElementType> $elements
+     * @param  array<non-negative-int, ElementType>  $elements
+     *
      * @return CollectionType<ElementType>
      */
     public function makeCollection(array $elements = [])

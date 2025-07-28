@@ -15,12 +15,16 @@ use Throwable;
  */
 class NodeNotInTreeException extends LogicException
 {
-    public function __construct(?int $treeid, int $nodeid, ?Throwable $prev = null)
-    {
+    public function __construct(
+        ?int $treeid,
+        int $nodeid,
+        ?Throwable $prev = null
+    ) {
         /**
          * it is possible for nodes to be created without having a treeid set
          */
-        $treeidString = (is_null($treeid) ? '{treeid not set}' : (string)$treeid);
+        $treeidString = (is_null($treeid) ? '{treeid not set}'
+            : (string)$treeid);
         parent::__construct($treeidString, $nodeid, $prev);
     }
 }

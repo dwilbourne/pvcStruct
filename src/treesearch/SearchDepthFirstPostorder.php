@@ -13,6 +13,7 @@ use pvc\interfaces\struct\treesearch\VisitStatus;
 /**
  * Class SearchStrategyDepthFirstPostorder
  * @template NodeType of NodeVisitableInterface
+ *
  * @extends SearchDepthFirst<NodeType>
  */
 class SearchDepthFirstPostorder extends SearchDepthFirst
@@ -30,6 +31,7 @@ class SearchDepthFirstPostorder extends SearchDepthFirst
 
     /**
      * getMovementDirection
+     *
      * @return Direction
      *
      * returns MOVE_DOWN if we should keep iterating by recursing down through child nodes,
@@ -50,21 +52,25 @@ class SearchDepthFirstPostorder extends SearchDepthFirst
         assert(!is_null($this->current()));
 
         switch ($this->current()->getVisitStatus()) {
-
             case VisitStatus::NEVER_VISITED:
                 if ($this->allChildrenFullyVisited() || $this->atMaxLevels()) {
-                    $this->current()->setVisitStatus(VisitStatus::FULLY_VISITED);
+                    $this->current()->setVisitStatus(
+                        VisitStatus::FULLY_VISITED
+                    );
                     $direction = Direction::DONT_MOVE;
-                }
-                else {
-                    $this->current()->setVisitStatus(VisitStatus::PARTIALLY_VISITED);
+                } else {
+                    $this->current()->setVisitStatus(
+                        VisitStatus::PARTIALLY_VISITED
+                    );
                     $direction = Direction::MOVE_DOWN;
                 }
                 break;
 
             case VisitStatus::PARTIALLY_VISITED:
                 if ($this->allChildrenFullyVisited() || $this->atMaxLevels()) {
-                    $this->current()->setVisitStatus(VisitStatus::FULLY_VISITED);
+                    $this->current()->setVisitStatus(
+                        VisitStatus::FULLY_VISITED
+                    );
                     $direction = Direction::DONT_MOVE;
                 } else {
                     $direction = Direction::MOVE_DOWN;

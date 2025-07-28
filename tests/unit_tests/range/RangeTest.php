@@ -22,6 +22,7 @@ class RangeTest extends TestCase
 
     /**
      * testSetGetRange
+     *
      * @covers \pvc\struct\range\Range::setRange()
      * @covers \pvc\struct\range\Range::getRange()
      */
@@ -33,7 +34,10 @@ class RangeTest extends TestCase
         $this->range->method('getMin')->willReturn($min);
         $this->range->method('getMax')->willReturn($max);
         $expectedResult = [$min, $max];
-        self::assertEqualsCanonicalizing($expectedResult, $this->range->getRange());
+        self::assertEqualsCanonicalizing(
+            $expectedResult,
+            $this->range->getRange()
+        );
     }
 
 
@@ -52,10 +56,12 @@ class RangeTest extends TestCase
 
     /**
      * testIsInRange
+     *
      * @param $min
      * @param $max
      * @param $value
      * @param $expectedResult
+     *
      * @dataProvider isInRangeDataProvider
      * @covers       \pvc\struct\range\Range::isInRange
      */

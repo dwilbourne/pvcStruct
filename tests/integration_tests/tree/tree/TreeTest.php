@@ -14,11 +14,28 @@ use pvc\struct\tree\err\NodeNotInTreeException;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
 use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
-class TreeUnorderedTest extends TestCase
+class TreeTest extends TestCase
 {
     protected TreeInterface $tree;
 
     protected TreenodeConfigurationsFixture $fixture;
+
+    /**
+     * testHydration
+     *
+     * @covers \pvc\struct\tree\tree\Tree::initialize
+     * @covers \pvc\struct\tree\tree\Tree::hydrate
+     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     */
+    public function testHydration(): void
+    {
+        $ordered = false;
+        $this->treeSetup($ordered);
+        self::assertEquals(
+            count($this->fixture->getNodeData()),
+            count($this->tree->getNodes())
+        );
+    }
 
     public function treeSetup(bool $ordered): void
     {
@@ -28,21 +45,8 @@ class TreeUnorderedTest extends TestCase
     }
 
     /**
-     * testHydration
-     * @covers \pvc\struct\tree\tree\Tree::initialize
-     * @covers \pvc\struct\tree\tree\Tree::hydrate
-     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
-     */
-    public function testHydration(): void
-    {
-        $ordered = false;
-        $this->treeSetup($ordered);
-        self::assertEquals(count($this->fixture->getNodeData()), count($this->tree->getNodes()));
-    }
-
-
-    /**
      * testDeleteNodeRecurse
+     *
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
      * @covers \pvc\struct\tree\tree\Tree::deleteNode
@@ -52,15 +56,23 @@ class TreeUnorderedTest extends TestCase
     {
         $ordered = false;
         $this->treeSetup($ordered);
-        $expectedRemainingNodeIds = $this->fixture->makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively();
+        $expectedRemainingNodeIds
+            = $this->fixture->makeExpectedNodeIdsRemainingIfNodeWithIdOneIsDeletedRecursively(
+        );
         $deleteBranchOK = true;
         $this->tree->deleteNode(1, $deleteBranchOK);
-        $actualRemainingNodeIds = TestUtils::getNodeIdsFromNodeArray($this->tree->getNodes());
-        self::assertEqualsCanonicalizing($expectedRemainingNodeIds, $actualRemainingNodeIds);
+        $actualRemainingNodeIds = TestUtils::getNodeIdsFromNodeArray(
+            $this->tree->getNodes()
+        );
+        self::assertEqualsCanonicalizing(
+            $expectedRemainingNodeIds,
+            $actualRemainingNodeIds
+        );
     }
 
     /**
      * testHydrationOrdered
+     *
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
      * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
@@ -69,9 +81,15 @@ class TreeUnorderedTest extends TestCase
     {
         $ordered = true;
         $this->treeSetup($ordered);
-        $expectedResultArray = $this->fixture->makeOrderedDepthFirstArrayOfAllNodeIds();
-        $actualResultArray = TestUtils::getNodeIdsFromNodeArray($this->tree->getNodes());
-        self::assertEqualsCanonicalizing($expectedResultArray, $actualResultArray);
+        $expectedResultArray
+            = $this->fixture->makeOrderedDepthFirstArrayOfAllNodeIds();
+        $actualResultArray = TestUtils::getNodeIdsFromNodeArray(
+            $this->tree->getNodes()
+        );
+        self::assertEqualsCanonicalizing(
+            $expectedResultArray,
+            $actualResultArray
+        );
     }
 
     /**
@@ -84,8 +102,14 @@ class TreeUnorderedTest extends TestCase
     {
         $ordered = false;
         $this->treeSetup($ordered);
-        $expectedResultArray = $this->fixture->makeUnorderedDepthFirstArrayOfAllNodeIds();
-        $actualResultArray = TestUtils::getNodeIdsFromNodeArray($this->tree->getNodes());
-        self::assertEqualsCanonicalizing($expectedResultArray, $actualResultArray);
+        $expectedResultArray
+            = $this->fixture->makeUnorderedDepthFirstArrayOfAllNodeIds();
+        $actualResultArray = TestUtils::getNodeIdsFromNodeArray(
+            $this->tree->getNodes()
+        );
+        self::assertEqualsCanonicalizing(
+            $expectedResultArray,
+            $actualResultArray
+        );
     }
 }

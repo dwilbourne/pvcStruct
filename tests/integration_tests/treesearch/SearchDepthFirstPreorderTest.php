@@ -8,7 +8,6 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
@@ -46,6 +45,7 @@ class SearchDepthFirstPreorderTest extends TestCase
 
     /**
      * testConstruct
+     *
      * @covers \pvc\struct\treesearch\SearchDepthFirst::__construct
      */
     public function testConstruct(): void
@@ -55,6 +55,7 @@ class SearchDepthFirstPreorderTest extends TestCase
 
     /**
      * testRewind
+     *
      * @covers \pvc\struct\treesearch\SearchDepthFirst::initializeVisitStatusRecurse
      * @covers \pvc\struct\treesearch\SearchDepthFirst::rewind
      */
@@ -79,6 +80,7 @@ class SearchDepthFirstPreorderTest extends TestCase
 
     /**
      * testIteratorPreorder
+     *
      * @covers \pvc\struct\treesearch\SearchDepthFirst::move
      * @covers \pvc\struct\treesearch\SearchDepthFirst::next
      * @covers \pvc\struct\treesearch\SearchDepthFirst::getMovementDirection
@@ -93,19 +95,26 @@ class SearchDepthFirstPreorderTest extends TestCase
     public function testIteratorPreorder(): void
     {
         $this->search->setStartNode($this->tree->getRoot());
-        $expectedResult = $this->fixture->makeUnorderedPreorderDepthFirstArrayOfAllNodeIds();
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $expectedResult
+            = $this->fixture->makeUnorderedPreorderDepthFirstArrayOfAllNodeIds(
+        );
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         self::assertEquals($expectedResult, $actualResult);
 
         /**
          * test it again to make sure the rewind machinery really is working
          */
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         self::assertEquals($expectedResult, $actualResult);
     }
 
     /**
      * testMaxLevelsPreorder
+     *
      * @throws SetMaxSearchLevelsException
      * @covers \pvc\struct\treesearch\SearchDepthFirst::allChildrenFullyVisited
      * @covers \pvc\struct\treesearch\SearchDepthFirst::getMovementDirection
@@ -116,9 +125,13 @@ class SearchDepthFirstPreorderTest extends TestCase
     public function testMaxLevelsPreorder(): void
     {
         $this->search->setStartNode($this->tree->getRoot());
-        $expectedResult = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot();
+        $expectedResult
+            = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+        );
         $this->search->setMaxLevels(3);
-        $actualResult = TestUtils::getNodeIdsFromNodeArray($this->search->getNodes());
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
         self::assertEquals($expectedResult, $actualResult);
     }
 }

@@ -5,9 +5,10 @@ namespace pvc\struct\tree\node;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
+use pvc\struct\tree\tree\TreeOrdered;
 
 /**
- * @extends TreenodeFactory<TreenodeOrdered, CollectionOrdered>
+ * @extends TreenodeFactory<TreenodeOrdered, CollectionOrdered, TreeOrdered>
  */
 class TreenodeFactoryOrdered extends TreenodeFactory
 {
@@ -17,14 +18,10 @@ class TreenodeFactoryOrdered extends TreenodeFactory
      */
     public function makeNode(): TreenodeOrdered
     {
-        if (!isset($this->tree)) {
-            throw new TreeNodeFactoryNotInitializedException();
-        }
-
         /** @var CollectionOrdered<TreenodeOrdered> $treenodeCollection */
-        $treenodeCollection = $this->treenodeCollectionFactory->makeCollection([]);
+        $treenodeCollection = $this->collectionFactory->makeCollection([]);
 
-        return new TreenodeOrdered($treenodeCollection, $this->tree);
+        return new TreenodeOrdered($treenodeCollection);
     }
 
 }

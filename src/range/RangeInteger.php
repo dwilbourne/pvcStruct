@@ -15,6 +15,7 @@ class RangeInteger extends Range
 {
     /**
      * getMin
+     *
      * @return int
      */
     protected function getMin(): mixed
@@ -24,6 +25,7 @@ class RangeInteger extends Range
 
     /**
      * getMax
+     *
      * @return int
      */
     protected function getMax(): mixed
