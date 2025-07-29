@@ -64,6 +64,16 @@ class TreenodeConfigurationsFixture
         return [0, 2, 6, 7];
     }
 
+    public function makeArrayOfAncestorsOfNodeWithNodeIdNine(): array
+    {
+        return [9, 5, 1, 0];
+    }
+
+    public function makeArrayOfAncestorsOfNodeWithNodeIdNineMaxLevelsTwo(): array
+    {
+        return [9, 5];
+    }
+
     public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneUnordered(
     ): array
     {

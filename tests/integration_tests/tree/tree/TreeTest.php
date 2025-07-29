@@ -7,6 +7,7 @@ declare (strict_types=1);
 
 namespace pvcTests\struct\integration_tests\tree\tree;
 
+use PHPUnit\Framework\Constraint\TraversableContainsIdentical;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -27,21 +28,39 @@ class TreeTest extends TestCase
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
      */
-    public function testHydration(): void
+    public function testHydrationWithDtos(): void
     {
         $ordered = false;
-        $this->treeSetup($ordered);
+        $makeNodes = false;
+        $this->treeSetup($ordered, $makeNodes);
         self::assertEquals(
             count($this->fixture->getNodeData()),
             count($this->tree->getNodes())
         );
     }
 
-    public function treeSetup(bool $ordered): void
+    /**
+     * @return void
+     * @covers \pvc\struct\tree\tree\Tree::initialize
+     * @covers \pvc\struct\tree\tree\Tree::hydrate
+     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     */
+    public function testHydrationWithNodes(): void
+    {
+        $ordered = false;
+        $makeNodes = true;
+        $this->treeSetup($ordered, $makeNodes);
+        self::assertEquals(
+            count($this->fixture->getNodeData()),
+            count($this->tree->getNodes())
+        );
+    }
+
+    public function treeSetup(bool $ordered, bool $makeNodes = false): void
     {
         $this->fixture = new TreenodeConfigurationsFixture();
         $testUtils = new TestUtils($this->fixture);
-        $this->tree = $testUtils->testTreeSetup($ordered);
+        $this->tree = $testUtils->testTreeSetup($ordered, $makeNodes);
     }
 
     /**

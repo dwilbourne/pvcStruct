@@ -142,7 +142,7 @@ class TreenodeTest extends TestCase
      * @throws InvalidValueException
      * @covers \pvc\struct\tree\node\Treenode::setParentId
      */
-    public function testSetParentIdFailsWithInvalidParentId(): void
+    public function testParentIdFailsWithInvalidParentId(): void
     {
         $nodeId = 5;
         $badParentId = -1;
@@ -153,6 +153,30 @@ class TreenodeTest extends TestCase
         $dto = $this->fixture->makeDTOUnordered($nodeId, $badParentId);
         self::expectException(InvalidParentNodeIdException::class);
         $node->hydrate($dto);
+    }
+
+    /**
+     * @return void
+     * @throws ChildCollectionException
+     * @throws InvalidNodeIdException
+     * @throws InvalidParentNodeIdException
+     * @throws InvalidTreeidException
+     * @covers \pvc\struct\tree\node\Treenode::hydrate
+     * @covers \pvc\struct\tree\node\Treenode::getNodeId
+     * @covers \pvc\struct\tree\node\Treenode::getParentId
+     */
+    public function testHydrateGetNodeIdGetParentId(): void
+    {
+        $nodeId = 5;
+        $parentId = 1;
+        $this->collection->expects($this->once())->method('isEmpty')
+            ->willReturn(true);
+        $node = new Treenode($this->collection);
+
+        $dto = $this->fixture->makeDTOUnordered($nodeId, $parentId);
+        $node->hydrate($dto);
+        self::assertEquals($nodeId, $node->getNodeId());
+        self::assertEquals($parentId, $node->getParentId());
     }
 
     /**

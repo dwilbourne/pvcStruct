@@ -14,14 +14,15 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 /**
  * Class SearchStrategyBreadthFirst
  *
- * @extends SearchAbstract<NodeSearchableInterface>
+ * @template NodeType of NodeSearchableInterface
+ * @extends SearchAbstract<NodeType>
  */
 class SearchBreadthFirst extends SearchAbstract
 {
     /**
      * array of nodes in the "current level" of the tree
      *
-     * @var array<NodeSearchableInterface>
+     * @var array<NodeType>
      */
     private array $currentLevelNodes;
 
@@ -88,7 +89,7 @@ class SearchBreadthFirst extends SearchAbstract
              * get the nodes on the next level of the tree
              */
             $this->currentLevelNodes = $this->getNextLevelOfNodes();
-            $this->setCurrentLevel(Direction::MOVE_DOWN);
+            $this->setCurrentLevel(-Direction::MOVE_DOWN->value);
             /**
              * rewind the current index and keep going
              */
@@ -100,14 +101,14 @@ class SearchBreadthFirst extends SearchAbstract
     /**
      * getNextLevelOfNodes
      *
-     * @return array<NodeSearchableInterface>
+     * @return array<NodeType>
      */
     protected function getNextLevelOfNodes(): array
     {
         /**
-         * @param  NodeSearchableInterface  $node
+         * @param  NodeType  $node
          *
-         * @return array<NodeSearchableInterface>
+         * @return array<NodeType>
          */
         $getChildrenCallback = function (NodeSearchableInterface $node): array {
             return $node->getChildrenArray();
@@ -117,8 +118,13 @@ class SearchBreadthFirst extends SearchAbstract
             $this->currentLevelNodes
         );
         /**
-         * splat operator is required to unpack the outer array
+         * splat operator is required to unpack the outer array.  Phpstan
+         * does not understand the callback parameter is NodeType not
+         * NodeSearchableInterface so we need to type hint the result....
+         *
+         * @var array<NodeType> $result
          */
-        return array_merge(...$childArrays);
+        $result = array_merge(...$childArrays);
+        return $result;
     }
 }

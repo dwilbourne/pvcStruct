@@ -34,7 +34,9 @@ abstract class SearchAbstract implements SearchInterface
     /**
      * @var int
      *
-     * maximum depth to which we are allowed to traverse the tree.
+     * maximum depth/height to which we are allowed to traverse the tree.
+     * Searching children goes down the tree, searching ancestors goes up the
+     * tree
      */
     private int $maxLevels = PHP_INT_MAX;
 
@@ -103,7 +105,7 @@ abstract class SearchAbstract implements SearchInterface
      * startNode must be set before the class can do anything so throw an exception if it is not set
      * @throws StartNodeUnsetException
      */
-    public function getStartNode(): mixed
+    protected function getStartNode(): mixed
     {
         if (!isset($this->startNode)) {
             throw new StartNodeUnsetException();
@@ -144,6 +146,9 @@ abstract class SearchAbstract implements SearchInterface
      *  as an example, max levels of 2 means the first level (containing the start node) is at level 0 and the level
      *  below that is on level 1.  So if the current level goes to 1 then we are at the max-levels
      *  threshold.
+     *
+     * the current level is an absolute value.  If we are doing a search of ancestors, then the level
+     * above the start node is level 1.
      */
     protected function atMaxLevels(): bool
     {
@@ -164,21 +169,22 @@ abstract class SearchAbstract implements SearchInterface
     }
 
     /**
-     * @param  Direction  $direction
+     * @param  int  $increment
      *
      * @return void
      * we only want subclasses to be able to modify the current level of the search
      */
-    protected function setCurrentLevel(Direction $direction): void
+    protected function setCurrentLevel(int $increment): void
     {
         /**
-         * feels backwards but moving down in the search increases the level.  Because Direction::DOWN is defined as
-         * -1, we want to subtract it from, not add it to, the current level.
+         * by using an absolute value for the current level, we are tracking the "distance away
+         * from the start node".  It is up to the subclasses to determine whether going DOWN (UP) is
+         * getting closer to or farther away from the start node.
          *
          * Type checker cannot know that the logic in the searches does not permit a current level of
-         * -1
+         * less than zero so we use the assertion
          */
-        $newLevel = $this->currentLevel - $direction->value;
+        $newLevel = $this->currentLevel + $increment;
         assert($newLevel >= 0);
         $this->currentLevel = $newLevel;
     }

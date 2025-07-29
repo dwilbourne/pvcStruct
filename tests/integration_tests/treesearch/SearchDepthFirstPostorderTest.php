@@ -8,10 +8,8 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
-use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPostorder;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
 use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
@@ -40,7 +38,7 @@ class SearchDepthFirstPostorderTest extends TestCase
         $testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
         $this->tree = $testUtils->testTreeSetup($ordered);
-        $this->search = new SearchDepthFirstPostorder(new NodeMap());
+        $this->search = new SearchDepthFirstPostorder();
     }
 
     /**

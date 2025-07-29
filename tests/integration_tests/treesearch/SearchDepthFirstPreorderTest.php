@@ -11,7 +11,6 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
-use pvc\struct\treesearch\NodeMap;
 use pvc\struct\treesearch\SearchDepthFirstPreorder;
 use pvcTests\struct\integration_tests\fixture\TestUtils;
 use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
@@ -40,13 +39,12 @@ class SearchDepthFirstPreorderTest extends TestCase
         $testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
         $this->tree = $testUtils->testTreeSetup($ordered);
-        $this->search = new SearchDepthFirstPreorder(new NodeMap());
+        $this->search = new SearchDepthFirstPreorder();
     }
 
     /**
      * testConstruct
-     *
-     * @covers \pvc\struct\treesearch\SearchDepthFirst::__construct
+     * @coversNothing
      */
     public function testConstruct(): void
     {
@@ -86,7 +84,6 @@ class SearchDepthFirstPreorderTest extends TestCase
      * @covers \pvc\struct\treesearch\SearchDepthFirst::getMovementDirection
      * @covers \pvc\struct\treesearch\SearchDepthFirst::getNextVisitableChild
      * @covers \pvc\struct\treesearch\SearchDepthFirst::getNextNode
-     * @covers \pvc\struct\treesearch\SearchDepthFirst::getParent
      * @covers \pvc\struct\treesearch\SearchDepthFirst::endOfSearch
      * @covers \pvc\struct\treesearch\SearchDepthFirstPreorder
      * @covers \pvc\struct\treesearch\SearchAbstract::invalidate

@@ -249,11 +249,7 @@ class Tree implements TreeInterface
         (
             $parentId
         ): bool {
-            if ($nodeDto instanceof TreenodeInterface) {
-                return $parentId == $nodeDto->getParent()?->getNodeId();
-            } else {
-                return $parentId === $nodeDto->getParentId();
-            }
+            return $parentId === $nodeDto->getParentId();
         };
         $children = array_filter($array, $filter);
 

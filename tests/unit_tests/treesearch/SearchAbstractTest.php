@@ -83,7 +83,7 @@ class SearchAbstractTest extends TestCase
     }
 
     /**
-     * testGetStartNodeThrowsExceptionWhenStartNodeNotSet
+     * testRewindThrowsExceptionWhenStartNodeNotSet
      *
      * @throws StartNodeUnsetException
      * @covers \pvc\struct\treesearch\SearchAbstract::getStartNode
@@ -91,19 +91,7 @@ class SearchAbstractTest extends TestCase
     public function testGetStartNodeThrowsExceptionWhenStartNodeNotSet(): void
     {
         self::expectException(StartNodeUnsetException::class);
-        $this->search->getStartNode();
-    }
-
-    /**
-     * testSetGetStartNode
-     *
-     * @covers \pvc\struct\treesearch\SearchAbstract::getStartNode
-     * @covers \pvc\struct\treesearch\SearchAbstract::setStartNode
-     */
-    public function testSetGetStartNode(): void
-    {
-        $this->search->setStartNode($this->startNodeMock);
-        self::assertEquals($this->startNodeMock, $this->search->getStartNode());
+        $this->search->rewind();
     }
 
     /**
@@ -118,6 +106,8 @@ class SearchAbstractTest extends TestCase
     /**
      * testSetGetCurrentNode
      *
+     * @covers \pvc\struct\treesearch\SearchAbstract::setStartNode
+     * @covers \pvc\struct\treesearch\SearchAbstract::getStartNode
      * @covers \pvc\struct\treesearch\SearchAbstract::setCurrent
      * @covers \pvc\struct\treesearch\SearchAbstract::current
      * @covers \pvc\struct\treesearch\SearchAbstract::key

@@ -10,6 +10,11 @@ use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
+use pvc\struct\tree\node\TreenodeFactory;
+use pvc\struct\tree\node\TreenodeFactoryOrdered;
+use pvc\struct\tree\node\TreenodeFactoryUnordered;
+use pvc\struct\tree\node\TreenodeOrdered;
+use pvc\struct\tree\node\TreenodeUnordered;
 use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\tree\TreeUnordered;
 use ReflectionException;
@@ -52,27 +57,25 @@ class TestUtils
         return array_values(array_map($callback, $nodeArray));
     }
 
-    public function testTreeSetup(bool $ordered): TreeInterface
+    public function testTreeSetup(bool $ordered, bool $makeNodes = false): TreeInterface
     {
         $treeId = 1;
-        $dtoArray = $this->makeDtoArray($ordered);
+        $inputArray = $this->makeInputArray($ordered, $makeNodes);
         $tree = $this->makeTestTree($ordered);
         $tree->initialize($treeId);
-        $tree->hydrate($dtoArray);
+        $tree->hydrate($inputArray);
         return $tree;
     }
 
     /**
-     * @param  int  $treeId
-     *
      * @return array<TreenodeDto>|array<TreenodeDtoOrdered>
      * @throws ReflectionException
      */
-    public function makeDtoArray(bool $ordered): array
+    public function makeInputArray(bool $ordered, bool $makeNodes = false): array
     {
         $nodeData = $this->fixture->getNodeData();
-        $callback = function (array $row) use ($ordered
-        ): TreenodeDto|TreenodeDtoOrdered {
+        $callback = function (array $row) use ($ordered, $makeNodes
+        ): TreenodeDto|TreenodeDtoOrdered|TreenodeUnordered|TreenodeOrdered {
             $nodeId = $row[0];
             $parentId = $row[1];
             $treeId = null;
@@ -90,7 +93,18 @@ class TestUtils
             } else {
                 $dto = new TreenodeDto($nodeId, $parentId, $treeId);
             }
-            return $dto;
+
+            if ($makeNodes) {
+                $factory = $ordered ?
+                    $this->container->get(TreenodeFactoryOrdered::class) :
+                    $this->container->get(TreenodeFactoryUnordered::class);
+                $result = $factory->makeNode();
+                $result->hydrate($dto);
+            } else {
+                $result = $dto;
+            }
+
+            return $result;
         };
         return array_map($callback, $nodeData);
     }

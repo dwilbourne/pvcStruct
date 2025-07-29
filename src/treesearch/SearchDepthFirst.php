@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace pvc\struct\treesearch;
 
-use pvc\interfaces\struct\treesearch\NodeMapInterface;
 use pvc\interfaces\struct\treesearch\NodeVisitableInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
 use pvc\struct\treesearch\err\StartNodeUnsetException;
@@ -21,13 +20,6 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
  */
 abstract class SearchDepthFirst extends SearchAbstract
 {
-    /**
-     * @param  NodeMapInterface<NodeType>  $nodeMap
-     */
-    public function __construct(protected NodeMapInterface $nodeMap)
-    {
-    }
-
     /**
      * rewind
      *
@@ -42,10 +34,6 @@ abstract class SearchDepthFirst extends SearchAbstract
          */
         $this->initializeVisitStatusRecurse($this->getStartNode());
 
-        /**
-         * initialize the node map
-         */
-        $this->nodeMap->initialize($this->getStartNode());
     }
 
     /**
@@ -126,9 +114,10 @@ abstract class SearchDepthFirst extends SearchAbstract
             $this->setCurrent($nextNode);
 
             /**
-             * adjust the current level
+             * adjust the current level.  MOVE_DOWN gets farther away from the
+             * start node so flip the sign
              */
-            $this->setCurrentLevel($direction);
+            $this->setCurrentLevel(-$direction->value);
         }
     }
 
@@ -137,45 +126,21 @@ abstract class SearchDepthFirst extends SearchAbstract
      *
      * @return NodeType|null
      */
-    protected function getNextNode(Direction $direction
-    ): ?NodeVisitableInterface {
+    protected function getNextNode(Direction $direction)
+    {
         switch ($direction) {
             case Direction::DONT_MOVE:
                 $nextNode = $this->current();
                 break;
             case Direction::MOVE_UP:
-                $nextNode = $this->getParent();
+                $nextNode = $this->current()?->getParent();
                 break;
             case Direction::MOVE_DOWN:
                 $nextNode = $this->getNextVisitableChild();
-                /**
-                 * we add a node to the node map every time we move down.  The type checker cannot see the
-                 * logic in the subclass that guarantees $nextNode is not null if we are moving down
-                 */
-                assert(!is_null($nextNode));
-                $this->nodeMap->setNode(
-                    $nextNode,
-                    $this->current()?->getNodeId()
-                );
                 break;
         }
+        /** @var NodeType $nextNode */
         return $nextNode;
-    }
-
-    /**
-     * getParent
-     *
-     * @return NodeType|null
-     */
-    protected function getParent(): ?NodeVisitableInterface
-    {
-        /**
-         * this method is only ever called when current() is not null but
-         * the type checker cannot know that
-         */
-        $nodeId = $this->current()?->getNodeId();
-        assert($nodeId !== null);
-        return $this->nodeMap->getParent($nodeId);
     }
 
     /**

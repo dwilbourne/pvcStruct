@@ -135,6 +135,11 @@ class Treenode implements TreenodeInterface
         return $this->nodeid;
     }
 
+    public function getParentId(): ?int
+    {
+        return $this->parentId ?? null;
+    }
+
     protected function setNodeId(int $nodeId): void
     {
         /**

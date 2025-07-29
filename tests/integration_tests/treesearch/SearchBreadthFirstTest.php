@@ -9,7 +9,6 @@ declare (strict_types=1);
 namespace pvcTests\struct\integration_tests\treesearch;
 
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\payload\HasPayloadInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\SearchBreadthFirst;
