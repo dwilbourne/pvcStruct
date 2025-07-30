@@ -10,13 +10,12 @@ use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvc\struct\tree\node\TreenodeFactory;
-use pvc\struct\tree\node\TreenodeFactoryOrdered;
-use pvc\struct\tree\node\TreenodeFactoryUnordered;
-use pvc\struct\tree\node\TreenodeOrdered;
-use pvc\struct\tree\node\TreenodeUnordered;
-use pvc\struct\tree\tree\TreeOrdered;
-use pvc\struct\tree\tree\TreeUnordered;
+use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
+use pvcExamples\struct\ordered\TreenodeOrdered;
+use pvcExamples\struct\ordered\TreeOrdered;
+use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
+use pvcExamples\struct\unordered\TreenodeUnordered;
+use pvcExamples\struct\unordered\TreeUnordered;
 use ReflectionException;
 
 class TestUtils

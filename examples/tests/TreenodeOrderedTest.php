@@ -1,6 +1,6 @@
 <?php
 
-namespace pvcTests\struct\unit_tests\tree\node;
+namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -15,8 +15,8 @@ use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeException;
 use pvc\struct\tree\node\Treenode;
-use pvc\struct\tree\node\TreenodeOrdered;
-use pvc\struct\tree\tree\TreeOrdered;
+use pvcExamples\struct\ordered\TreenodeOrdered;
+use pvcExamples\struct\ordered\TreeOrdered;
 use pvcTests\struct\unit_tests\tree\node\fixture\TreenodeTestingFixture;
 
 class TreenodeOrderedTest extends TestCase
@@ -53,7 +53,7 @@ class TreenodeOrderedTest extends TestCase
     /**
      * testConstruct
      *
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::__construct
+     * @covers \pvcExamples\struct\ordered\TreenodeOrdered::__construct
      */
     public function testConstruct(): void
     {
@@ -65,8 +65,8 @@ class TreenodeOrderedTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::setIndex
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::getIndex
+     * @covers \pvcExamples\struct\ordered\TreenodeOrdered::setIndex
+     * @covers \pvcExamples\struct\ordered\TreenodeOrdered::getIndex
      */
     public function testSetGetIndex(): void
     {
@@ -90,7 +90,7 @@ class TreenodeOrderedTest extends TestCase
      * @throws NodeNotEmptyHydrationException
      * @throws RootCannotBeMovedException
      * @throws SetTreeException
-     * @covers \pvc\struct\tree\node\TreenodeOrdered::hydrate
+     * @covers \pvcExamples\struct\ordered\TreenodeOrdered::hydrate
      */
     public function testHydrateSetsIndex(): void
     {

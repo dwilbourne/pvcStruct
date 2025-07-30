@@ -1,10 +1,10 @@
 <?php
 
-namespace pvc\struct\tree\node;
+namespace pvcExamples\struct\unordered;
 
 use pvc\struct\collection\Collection;
 use pvc\struct\tree\err\ChildCollectionException;
-use pvc\struct\tree\tree\TreeUnordered;
+use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @extends TreenodeFactory<TreenodeUnordered, Collection, TreeUnordered>

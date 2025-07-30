@@ -1,11 +1,11 @@
 <?php
 
-namespace pvc\struct\tree\node;
+namespace pvcExamples\struct\ordered;
 
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\TreenodeFactoryNotInitializedException;
-use pvc\struct\tree\tree\TreeOrdered;
+use pvc\struct\tree\node\TreenodeFactory;
 
 /**
  * @extends TreenodeFactory<TreenodeOrdered, CollectionOrdered, TreeOrdered>

@@ -7,7 +7,6 @@ declare (strict_types=1);
 
 namespace pvcTests\struct\integration_tests\tree\tree;
 
-use PHPUnit\Framework\Constraint\TraversableContainsIdentical;
 use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -94,7 +93,7 @@ class TreeTest extends TestCase
      *
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
-     * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
+     * @covers \pvcExamples\struct\ordered\TreeOrdered::__construct
      */
     public function testHydrationOrdered(): void
     {
@@ -115,7 +114,7 @@ class TreeTest extends TestCase
      * @return void
      * @covers \pvc\struct\tree\tree\Tree::hydrate
      * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
-     * @covers \pvc\struct\tree\tree\TreeUnordered::__construct
+     * @covers \pvcExamples\struct\unordered\TreeUnordered::__construct
      */
     public function testhydrationUnordered(): void
     {

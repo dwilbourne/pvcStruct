@@ -37,13 +37,13 @@ abstract class TreenodeFactory implements TreenodeFactoryInterface
     }
 
     /**
-     * @return CollectionType
+     * @return CollectionInterface
      */
     public function makeCollection(): CollectionInterface
     {
-        /** @var array<TreenodeType> $array */
+        /** @var TreenodeInterface $array */
         $array = [];
-        /** @var CollectionType $collection */
+        /** @var CollectionInterface $collection */
         $collection = $this->collectionFactory->makeCollection($array);
         return $collection;
     }

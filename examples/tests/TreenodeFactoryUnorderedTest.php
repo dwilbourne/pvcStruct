@@ -1,14 +1,14 @@
 <?php
 
-namespace pvcTests\struct\unit_tests\tree\node;
+namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\tree\err\ChildCollectionException;
-use pvc\struct\tree\node\TreenodeFactoryUnordered;
-use pvc\struct\tree\node\TreenodeUnordered;
+use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
+use pvcExamples\struct\unordered\TreenodeUnordered;
 
 class TreenodeFactoryUnorderedTest extends TestCase
 {
@@ -41,7 +41,7 @@ class TreenodeFactoryUnorderedTest extends TestCase
     /**
      * @return void
      * @throws ChildCollectionException
-     * @covers \pvc\struct\tree\node\TreenodeFactoryUnordered::makeNode
+     * @covers \pvcExamples\struct\unordered\TreenodeFactoryUnordered::makeNode
      */
     public function testMakeNode(): void
     {

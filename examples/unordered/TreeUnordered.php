@@ -1,10 +1,9 @@
 <?php
 
-namespace pvc\struct\tree\tree;
+namespace pvcExamples\struct\unordered;
 
 use pvc\struct\collection\Collection;
-use pvc\struct\tree\node\TreenodeFactoryUnordered;
-use pvc\struct\tree\node\TreenodeUnordered;
+use pvc\struct\tree\tree\Tree;
 
 /**
  * @class TreeOrdered

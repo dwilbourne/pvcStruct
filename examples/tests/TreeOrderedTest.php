@@ -1,13 +1,13 @@
 <?php
 
-namespace pvcTests\struct\unit_tests\tree\tree;
+namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\CollectionOrdered;
-use pvc\struct\tree\node\TreenodeFactoryOrdered;
-use pvc\struct\tree\node\TreenodeOrdered;
-use pvc\struct\tree\tree\TreeOrdered;
+use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
+use pvcExamples\struct\ordered\TreenodeOrdered;
+use pvcExamples\struct\ordered\TreeOrdered;
 
 class TreeOrderedTest extends TestCase
 {
@@ -39,7 +39,7 @@ class TreeOrderedTest extends TestCase
     /**
      * testConstruct
      *
-     * @covers \pvc\struct\tree\tree\TreeOrdered::__construct
+     * @covers \pvcExamples\struct\ordered\TreeOrdered::__construct
      */
     public function testConstruct(): void
     {

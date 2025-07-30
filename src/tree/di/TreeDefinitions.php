@@ -10,12 +10,10 @@ use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\collection\CollectionOrdered;
 use pvc\struct\collection\CollectionOrderedFactory;
-use pvc\struct\tree\node\TreenodeFactoryOrdered;
-use pvc\struct\tree\node\TreenodeFactoryUnordered;
-use pvc\struct\tree\node\TreenodeOrdered;
-use pvc\struct\tree\node\TreenodeUnordered;
-use pvc\struct\tree\tree\TreeOrdered;
-use pvc\struct\tree\tree\TreeUnordered;
+use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
+use pvcExamples\struct\ordered\TreeOrdered;
+use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
+use pvcExamples\struct\unordered\TreeUnordered;
 
 class TreeDefinitions
 {

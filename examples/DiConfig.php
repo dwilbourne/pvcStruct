@@ -19,9 +19,10 @@ use pvc\struct\tree\dto\factory\TreenodeValueObjectOrderedFactory;
 use pvc\struct\tree\node\factory\TreenodeOrderedFactory;
 use pvc\struct\tree\node\TreenodeFactory;
 use pvc\struct\tree\node\TreenodeValueValidatorDefault;
-use pvc\struct\tree\tree\TreeOrdered;
 use pvc\struct\tree\treesearch\SearchFilterDefault;
 use pvc\struct\tree\treesearch\SearchStrategyDepthFirst;
+use pvcExamples\struct\ordered\TreeOrdered;
+
 use function DI\create;
 use function DI\get;
 

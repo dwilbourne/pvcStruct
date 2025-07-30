@@ -6,7 +6,7 @@
 
 declare (strict_types=1);
 
-namespace pvc\struct\tree\node;
+namespace pvcExamples\struct\ordered;
 
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
@@ -19,7 +19,7 @@ use pvc\struct\tree\err\InvalidValueException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeException;
-use pvc\struct\tree\tree\TreeOrdered;
+use pvc\struct\tree\node\Treenode;
 
 /**
  *  The nodeid property is immutable - the only way to set the nodeid is at hydration.  The same applies to the tree property,
