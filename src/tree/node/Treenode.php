@@ -49,7 +49,7 @@ class Treenode implements TreenodeInterface
     use VisitationTrait;
 
     /**
-     * @var CollectionInterface $children
+     * @var CollectionType $children
      */
     public CollectionInterface $children;
     /**
@@ -69,18 +69,18 @@ class Treenode implements TreenodeInterface
     /**
      * reference to parent
      *
-     * @var TreenodeInterface|null
+     * @var TreenodeType|null
      */
     protected ?TreenodeInterface $parent;
     /**
      * reference to containing tree
      *
-     * @var TreeInterface
+     * @var TreeType
      */
     protected TreeInterface $tree;
 
     /**
-     * @param  CollectionInterface  $collection
+     * @param  CollectionType  $collection
      *
      * @throws ChildCollectionException
      */
@@ -180,45 +180,45 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @return TreenodeInterface|null
+     * @return TreenodeType|null
      */
-    public function getFirstChild()
+    public function getFirstChild(): ?TreenodeInterface
     {
-        /** @var CollectionInterface $children */
-        $children = $this->getChildren();
-        return $children->getFirst();
+        /** @var TreenodeType|null $node */
+        $node = $this->getChildren()->getFirst();
+        return $node;
     }
 
     /**
-     * @return TreenodeInterface|null
+     * @return TreenodeType|null
      */
-    public function getLastChild()
+    public function getLastChild(): ?TreenodeInterface
     {
-        /** @var CollectionInterface $children */
-        $children = $this->getChildren();
-        return $children->getLast();
+        /** @var TreenodeType|null $node */
+        $node = $this->getChildren()->getLast();
+        return $node;
     }
 
     /**
      * @param  non-negative-int  $n
      *
-     * @return TreenodeInterface|null
+     * @return TreenodeType|null
      */
-    public function getNthChild(int $n)
+    public function getNthChild(int $n): ?TreenodeInterface
     {
-        /** @var CollectionInterface $children */
-        $children = $this->getChildren();
-        return $children->getNth($n);
+        /** @var TreenodeType|null $node */
+        $node = $this->getChildren()->getNth($n);
+        return $node;
     }
 
     /**
      * getChildrenAsArray
      *
-     * @return TreenodeInterface
+     * @return array<TreenodeType>
      */
     public function getChildrenArray(): array
     {
-        /** @var TreenodeInterface $result */
+        /** @var array<TreenodeType> $result */
         $result = $this->getChildren()->getElements();
         return $result;
     }
@@ -237,11 +237,11 @@ class Treenode implements TreenodeInterface
      *
      * @param  non-negative-int  $nodeid
      *
-     * @return TreenodeInterface|null
+     * @return TreenodeType|null
      */
     public function getChild(int $nodeid)
     {
-        /** @var TreenodeInterface $child */
+        /** @var TreenodeType $child */
         foreach ($this->getChildren() as $child) {
             if ($nodeid == $child->getNodeId()) {
                 return $child;
@@ -253,7 +253,7 @@ class Treenode implements TreenodeInterface
     /**
      * getSiblings returns a collection of this node's siblings
      *
-     * @return CollectionInterface
+     * @return CollectionType
      */
     public function getSiblings(): CollectionInterface
     {
@@ -263,13 +263,13 @@ class Treenode implements TreenodeInterface
          */
 
         if ($this->getTree()->rootTest($this)) {
-            /** @var CollectionInterface $collection */
+            /** @var CollectionType $collection */
             $collection = $this->getTree()->makeCollection();
             $collection->add($this->getNodeId(), $this);
         } else {
             $parent = $this->getParent();
             assert(!is_null($parent));
-            /** @var CollectionInterface $collection */
+            /** @var CollectionType $collection */
             $collection = $parent->getChildren();
         }
         return $collection;
@@ -277,7 +277,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @function getTree
-     * @return TreeInterface
+     * @return TreeType
      */
     public function getTree(): TreeInterface
     {
@@ -285,7 +285,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param  TreeInterface  $tree
+     * @param  TreeType  $tree
      *
      * @return void
      * @throws SetTreeException
@@ -321,7 +321,7 @@ class Treenode implements TreenodeInterface
 
     /**
      * @function getParent
-     * @return TreenodeInterface|null
+     * @return TreenodeType|null
      * the parent reference is a convenience, a shortcut because we could
      * always go to the tree and get the parent from the tree via the
      * node's parentId property.  In a large tree, this reference could save
@@ -333,7 +333,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @param ?TreenodeInterface  $parent
+     * @param ?TreenodeType  $parent
      *
      * @return void
      *
@@ -351,7 +351,7 @@ class Treenode implements TreenodeInterface
          * property via the tree.  If not, throw an exception
          */
         if ($parent === null && $this->parentId !== null) {
-            /** @var TreenodeInterface|null $parent */
+            /** @var TreenodeType|null $parent */
             $parent = $this->tree->getNode($this->parentId);
             if (!$parent) {
                 throw new InvalidParentNodeIdException($this->parentId);
@@ -403,7 +403,7 @@ class Treenode implements TreenodeInterface
     /**
      * @function isDescendantOf
      *
-     * @param  TreenodeInterface  $node
+     * @param  TreenodeType  $node
      *
      * @return bool
      */
@@ -420,7 +420,7 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * @return CollectionInterface
+     * @return CollectionType
      */
     public function getChildren(): CollectionInterface
     {
@@ -438,7 +438,7 @@ class Treenode implements TreenodeInterface
     /**
      * @function isAncestorOf
      *
-     * @param  TreenodeInterface  $node
+     * @param  TreenodeType  $node
      *
      * @return bool
      */
