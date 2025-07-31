@@ -79,9 +79,7 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
         if (!$this->validateExistingKey($key)) {
             throw new NonExistentKeyException($key);
         }
-        $element = $this->getElement($key);
-        assert(!is_null($element));
-        return $element->getIndex();
+        return $this->getElement($key)->getIndex();
     }
 
     /**

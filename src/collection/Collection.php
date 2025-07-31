@@ -27,7 +27,7 @@ use pvc\struct\collection\err\NonExistentKeyException;
 class Collection extends IteratorIterator implements CollectionInterface
 {
     /**
-     * @var ArrayIterator<int, ElementType>
+     * @var ArrayIterator<non-negative-int, ElementType>
      */
     protected ArrayIterator $iterator;
 
@@ -38,14 +38,22 @@ class Collection extends IteratorIterator implements CollectionInterface
     protected $comparator = null;
 
     /**
-     * @param  array<non-negative-int, ElementType>  $elements
+     * @param  array<int, ElementType>  $elements
      * @param  callable(ElementType, ElementType):int|null  $comparator
      */
     public function __construct(
         array $elements = [],
         callable|null $comparator = null
     ) {
-        $this->iterator = new ArrayIterator($elements);
+        /** @var array<non-negative-int, ElementType> $values */
+        $values = array_values($elements);
+        /**
+         * can't do anything about the fact that keys for ArrayIterator are
+         * typed as standard php keys (string | int) whereas this object
+         * only allows non-negative-ints as keys.
+         */
+        /** @phpstan-ignore-next-line */
+        $this->iterator = new ArrayIterator($values);
         $this->comparator = $comparator;
         parent::__construct($this->iterator);
     }
@@ -108,7 +116,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * validateExistingKey ensures that the key is both valid and exists in the collection
      *
-     * @param  int  $key
+     * @param  non-negative-int  $key
      *
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
@@ -128,9 +136,7 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getKey($element, bool $strict = true): int|false
     {
-        $key = array_search($element, $this->getElements(), $strict);
-        assert((is_int($key) && ($key >= 0)) || $key === false);
-        return $key;
+        return array_search($element, $this->getElements(), $strict);
     }
 
     /**
@@ -139,7 +145,7 @@ class Collection extends IteratorIterator implements CollectionInterface
 
     /**
      * @function getElements
-     * @return array<ElementType>
+     * @return array<non-negative-int, ElementType>
      */
     public function getElements(): array
     {
@@ -190,7 +196,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * validateNewKey ensures that the key does not exist in the collection
      *
-     * @param  int  $key
+     * @param  non-negative-int  $key
      */
     public function validateNewKey(int $key): bool
     {

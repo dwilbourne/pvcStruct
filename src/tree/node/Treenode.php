@@ -212,15 +212,15 @@ class Treenode implements TreenodeInterface
     }
 
     /**
-     * getChildrenAsArray
+     * getChildrenArray
      *
-     * @return array<TreenodeType>
+     * @return array<non-negative-int, TreenodeType>
      */
     public function getChildrenArray(): array
     {
-        /** @var array<TreenodeType> $result */
-        $result = $this->getChildren()->getElements();
-        return $result;
+        /** @var array<non-negative-int, TreenodeType> $array */
+        $array = $this->getChildren()->getElements();
+        return $array;
     }
 
     /**
