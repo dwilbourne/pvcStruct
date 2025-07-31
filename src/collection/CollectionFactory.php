@@ -20,7 +20,7 @@ class CollectionFactory implements CollectionFactoryInterface
      *
      * @return CollectionType<ElementType>
      */
-    public function makeCollection(array $elements = [])
+    public function makeCollection(array $elements = []): CollectionInterface
     {
         return new Collection($elements);
     }

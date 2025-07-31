@@ -20,7 +20,7 @@ class CollectionOrderedFactory implements CollectionFactoryInterface
      *
      * @return CollectionType<ElementType>
      */
-    public function makeCollection(array $elements = [])
+    public function makeCollection(array $elements = []): CollectionOrderedInterface
     {
         return new CollectionOrdered($elements);
     }
