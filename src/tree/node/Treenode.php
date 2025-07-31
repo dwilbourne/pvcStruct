@@ -239,7 +239,7 @@ class Treenode implements TreenodeInterface
      *
      * @return TreenodeType|null
      */
-    public function getChild(int $nodeid)
+    public function getChild(int $nodeid): ?TreenodeInterface
     {
         /** @var TreenodeType $child */
         foreach ($this->getChildren() as $child) {
@@ -327,7 +327,7 @@ class Treenode implements TreenodeInterface
      * node's parentId property.  In a large tree, this reference could save
      * a few cpu cycles....
      */
-    public function getParent()
+    public function getParent(): ?TreenodeInterface
     {
         return $this->parent ?? null;
     }
