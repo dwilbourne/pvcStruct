@@ -11,6 +11,7 @@ namespace pvc\struct\collection;
 use ArrayIterator;
 use IteratorIterator;
 use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
@@ -47,13 +48,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     ) {
         /** @var array<non-negative-int, ElementType> $values */
         $values = array_values($elements);
-        /**
-         * can't do anything about the fact that keys for ArrayIterator are
-         * typed as standard php keys (string | int) whereas this object
-         * only allows non-negative-ints as keys.
-         */
-        /** @phpstan-ignore-next-line */
-        $this->iterator = new ArrayIterator($values);
+        $this->iterator = new ArrayIteratorNonNegIntKeys($values);
         $this->comparator = $comparator;
         parent::__construct($this->iterator);
     }
@@ -121,22 +116,21 @@ class Collection extends IteratorIterator implements CollectionInterface
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
-    public function validateExistingKey(int $key): bool
+    protected function validateExistingKey(int $key): bool
     {
         return $this->iterator->offsetExists($key);
     }
 
     /**
-     * @function getKey
+     * @function findElementKey
      *
-     * @param  ElementType  $element
-     * @param  bool  $strict
+     * @param  ValTesterInterface<ElementType>  $valTester
      *
-     * @return non-negative-int|false
+     * @return non-negative-int|null
      */
-    public function getKey($element, bool $strict = true): int|false
+    public function findElementKey(ValTesterInterface $valTester): ?int
     {
-        return array_search($element, $this->getElements(), $strict);
+        return array_find_key($this->getElements(), [$valTester, 'testValue']);
     }
 
     /**
@@ -156,18 +150,15 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * getKeys returns all the keys in the collection where the corresponding element equals $element.
      *
-     * @param  ElementType  $element
-     * @param  bool  $strict
+     * @param  ValTesterInterface<ElementType>  $valTester
      *
      * @return array<non-negative-int>
      */
-    public function getKeys($element, bool $strict = true): array
+    public function findElementKeys(ValTesterInterface $valTester): array
     {
-        /** @var array<non-negative-int> $keys */
-        $keys = array_keys($this->getElements(), $element, $strict);
-        return $keys;
+        $elements = array_filter($this->getElements(), [$valTester, 'testValue']);
+        return array_keys($elements);
     }
 
     /**
@@ -198,7 +189,7 @@ class Collection extends IteratorIterator implements CollectionInterface
      *
      * @param  non-negative-int  $key
      */
-    public function validateNewKey(int $key): bool
+    protected function validateNewKey(int $key): bool
     {
         return !$this->iterator->offsetExists($key);
     }
@@ -268,24 +259,7 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getNth(int $index)
     {
-        $maxIndex = max(0, $this->count() - 1);
-        $index = $this->trimIndex($index, $maxIndex);
-        return $this->getElements()[$index] ?? null;
+        return array_values($this->getElements())[$index] ?? null;
     }
 
-    /**
-     * @param  non-negative-int  $proposedIndex
-     * @param  non-negative-int  $maxIndex
-     *
-     * @return non-negative-int
-     *
-     * there are several methods where we need to ensure the index argument
-     * is between 0 and maxIndex.  It is (count - 1) when we are looking for
-     * something and count when we are adding something
-     */
-    protected function trimIndex(int $proposedIndex, int $maxIndex): int
-    {
-        $proposedIndex = max($proposedIndex, 0);
-        return min($proposedIndex, $maxIndex);
-    }
 }

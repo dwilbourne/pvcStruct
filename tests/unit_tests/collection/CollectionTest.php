@@ -8,6 +8,7 @@ declare (strict_types=1);
 namespace pvcTests\struct\unit_tests\collection;
 
 use PHPUnit\Framework\TestCase;
+use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\Collection;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
@@ -182,26 +183,27 @@ class CollectionTest extends TestCase
     /**
      * testGetKeyReturnsNullIfValueNotInList
      *
-     * @covers \pvc\struct\collection\Collection::getKey
+     * @covers \pvc\struct\collection\Collection::findElementKey
      */
-    public function testGetKeyReturnsFalseIfValueNotInList(): void
+    public function testFindElementKeyReturnsNullIfValueNotInList(): void
     {
         $this->addElements(3);
-        $needle = new CollectionElement();
-        self::assertFalse($this->collection->getKey($needle));
+        $valTester = $this->createMock(ValTesterInterface::class);
+        $valTester->method('testValue')->willReturn(false);
+        self::assertNull($this->collection->findElementKey($valTester));
     }
 
     /**
-     * testGetKeysReturnsEmptyArrayIfValueNotFound
+     * testFindElementKeysReturnsEmptyArrayIfValueNotFound
      *
-     * @covers \pvc\struct\collection\Collection::getKeys
+     * @covers \pvc\struct\collection\Collection::findElementKeys
      */
-    public function testGetKeysReturnsEmptyArrayIfValueNotFound(): void
+    public function testFindElementKeysReturnsEmptyArrayIfValueNotFound(): void
     {
         $this->addElements(3);
-
-        $needle = 'foo';
-        $result = $this->collection->getKeys($needle);
+        $valTester = $this->createMock(ValTesterInterface::class);
+        $valTester->method('testValue')->willReturn(false);
+        $result = $this->collection->findElementKeys($valTester);
         self::assertIsArray($result);
         self::assertEmpty($result);
     }
@@ -365,6 +367,6 @@ class CollectionTest extends TestCase
         self::assertSame($c, $this->collection->getLast());
         self::assertSame($b, $this->collection->getNth(1));
         self::assertSame($c, $this->collection->getNth(2));
-        self::assertSame($c, $this->collection->getNth(4));
+        self::assertNull($this->collection->getNth(4));
     }
 }

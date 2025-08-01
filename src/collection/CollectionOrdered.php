@@ -65,6 +65,22 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
+     * @param  non-negative-int  $proposedIndex
+     * @param  non-negative-int  $maxIndex
+     *
+     * @return non-negative-int
+     *
+     * there are several methods where we need to ensure the index argument
+     * is between 0 and maxIndex.  It is (count - 1) when we are looking for
+     * something and count when we are adding something
+     */
+    protected function trimIndex(int $proposedIndex, int $maxIndex): int
+    {
+        $proposedIndex = max($proposedIndex, 0);
+        return min($proposedIndex, $maxIndex);
+    }
+
+    /**
      * getIndex returns the index which corresponds to $key
      *
      * @param  non-negative-int  $key
