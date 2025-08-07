@@ -15,7 +15,7 @@ use Throwable;
  */
 class InvalidKeyException extends LogicException
 {
-    public function __construct(int $invalidKey, ?Throwable $prev = null)
+    public function __construct(string $invalidKey, ?Throwable $prev = null)
     {
         parent::__construct($invalidKey, $prev);
     }

@@ -32,6 +32,11 @@ readonly class TreenodeDto implements TreenodeDtoInterface
          * treeid from the containing tree.
          */
         public ?int $treeId,
+
+        /**
+         * @var non-negative-int
+         */
+        public int $index,
     ) {
     }
 
@@ -50,8 +55,8 @@ readonly class TreenodeDto implements TreenodeDtoInterface
         return $this->treeId ?? null;
     }
 
-    public function getIndex(): ?int
+    public function getIndex(): int
     {
-        return null;
+        return $this->index;
     }
 }

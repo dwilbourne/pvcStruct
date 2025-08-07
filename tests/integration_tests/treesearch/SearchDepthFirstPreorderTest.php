@@ -17,6 +17,8 @@ use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
 
 class SearchDepthFirstPreorderTest extends TestCase
 {
+    protected int $treeId = 1;
+
     /**
      * @var TreeInterface
      */
@@ -32,13 +34,16 @@ class SearchDepthFirstPreorderTest extends TestCase
      */
     protected TreenodeConfigurationsFixture $fixture;
 
+    protected TestUtils $testUtils;
+
     public function setUp(): void
     {
-        $ordered = false;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $testUtils = new TestUtils($this->fixture);
+        $this->testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($ordered);
+        $this->tree = $this->testUtils->testTreeSetup($this->treeId);
+        $inputArray = $this->testUtils->makeDtoArray();
+        $this->tree->hydrate($inputArray);
         $this->search = new SearchDepthFirstPreorder();
     }
 
@@ -93,7 +98,7 @@ class SearchDepthFirstPreorderTest extends TestCase
     {
         $this->search->setStartNode($this->tree->getRoot());
         $expectedResult
-            = $this->fixture->makeUnorderedPreorderDepthFirstArrayOfAllNodeIds(
+            = $this->fixture->makeOrderedPreorderDepthFirstArrayOfAllNodeIds(
         );
         $actualResult = TestUtils::getNodeIdsFromNodeArray(
             $this->search->getNodes()
@@ -123,7 +128,7 @@ class SearchDepthFirstPreorderTest extends TestCase
     {
         $this->search->setStartNode($this->tree->getRoot());
         $expectedResult
-            = $this->fixture->makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+            = $this->fixture->makeOrderedPreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
         );
         $this->search->setMaxLevels(3);
         $actualResult = TestUtils::getNodeIdsFromNodeArray(

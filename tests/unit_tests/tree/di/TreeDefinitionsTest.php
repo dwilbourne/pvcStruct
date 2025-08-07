@@ -8,16 +8,23 @@ use League\Container\ReflectionContainer;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use pvc\struct\collection\Collection;
-use pvc\struct\collection\CollectionFactory;
-use pvc\struct\collection\CollectionOrdered;
-use pvc\struct\collection\CollectionOrderedFactory;
+use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedByIndexFactoryInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedByIndexInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedFactoryInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedInterface;
+use pvc\interfaces\struct\tree\node\TreenodeChildCollectionFactoryInterface;
+use pvc\interfaces\struct\tree\node\TreenodeChildCollectionInterface;
+use pvc\interfaces\struct\tree\tree\TreenodeCollectionInterface;
+use pvc\struct\collection\CollectionOrderedByIndex;
+use pvc\struct\collection\CollectionOrderedByIndexFactory;
 use pvc\struct\tree\di\TreeDefinitions;
-use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
-use pvcExamples\struct\ordered\TreeOrdered;
-use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
-use pvcExamples\struct\unordered\TreeUnordered;
-use ReflectionException;
+use pvc\struct\tree\node\Treenode;
+use pvc\struct\tree\node\TreenodeChildCollection;
+use pvc\struct\tree\node\TreenodeChildCollectionFactory;
+use pvc\struct\tree\node\TreenodeFactory;
+use pvc\struct\tree\tree\Tree;
+use pvc\struct\tree\tree\TreenodeCollection;
 
 class TreeDefinitionsTest extends TestCase
 {
@@ -39,54 +46,51 @@ class TreeDefinitionsTest extends TestCase
      * @return void
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
-     * @throws ReflectionException
-     * @throws DtoInvalidArrayKeyException
-     * @throws DtoInvalidEntityGetterException
      * @covers \pvc\struct\tree\di\TreeDefinitions
      */
-    public function testSetUpUnordered(): void
+    public function testSetUp(): void
     {
         self::assertInstanceOf(
-            Collection::class,
-            $this->container->get(Collection::class)
+            CollectionInterface::class,
+            $this->container->get(CollectionInterface::class)
         );
         self::assertInstanceOf(
-            CollectionFactory::class,
-            $this->container->get(CollectionFactory::class)
+            CollectionOrderedByIndexInterface::class,
+            $this->container->get(CollectionOrderedByIndex::class)
         );
         self::assertInstanceOf(
-            TreenodeFactoryUnordered::class,
-            $this->container->get(TreenodeFactoryUnordered::class)
+            CollectionOrderedByIndexFactoryInterface::class,
+            $this->container->get(CollectionOrderedByIndexFactory::class)
         );
-        self::assertInstanceOf(
-            TreeUnordered::class,
-            $this->container->get(TreeUnordered::class)
-        );
-    }
 
-    /**
-     * @return void
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     * @covers \pvc\struct\tree\di\TreeDefinitions
-     */
-    public function testSetUpOrdered(): void
-    {
         self::assertInstanceOf(
-            CollectionOrdered::class,
-            $this->container->get(CollectionOrdered::class)
+            TreenodeChildCollectionInterface::class,
+            $this->container->get(TreenodeChildCollection::class)
         );
+
         self::assertInstanceOf(
-            CollectionOrderedFactory::class,
-            $this->container->get(CollectionOrderedFactory::class)
+            TreenodeChildCollectionFactoryInterface::class,
+            $this->container->get(TreenodeChildCollectionFactory::class)
         );
+
         self::assertInstanceOf(
-            TreenodeFactoryOrdered::class,
-            $this->container->get(TreenodeFactoryOrdered::class)
+            Treenode::class,
+            $this->container->get(Treenode::class)
         );
+
         self::assertInstanceOf(
-            TreeOrdered::class,
-            $this->container->get(TreeOrdered::class)
+            TreenodeFactory::class,
+            $this->container->get(TreenodeFactory::class)
+        );
+
+        self::assertInstanceOf(
+            TreenodeCollection::class,
+            $this->container->get(TreenodeCollectionInterface::class)
+        );
+
+        self::assertInstanceOf(
+            Tree::class,
+            $this->container->get(Tree::class)
         );
     }
 }

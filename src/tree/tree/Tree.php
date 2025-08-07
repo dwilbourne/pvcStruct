@@ -8,11 +8,13 @@ declare (strict_types=1);
 
 namespace pvc\struct\tree\tree;
 
-use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\struct\tree\dto\TreenodeDtoInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
+use pvc\interfaces\struct\tree\tree\TreenodeCollectionInterface;
+use pvc\struct\collection\err\NonExistentKeyException;
+use pvc\struct\tree\dto\TreenodeDto;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\AlreadySetRootException;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
@@ -24,9 +26,7 @@ use pvc\struct\tree\err\TreeNotInitializedException;
 /**
  * @class Tree
  * @template TreenodeType of TreenodeInterface
- * @template CollectionType of CollectionInterface
- * @template TreeType of TreeInterface
- * @implements TreeInterface<TreenodeType, CollectionType>
+ * @implements TreeInterface<TreenodeType>
  */
 class Tree implements TreeInterface
 {
@@ -46,42 +46,25 @@ class Tree implements TreeInterface
     protected TreenodeInterface|null $root;
 
     /**
-     * @var array<TreenodeType>
-     */
-    protected array $nodes = [];
-
-    /**
-     * @var callable|null
-     */
-    protected $treenodeComparator = null;
-
-    /**
-     * @param  TreenodeFactoryInterface<TreenodeType, CollectionType>  $treenodeFactory
+     * @param  TreenodeFactoryInterface<TreenodeType>  $treenodeFactory
+     * @param TreenodeCollectionInterface<TreenodeType> $collection
      */
     public function __construct(
-        protected TreenodeFactoryInterface $treenodeFactory
+        protected TreenodeFactoryInterface $treenodeFactory,
+        protected TreenodeCollectionInterface $collection,
     ) {
         $this->isInitialized = false;
     }
 
     /**
-     * @return bool
-     */
-    public function isInitialized(): bool
-    {
-        return $this->isInitialized;
-    }
-
-    /**
      * initialize
-     * initializes the tree, e.g. removes all the nodes, sets the root to null, sets the treeId and
-     * initializes the TreenodeFactory
+     * initializes the tree, e.g. removes all the nodes, sets the root to null, sets the treeId
      *
      * @param  non-negative-int  $treeId
      */
     public function initialize(int $treeId): void
     {
-        $this->nodes = [];
+        $this->collection->initialize();
         $this->root = null;
         $this->setTreeId($treeId);
         /**
@@ -100,204 +83,90 @@ class Tree implements TreeInterface
      *
      * @return bool
      */
-    public function validateTreeId(int $nodeid): bool
+    protected function validateTreeId(int $nodeid): bool
     {
         return 0 <= $nodeid;
     }
 
     /**
-     * @return CollectionInterface<TreenodeType>
+     * @param  non-negative-int  $treeId
+     *
+     * @return void
+     * @throws InvalidTreeidException
      */
-    public function makeCollection(): CollectionInterface
+    protected function setTreeId(int $treeId): void
     {
-        return $this->treenodeFactory->makeCollection();
+        if (!$this->validateTreeId($treeId)) {
+            throw new InvalidTreeIdException($treeId);
+        }
+        $this->treeId = $treeId;
     }
 
     /**
-     * isEmpty tells you whether the tree has any nodes or not.
+     * @function setRoot sets a reference to the root node of the tree
      *
-     * @function isEmpty
-     * @return bool
+     * @param  TreenodeType  $node
+     *
+     * @throws AlreadySetRootException
      */
+    protected function setRoot(TreenodeInterface $node): void
+    {
+        /**
+         * if the root is already set, throw an exception
+         */
+        if (isset($this->root)) {
+            throw new AlreadySetRootException();
+        }
+        $this->root = $node;
+    }
+
+    /**
+     * @function getRoot
+     * @return TreenodeType|null
+     * leave the return type unspecified because when we extend this class we
+     * want to be able to get a covariant return type
+     */
+    public function getRoot()
+    {
+        return $this->root ?? null;
+    }
+
     public function isEmpty(): bool
     {
-        return empty($this->getNodes());
+        return $this->collection->isEmpty();
     }
 
-    /**
-     * @function getNodes
-     * @return array<TreenodeType>
-     */
-    public function getNodes(): array
-    {
-        return $this->nodes;
-    }
-
-    /**
-     * @function nodeCount
-     * @return int
-     */
-    public function nodeCount(): int
-    {
-        return count($this->getNodes());
-    }
 
     /**
      * addNode
      *
-     * @param  TreenodeType|TreenodeDtoInterface  $nodeDto
+     * @param  TreenodeType  $node
+     * @param  TreenodeType  $parent
      */
-    public function addNode(TreenodeInterface|TreenodeDtoInterface $nodeDto
-    ): void {
-        if ($nodeDto instanceof TreenodeDtoInterface) {
-            $node = $this->treenodeFactory->makeNode();
-            $node->hydrate($nodeDto);
-        } else {
-            $node = $nodeDto;
-        }
-
+    public function addNode(TreenodeInterface $node, ?TreenodeInterface $parent): void
+    {
         /**
-         * node id cannot already exist in the tree
+         * node cannot already exist in the tree
          */
-        /** @var non-negative-int $nodeId */
         $nodeId = $node->getNodeId();
         if ($this->getNode($nodeId) !== null) {
             throw new AlreadySetNodeidException($node->getNodeId());
         }
 
-        /**
-         * set the tree reference.  Dto potentially has a null treeId
-         */
         $node->setTree($this);
+        $node->setParent($parent);
 
         /**
-         * set the parent reference. When the argument to setParent is null,
-         * setParent will look at the node's parentId property to determine
-         * whether it should go get the parent from the tree or whether we
-         * really are setting up the root node.
+         * if it is the root, set the property
          */
-        $node->setParent(null);
-
-        $this->nodes[$node->getNodeId()] = $node;
-
         if ($this->rootTest($node)) {
             $this->setRoot($node);
         }
-    }
-
-    /**
-     * hydrate
-     *
-     * @param  array<TreenodeType|TreenodeDtoInterface>  $array
-     */
-    public function hydrate(array $array): void
-    {
-        if (!$this->isInitialized) {
-            throw new TreeNotInitializedException();
-        }
 
         /**
-         * If empty, just return - nothing to do.  Otherwise, find the root
+         * add the node to the node collection
          */
-        if (empty($array)) {
-            return;
-        }
-        /** @var callable $callable */
-        $callable = [$this, 'rootTest'];
-        if (!$root = array_find($array, $callable)) {
-            throw new NoRootFoundException();
-        }
-
-        /**
-         * root found, insert nodes recursively
-         * phpstan cannot know that this is a
-         */
-        $startNodeId = $root->getNodeId();
-        $this->insertNodeRecurse($startNodeId, $array);
-    }
-
-    /**
-     * insertNodeRecurse recursively inserts nodes into the tree using a depth first algorithm
-     *
-     * @param  int  $startNodeKey
-     * @param  array<TreenodeType|TreenodeDtoInterface>  $array
-     *
-     * @return void
-     */
-    protected function insertNodeRecurse(int $startNodeKey, array $array): void
-    {
-        /** @var TreenodeType|TreenodeDtoInterface $start */
-        $start = $array[$startNodeKey];
-        $this->addNode($start);
-
-        /**
-         * use a collection here instead of an array so that the children are added to the node's child collection
-         * in the proper order in case of an indexed collection
-         */
-
-        /**
-         * filter dto array for children of $node
-         *
-         * need identity, not equals, because 0 == null.  For example, if the root node has nodeId of 0, then it
-         * gets inserted into the tree properly the first time.  When searching the array for children whose
-         * parentId equals 0, the nodeDto for the root returns a parentId of null and if 0 == null, then
-         * we try to add the root a second time as a child of itself.....
-         */
-
-        $parentId = $start->getNodeId();
-        $filter = function (TreenodeInterface|TreenodeDtoInterface $nodeDto) use
-        (
-            $parentId
-        ): bool {
-            return $parentId === $nodeDto->getParentId();
-        };
-        $children = array_filter($array, $filter);
-
-        /**
-         * if necessary, sort the dtos so they go into the tree in the correct order
-         */
-        if ($this->treenodeComparator) {
-            uasort($children, $this->treenodeComparator);
-        }
-
-        /**
-         * recurse down through the children to hydrate the tree.  The foreach looks a little odd because
-         * we only need the key from the array, not the dto. The second parameter is the complete set of dtos we
-         * are importing into the tree
-         */
-        foreach ($children as $key => $dto) {
-            $this->insertNodeRecurse($key, $array);
-        }
-    }
-
-    /**
-     * @function getNode
-     *
-     * @param  non-negative-int  $nodeId
-     *
-     * @return TreenodeType|null
-     */
-    public function getNode(int $nodeId): ?TreenodeInterface
-    {
-        return $this->nodes[$nodeId] ?? null;
-    }
-
-    /**
-     * rootTest
-     * encapsulate logic for testing whether something is or can be the root
-     *
-     * @param  TreenodeType|TreenodeDtoInterface  $nodeItem
-     *
-     * @return bool
-     */
-    public function rootTest($nodeItem): bool
-    {
-        if ($nodeItem instanceof TreenodeInterface) {
-            $parent = $nodeItem->getParent();
-        } else {
-            $parent = $nodeItem->getParentId();
-        }
-        return is_null($parent);
+        $this->collection->add($node->getNodeId(), $node);
     }
 
     /**
@@ -318,7 +187,7 @@ class Tree implements TreeInterface
          * if the node is not in the tree, throw an exception
          */
         if (!$node = $this->getNode($nodeId)) {
-            throw new NodeNotInTreeException($this->getTreeId(), $nodeId);
+            throw new NodeNotInTreeException($this->treeId, $nodeId);
         }
 
         /**
@@ -342,32 +211,176 @@ class Tree implements TreeInterface
     }
 
     /**
-     * @function getTreeId
-     * @return non-negative-int
+     * hydrate
+     *
+     * @param  array<TreenodeDtoInterface>  $array
      */
-    public function getTreeId(): int
+    public function hydrate(array $array): void
     {
-        return $this->treeId;
+        if (!$this->isInitialized) {
+            throw new TreeNotInitializedException();
+        }
+
+        /**
+         * If empty, just return - nothing to do.  Otherwise, find the root
+         * and start the recursion
+         */
+        if (!empty($array)) {
+            $root = array_find($array, [$this, 'rootTest']);
+            if ($root === null) {
+                throw new NoRootFoundException();
+            } else {
+                $this->insertNodeRecurse($root->getNodeId(), $array);
+            }
+        }
+    }
+
+
+    /**
+     * insertNodeRecurse recursively inserts nodes into the tree using a depth first algorithm
+     *
+     * @param  int  $nodeId
+     * @param  array<TreenodeDtoInterface>  $array
+     *
+     * @return void
+     */
+    protected function insertNodeRecurse(int $nodeId, array $array): void
+    {
+        $dto = $array[$nodeId];
+
+        /**
+         * make the node we are going to insert
+         */
+        $node = $this->treenodeFactory->makeNode();
+
+        /**
+         * set the nodeId
+         */
+        $node->setNodeId($nodeId);
+
+        /**
+         * if the dto has a non-null treeId, ensure it matches that of this tree
+         */
+        if (($dto->getTreeId() !== null) && ($this->treeId !== $dto->getTreeId())) {
+            throw new InvalidTreeidException($dto->getTreeId());
+        }
+
+        /**
+         * get the parent from the tree
+         */
+        $parentId = $dto->getParentId();
+        $parent = is_null($parentId) ? null : $this->getNode($parentId);
+
+        /**
+         * set the index property
+         */
+        $node->setIndex($dto->getIndex());
+
+        /**
+         * add the node
+         */
+        $this->addNode($node, $parent);
+
+        /**
+         * filter dto array for children of $node
+         *
+         * need identity, not equals, because 0 == null.  For example, if the root node has nodeId of 0, then it
+         * gets inserted into the tree properly the first time.  When searching the array for children whose
+         * parentId equals 0, the nodeDto for the root returns a parentId of null and if 0 == null, then
+         * we try to add the root a second time as a child of itself.....
+         */
+        $filter = function (TreenodeDtoInterface $dto) use ($nodeId): bool {
+            return $nodeId === $dto->getParentId();
+        };
+        $children = array_filter($array, $filter);
+
+        /**
+         * children must be inserted in index order
+         */
+        $comparator = function (TreenodeDtoInterface $a, TreenodeDtoInterface $b): int {
+            return $a->getIndex() <=> $b->getIndex();
+        };
+        uasort($children, $comparator);
+
+        /**
+         * recurse down through the children to hydrate the tree.  The foreach looks a little odd because
+         * we only need the key from the array, not the dto. The second parameter is the complete set of dtos we
+         * are importing into the tree
+         */
+        foreach ($children as $key => $childDto) {
+            $this->insertNodeRecurse($key, $array);
+        }
     }
 
     /**
-     * @param  non-negative-int  $treeId
-     *
-     * @return void
-     * @throws InvalidTreeidException
+     * @return array<TreenodeDtoInterface>
+     * @throws TreeNotInitializedException
      */
-    protected function setTreeId(int $treeId): void
+    public function dehydrate(): array
+    {
+        $result = [];
+        /**
+         * why in the world does this collection not iterate properly????
+         * foreach ($this->collection as node) fails!!!!
+         */
+        /** @var TreenodeType $node */
+        foreach ($this->collection->getElements() as $node) {
+            $nodeId = $node->getNodeId();
+            $parentId = $node->getParent()?->getNodeId();
+            $treeId = $this->treeId;
+            $index = $node->getIndex();
+            $dto = new TreenodeDto($nodeId, $parentId, $treeId, $index);
+            $result[$nodeId] = $dto;
+        }
+        return $result;
+    }
+
+
+    /**
+     * @function getNodes
+     * @return TreenodeCollectionInterface<TreenodeType>
+     */
+    public function getNodeCollection(): TreenodeCollectionInterface
+    {
+        return $this->collection;
+    }
+
+    /**
+     * @function getNode
+     *
+     * @param  non-negative-int  $nodeId
+     *
+     * @return TreenodeType|null
+     */
+    public function getNode(int $nodeId): ?TreenodeInterface
     {
         /**
-         * because each node has a treeId property, TreenodeFactory throws an exception if the treeId is not
-         * set when it tries to make a node.  This ensures that you cannot make a node without a treeId.
+         * Collection::getElement throws an exception if the key does not exist
+         * but we do not want that here.
          */
-
-        if (!$this->validateTreeId($treeId)) {
-            throw new InvalidTreeIdException($treeId);
+        try {
+            return $this->collection->getElement($nodeId);
+        } catch (NonExistentKeyException) {
+            return null;
         }
+    }
 
-        $this->treeId = $treeId;
+    /**
+     * rootTest
+     * encapsulate logic for testing whether something is or can be the root
+     *
+     * @param  TreenodeType|TreenodeDtoInterface  $nodeItem
+     *
+     * @return bool
+     */
+    public function rootTest($nodeItem): bool
+    {
+        if ($nodeItem instanceof TreenodeInterface) {
+            $parent = $nodeItem->getParent();
+        } else {
+            $parent = $nodeItem->getParentId();
+        }
+        return is_null($parent);
     }
 
     /**
@@ -396,35 +409,9 @@ class Tree implements TreeInterface
         /**
          * remove the node from the node list
          */
-        unset($this->nodes[$node->getNodeId()]);
+        $this->collection->delete($node->getNodeId());
     }
 
-    /**
-     * @function getRoot
-     * @return TreenodeType|null
-     * leave the return type unspecified because when we extend this class we
-     * want to be able to get a covariant return type
-     */
-    public function getRoot()
-    {
-        return $this->root ?? null;
-    }
 
-    /**
-     * @function setRoot sets a reference to the root node of the tree
-     *
-     * @param  TreenodeType  $node
-     *
-     * @throws AlreadySetRootException
-     */
-    protected function setRoot(TreenodeInterface $node): void
-    {
-        /**
-         * if the root is already set, throw an exception
-         */
-        if (isset($this->root)) {
-            throw new AlreadySetRootException();
-        }
-        $this->root = $node;
-    }
+
 }

@@ -8,12 +8,12 @@ use pvc\struct\collection\Collection;
 use pvc\struct\collection\CollectionFactory;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
-use pvcExamples\struct\unordered\TreenodeUnordered;
+use pvcExamples\struct\unordered\TreenodeBaseUnordered;
 
 class TreenodeFactoryUnorderedTest extends TestCase
 {
     /**
-     * @var CollectionFactory<TreenodeUnordered>|MockObject
+     * @var CollectionFactory<TreenodeBaseUnordered>|MockObject
      */
     protected CollectionFactory|MockObject $collectionFactory;
 
@@ -53,7 +53,7 @@ class TreenodeFactoryUnorderedTest extends TestCase
             true
         );
         self::assertInstanceOf(
-            TreenodeUnordered::class,
+            TreenodeBaseUnordered::class,
             $this->factory->makeNode()
         );
     }

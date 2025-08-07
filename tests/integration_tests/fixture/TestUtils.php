@@ -6,16 +6,9 @@ use League\Container\Container;
 use League\Container\Definition\DefinitionAggregate;
 use League\Container\ReflectionContainer;
 use pvc\interfaces\struct\tree\node\TreenodeInterface;
-use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\tree\di\TreeDefinitions;
 use pvc\struct\tree\dto\TreenodeDto;
-use pvc\struct\tree\dto\TreenodeDtoOrdered;
-use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
-use pvcExamples\struct\ordered\TreenodeOrdered;
-use pvcExamples\struct\ordered\TreeOrdered;
-use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
-use pvcExamples\struct\unordered\TreenodeUnordered;
-use pvcExamples\struct\unordered\TreeUnordered;
+use pvc\struct\tree\tree\Tree;
 use ReflectionException;
 
 class TestUtils
@@ -23,6 +16,8 @@ class TestUtils
     protected Container $container;
 
     protected TreenodeConfigurationsFixture $fixture;
+
+    protected int $treeId;
 
     public function __construct(TreenodeConfigurationsFixture $fixture)
     {
@@ -41,7 +36,7 @@ class TestUtils
     /**
      * getNodeIdsFromNodeArray
      *
-     * @param  TreenodeInterface  $nodeArray
+     * @param  array<TreenodeInterface>  $nodeArray
      *
      * @return array<int>
      */
@@ -56,61 +51,48 @@ class TestUtils
         return array_values(array_map($callback, $nodeArray));
     }
 
-    public function testTreeSetup(bool $ordered, bool $makeNodes = false): TreeInterface
+    public function testTreeSetup(int $treeId): Tree
     {
-        $treeId = 1;
-        $inputArray = $this->makeInputArray($ordered, $makeNodes);
-        $tree = $this->makeTestTree($ordered);
-        $tree->initialize($treeId);
-        $tree->hydrate($inputArray);
+        $this->treeId = $treeId;
+        $tree = $this->container->get(Tree::class);
+        $tree->initialize($this->treeId);
         return $tree;
     }
 
     /**
-     * @return array<TreenodeDto>|array<TreenodeDtoOrdered>
+     * @return array<TreenodeDto>
      * @throws ReflectionException
      */
-    public function makeInputArray(bool $ordered, bool $makeNodes = false): array
+    public function makeDtoArray(): array
     {
         $nodeData = $this->fixture->getNodeData();
-        $callback = function (array $row) use ($ordered, $makeNodes
-        ): TreenodeDto|TreenodeDtoOrdered|TreenodeUnordered|TreenodeOrdered {
+
+        /**
+         * @param  array<non-negative-int>  $row
+         * @return TreenodeDto
+         */
+        $callback = function (array $row): TreenodeDto {
+            /** @var non-negative-int $nodeId */
             $nodeId = $row[0];
+
+            /** @var non-negative-int $nodeId */
             $parentId = $row[1];
-            $treeId = null;
-            if ($ordered) {
-                $index = $row[2];
-            }
 
-            if ($ordered) {
-                $dto = new TreenodeDtoOrdered(
-                    $nodeId,
-                    $parentId,
-                    $treeId,
-                    $index
-                );
-            } else {
-                $dto = new TreenodeDto($nodeId, $parentId, $treeId);
-            }
+            $treeId = $this->treeId;
 
-            if ($makeNodes) {
-                $factory = $ordered ?
-                    $this->container->get(TreenodeFactoryOrdered::class) :
-                    $this->container->get(TreenodeFactoryUnordered::class);
-                $result = $factory->makeNode();
-                $result->hydrate($dto);
-            } else {
-                $result = $dto;
-            }
+            /** @var non-negative-int $nodeId */
+            $index = $row[2];
 
-            return $result;
+            $dto = new TreenodeDto(
+                $nodeId,
+                $parentId,
+                $treeId,
+                $index
+            );
+
+            return $dto;
         };
-        return array_map($callback, $nodeData);
-    }
 
-    public function makeTestTree(bool $ordered): TreeInterface
-    {
-        $classString = $ordered ? TreeOrdered::class : TreeUnordered::class;
-        return $this->container->get($classString);
+        return array_map($callback, $nodeData);
     }
 }

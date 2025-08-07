@@ -10,6 +10,7 @@ namespace pvcTests\struct\unit_tests\collection\err;
 
 use pvc\err\XDataTestMaster;
 use pvc\struct\collection\err\_CollectionXData;
+use pvc\struct\collection\err\InvalidComparatorException;
 
 /**
  * Class _CollectionXDataTest
@@ -24,6 +25,7 @@ class _CollectionXDataTest extends XDataTestMaster
      * @covers \pvc\struct\collection\err\DuplicateKeyException::__construct
      * @covers \pvc\struct\collection\err\InvalidKeyException::__construct
      * @covers \pvc\struct\collection\err\NonExistentKeyException::__construct
+     * @covers \pvc\struct\collection\err\InvalidComparatorException::__construct
      */
     public function testListExceptionLibrary(): void
     {

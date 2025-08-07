@@ -13,8 +13,8 @@ use pvc\struct\collection\Collection;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
 use pvc\struct\collection\err\NonExistentKeyException;
-use pvcTests\struct\unit_tests\collection\fixtures\CollectionElement;
-use pvcTests\struct\unit_tests\collection\fixtures\CollectionElementFactory;
+use pvcTests\struct\unit_tests\collection\fixtures\Element;
+use pvcTests\struct\unit_tests\collection\fixtures\ElementFactory;
 
 /**
  * Class CollectionTest
@@ -22,22 +22,26 @@ use pvcTests\struct\unit_tests\collection\fixtures\CollectionElementFactory;
 class CollectionTest extends TestCase
 {
     /**
-     * @var Collection<CollectionElement>
+     * @var Collection<Element>
      */
     protected Collection $collection;
 
-    protected array $collectionElements;
+    /**
+     * @var array<Element>
+     */
+    protected array $elements;
 
-    protected CollectionElementFactory $collectionElementFactory;
+    protected ElementFactory $elementFactory;
 
     public function setUp(): void
     {
-        $this->collectionElementFactory = new CollectionElementFactory();
+        $this->elementFactory = new ElementFactory();
     }
 
     /**
      * @return void
      * @covers \pvc\struct\collection\Collection::__construct
+     * @covers \pvc\struct\collection\Collection::setInnerIterator
      */
     public function testConstruct(): void
     {
@@ -65,9 +69,9 @@ class CollectionTest extends TestCase
      */
     protected function addElements(int $n): void
     {
-        $this->collectionElements
-            = $this->collectionElementFactory->makeCollectionElementArray($n);
-        $this->collection = new Collection($this->collectionElements);
+        $this->elements
+            = $this->elementFactory->makeElementArray($n);
+        $this->collection = new Collection($this->elements);
     }
 
     /**
@@ -82,7 +86,7 @@ class CollectionTest extends TestCase
         foreach ($this->collection as $i => $element) {
             self::assertEquals($i, $this->collection->key());
             self::assertEquals(
-                $this->collectionElements[$i++],
+                $this->elements[$i++],
                 $this->collection->current()
             );
             self::assertTrue($this->collection->valid());
@@ -102,7 +106,7 @@ class CollectionTest extends TestCase
         $this->addElements(3);
 
         self::assertEquals(
-            count($this->collectionElements),
+            count($this->elements),
             count($this->collection)
         );
     }
@@ -116,15 +120,14 @@ class CollectionTest extends TestCase
     public function testGetElementThrowsExceptionWithInvalidKey(): void
     {
         $this->addElements(2);
-        self::expectException(InvalidKeyException::class);
-        $element = $this->collection->getElement(-2);
+        self::expectException(NonExistentKeyException::class);
+        $this->collection->getElement(-2);
     }
 
     /**
      * testGetElementThrowsExceptionWithNonExistentKey
      *
      * @covers \pvc\struct\collection\Collection::getElement
-     * @covers \pvc\struct\collection\Collection::validateKey
      * @covers \pvc\struct\collection\Collection::validateExistingKey
      */
     public function testGetElementThrowsExceptionWithNonExistentKey(): void
@@ -145,7 +148,7 @@ class CollectionTest extends TestCase
         $this->addElements(3);
 
         self::assertEquals(
-            $this->collectionElements[0],
+            $this->elements[0],
             $this->collection->getElement(0)
         );
     }
@@ -154,17 +157,11 @@ class CollectionTest extends TestCase
      * testGetElements
      *
      * @covers \pvc\struct\collection\Collection::getElements
+     * @covers \pvc\struct\collection\Collection::initialize
      */
-    public function testGetElements(): void
+    public function testGetElementsAndThenInitialize(): void
     {
-        /**
-         * sorted
-         */
-        $comparator = function (CollectionElement $a, CollectionElement $b) {
-            return $a->getValue() <=> $b->getValue();
-        };
-
-        $this->collection = new Collection([], $comparator);
+        $this->collection = new Collection();
         self::assertEmpty($this->collection->getElements());
 
         $this->addElements(4);
@@ -174,10 +171,10 @@ class CollectionTest extends TestCase
          */
         $elements = $this->collection->getElements();
         self::assertIsArray($elements);
-        self::assertEqualsCanonicalizing($this->collectionElements, $elements);
+        self::assertEqualsCanonicalizing($this->elements, $elements);
 
-        usort($elements, $comparator);
-        self::assertEquals($elements, $this->collection->getElements());
+        $this->collection->initialize();
+        self::assertTrue($this->collection->isEmpty());
     }
 
     /**
@@ -212,7 +209,6 @@ class CollectionTest extends TestCase
      * testAddThrowsExceptionWithInvalidKey
      *
      * @covers \pvc\struct\collection\Collection::add
-     * @covers \pvc\struct\collection\Collection::validateKey
      * @covers \pvc\struct\collection\Collection::validateNewKey
      */
     public function testAddThrowsExceptionWithInvalidKey(): void
@@ -242,16 +238,22 @@ class CollectionTest extends TestCase
      * testAdd
      *
      * @covers \pvc\struct\collection\Collection::add
+     * @covers \pvc\struct\collection\Collection::getIndex
      */
     public function testAdd(): void
     {
         $this->collection = new Collection();
-        $this->collectionElements
-            = $this->collectionElementFactory->makeCollectionElementArray(3);
-        foreach ($this->collectionElements as $key => $value) {
+        $this->elements
+            = $this->elementFactory->makeElementArray(3);
+        foreach ($this->elements as $key => $value) {
             $this->collection->add($key, $value);
             self::assertEquals($value, $this->collection->getElement($key));
         }
+        /**
+         * indices are zero-based
+         */
+        self::assertEquals(2, $this->collection->getIndex(2));
+        self::assertNull($this->collection->getIndex(5));
     }
 
     /**
@@ -262,7 +264,7 @@ class CollectionTest extends TestCase
     public function testUpdateThrowsExceptionWithInvalidKey(): void
     {
         $this->collection = new Collection();
-        $this->expectException(InvalidKeyException::class);
+        $this->expectException(NonExistentKeyException::class);
         $badKey = -1;
         $this->collection->update($badKey, 'some payload');
     }
@@ -287,7 +289,7 @@ class CollectionTest extends TestCase
     public function testUpdate(): void
     {
         $this->addElements(3);
-        $newElement = new CollectionElement();
+        $newElement = new Element();
         $testKey = 1;
         $this->collection->update($testKey, $newElement);
 
@@ -305,7 +307,7 @@ class CollectionTest extends TestCase
     public function testDeleteThrowsExceptionWithInvalidKey(): void
     {
         $this->collection = new Collection();
-        $this->expectException(InvalidKeyException::class);
+        $this->expectException(NonExistentKeyException::class);
         $badKey = -1;
         $this->collection->delete($badKey, 'some payload');
     }
@@ -353,13 +355,13 @@ class CollectionTest extends TestCase
         $indexed = false;
 
         $key = 7;
-        $a = $this->collectionElementFactory->makeElement($key, $indexed);
+        $a = $this->elementFactory->makeElement($key, $indexed);
 
         $key = 10;
-        $b = $this->collectionElementFactory->makeElement($key, $indexed);
+        $b = $this->elementFactory->makeElement($key, $indexed);
 
         $key = 10;
-        $c = $this->collectionElementFactory->makeElement($key, $indexed);
+        $c = $this->elementFactory->makeElement($key, $indexed);
 
         $this->collection = new Collection([$a, $b, $c]);
 
@@ -368,5 +370,64 @@ class CollectionTest extends TestCase
         self::assertSame($b, $this->collection->getNth(1));
         self::assertSame($c, $this->collection->getNth(2));
         self::assertNull($this->collection->getNth(4));
+    }
+
+    /**
+     * @return void
+     * @covers \pvc\struct\collection\Collection::setComparator
+     * @covers \pvc\struct\collection\Collection::getElements
+     * @covers \pvc\struct\collection\Collection::add
+     * @covers \pvc\struct\collection\Collection::update
+     *
+     */
+    public function testOrderingBehavior(): void
+    {
+        /**
+         * value is 'd'
+         */
+        $elementA = $this->elementFactory->makeElement(3);
+
+        /**
+         * value is 'c'
+         */
+        $elementB = $this->elementFactory->makeElement( 2);
+
+        /**
+         * default behavior is the order in which the elements are added to the collection
+         */
+        $expectedResult = [$elementA, $elementB];
+        $collection = new Collection([$elementA, $elementB]);
+        self::assertEquals($expectedResult, $collection->getElements());
+
+        /**
+         * collection reorders when comparator is set
+         */
+        $comparator = function (Element $a, Element $b) {
+            return $a->getValue() <=> $b->getValue();
+        };
+        $collection->setComparator($comparator);
+
+        /**
+         * elements are now in alphabetical order
+         */
+        $expectedResult = [1 => $elementB, 0 => $elementA];
+        self::assertEquals($expectedResult, $collection->getElements());
+
+        /**
+         * new elements are added and the collection remains sorted correctly
+         */
+        $elementC = $this->elementFactory->makeElement(1);
+        $collection->add(2, $elementC);
+        $expectedResult = [2 => $elementC, 1 => $elementB, 0 => $elementA];
+        self::assertEquals($expectedResult, $collection->getElements());
+
+        /**
+         * update an element and the sort order is maintained
+         * value = 'g'
+         */
+        $elementD = $this->elementFactory->makeElement(6);
+        $collection->update(2, $elementD);
+        $expectedResult = [1 => $elementB, 0 => $elementA, 2 => $elementD];
+        self::assertEquals($expectedResult, $collection->getElements());
     }
 }

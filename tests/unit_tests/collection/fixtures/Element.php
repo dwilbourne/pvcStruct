@@ -2,24 +2,24 @@
 
 namespace pvcTests\struct\unit_tests\collection\fixtures;
 
-class CollectionElement
+class Element
 {
-    protected int $value;
+    protected string $value;
 
     /**
-     * @return int
+     * @return string
      */
-    public function getValue(): int
+    public function getValue(): string
     {
         return $this->value;
     }
 
     /**
-     * @param  int  $value
+     * @param  string  $value
      *
      * @return void
      */
-    public function setValue(int $value): void
+    public function setValue(string $value): void
     {
         $this->value = $value;
     }

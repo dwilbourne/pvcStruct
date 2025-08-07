@@ -4,7 +4,7 @@ namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\CollectionOrdered;
+use pvc\struct\collection\CollectionOrderedByIndex;
 use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
 use pvcExamples\struct\ordered\TreenodeOrdered;
 use pvcExamples\struct\ordered\TreeOrdered;
@@ -22,7 +22,7 @@ class TreeOrderedTest extends TestCase
     protected TreeOrdered $tree;
 
     /**
-     * @var TreenodeFactoryOrdered<TreenodeOrdered, TreeOrdered, CollectionOrdered>&MockObject
+     * @var TreenodeFactoryOrdered<TreenodeOrdered, TreeOrdered, CollectionOrderedByIndex>&MockObject
      */
     protected TreenodeFactoryOrdered&MockObject $nodeFactory;
 

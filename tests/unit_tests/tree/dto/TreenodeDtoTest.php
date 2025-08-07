@@ -20,12 +20,13 @@ class TreenodeDtoTest extends TestCase
         $nodeId = 1;
         $parentId = 2;
         $treeId = 3;
-        $dto = new TreenodeDto($nodeId, $parentId, $treeId);
+        $index = 5;
+        $dto = new TreenodeDto($nodeId, $parentId, $treeId, $index);
         self::assertInstanceOf(TreenodeDto::class, $dto);
 
         self::assertEquals($nodeId, $dto->getNodeId());
         self::assertEquals($parentId, $dto->getParentId());
         self::assertEquals($treeId, $dto->getTreeId());
-        self::assertNull($dto->getIndex());
+        self::assertEquals($index, $dto->getIndex());
     }
 }

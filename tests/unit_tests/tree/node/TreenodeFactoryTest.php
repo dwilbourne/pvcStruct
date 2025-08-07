@@ -10,15 +10,16 @@ namespace pvcTests\struct\unit_tests\tree\node;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\interfaces\struct\collection\CollectionFactoryInterface;
-use pvc\interfaces\struct\collection\CollectionInterface;
+use pvc\interfaces\struct\tree\node\TreenodeChildCollectionFactoryInterface;
+use pvc\interfaces\struct\tree\node\TreenodeChildCollectionInterface;
 use pvc\interfaces\struct\tree\node\TreenodeFactoryInterface;
+use pvc\struct\tree\node\Treenode;
 use pvc\struct\tree\node\TreenodeFactory;
 
 class TreenodeFactoryTest extends TestCase
 {
 
-    protected CollectionFactoryInterface&MockObject $collectionFactory;
+    protected TreenodeChildCollectionFactoryInterface&MockObject $collectionFactory;
 
     /**
      * @var TreenodeFactoryInterface
@@ -28,11 +29,9 @@ class TreenodeFactoryTest extends TestCase
     public function setUp(): void
     {
         $this->collectionFactory = $this->createMock(
-            CollectionFactoryInterface::class
+            TreenodeChildCollectionFactoryInterface::class
         );
-        $this->factory = $this->getMockBuilder(TreenodeFactory::class)
-            ->setConstructorArgs([$this->collectionFactory])
-            ->getMockForAbstractClass();
+        $this->factory = new TreenodeFactory($this->collectionFactory);
     }
 
     /**
@@ -46,17 +45,18 @@ class TreenodeFactoryTest extends TestCase
     }
 
     /**
-     * testGetCollectionFactory
+     * testMakeNode
      *
-     * @covers \pvc\struct\tree\node\TreenodeFactory::makeCollection
+     * @covers \pvc\struct\tree\node\TreenodeFactory::makeNode
      */
-    public function testMakeCollection(): void
+    public function testMakeNode(): void
     {
-        $collectionMock = $this->createMock(CollectionInterface::class);
+        $collectionMock = $this->createMock(TreenodeChildCollectionInterface::class);
         $this->collectionFactory
             ->expects(self::once())
-            ->method('makeCollection')
+            ->method('makeChildCollection')
             ->willReturn($collectionMock);
-        $this->factory->makeCollection();
+        $node = $this->factory->makeNode();
+        self::assertInstanceOf(Treenode::class, $node);
     }
 }

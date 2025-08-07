@@ -4,7 +4,7 @@ namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\CollectionOrdered;
+use pvc\struct\collection\CollectionOrderedByIndex;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -27,9 +27,9 @@ class TreenodeOrderedTest extends TestCase
     protected TreenodeTestingFixture $fixture;
 
     /**
-     * @var CollectionOrdered&MockObject
+     * @var CollectionOrderedByIndex&MockObject
      */
-    protected CollectionOrdered&MockObject $collection;
+    protected CollectionOrderedByIndex&MockObject $collection;
 
     /**
      * @var TreeOrdered&MockObject
@@ -45,7 +45,7 @@ class TreenodeOrderedTest extends TestCase
     {
         $this->fixture = new TreenodeTestingFixture();
         $this->fixture->setUp();
-        $this->collection = $this->createMock(CollectionOrdered::class);
+        $this->collection = $this->createMock(CollectionOrderedByIndex::class);
         $this->tree = $this->createMock(TreeOrdered::class);
         $this->tree->method('getTreeId')->willReturn($this->fixture->treeId);
     }

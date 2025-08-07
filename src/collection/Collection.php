@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
-use ArrayIterator;
 use IteratorIterator;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\validator\ValTesterInterface;
@@ -20,7 +19,7 @@ use pvc\struct\collection\err\NonExistentKeyException;
  * Class Collection
  * @template ElementType
  *
- * @extends IteratorIterator<non-negative-int, ElementType, ArrayIterator>
+ * @extends IteratorIterator<non-negative-int, ElementType, ArrayIteratorNonNegIntKeys>
  * @implements CollectionInterface<ElementType>
  *
  * elements in a collection cannot be null
@@ -28,29 +27,69 @@ use pvc\struct\collection\err\NonExistentKeyException;
 class Collection extends IteratorIterator implements CollectionInterface
 {
     /**
-     * @var ArrayIterator<non-negative-int, ElementType>
+     * @var ArrayIteratorNonNegIntKeys<ElementType>
      */
-    protected ArrayIterator $iterator;
+    protected ArrayIteratorNonNegIntKeys $iterator;
 
     /**
-     * @var callable(ElementType, ElementType):int|null
-     * used by getElements to return the elements in whatever sort order you choose
+     * @var ?callable(ElementType, ElementType): int $comparator;
      */
-    protected $comparator = null;
+    protected $comparator;
+
 
     /**
-     * @param  array<int, ElementType>  $elements
-     * @param  callable(ElementType, ElementType):int|null  $comparator
+     * @param  array<non-negative-int, ElementType>  $elements
      */
     public function __construct(
         array $elements = [],
-        callable|null $comparator = null
     ) {
-        /** @var array<non-negative-int, ElementType> $values */
-        $values = array_values($elements);
-        $this->iterator = new ArrayIteratorNonNegIntKeys($values);
-        $this->comparator = $comparator;
+        $this->setInnerIterator($elements);
         parent::__construct($this->iterator);
+    }
+
+    /**
+     * @param  array<non-negative-int, ElementType>  $elements
+     *
+     * @return void
+     * this method is also used to initialize the collection by
+     * calling it with no parameters
+     */
+    protected function setInnerIterator(array $elements = []): void
+    {
+        $this->iterator = new ArrayIteratorNonNegIntKeys($elements);
+    }
+
+    /**
+     * @param ?callable(ElementType, ElementType): int $comparator
+     *
+     * @return void
+     */
+    public function setComparator($comparator): void
+    {
+        $this->comparator = $comparator;
+        if ($this->comparator !== null) {
+            $this->iterator->uasort($this->comparator);
+        }
+    }
+
+    /**
+     * @param  non-negative-int  $key
+     *
+     * @return non-negative-int|null
+     */
+    public function getIndex(int $key): ?int
+    {
+            $i = 0;
+            foreach ($this->iterator as $n => $element) {
+                if ($n === $key) return $i;
+                $i++;
+            }
+            return null;
+    }
+
+    public function initialize(): void
+    {
+        $this->setInnerIterator();
     }
 
     /**
@@ -82,9 +121,6 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getElement(int $key): mixed
     {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
         if (!$this->validateExistingKey($key)) {
             throw new NonExistentKeyException($key);
         }
@@ -96,17 +132,6 @@ class Collection extends IteratorIterator implements CollectionInterface
         return $element;
     }
 
-    /**
-     * validateKey encapsulates the logic that all keys must be non-negative integers
-     *
-     * @param  int  $key
-     *
-     * @return bool
-     */
-    protected function validateKey(int $key): bool
-    {
-        return $key >= 0;
-    }
 
     /**
      * validateExistingKey ensures that the key is both valid and exists in the collection
@@ -143,9 +168,6 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getElements(): array
     {
-        if ($this->comparator) {
-            $this->iterator->uasort($this->comparator);
-        }
         return iterator_to_array($this->iterator);
     }
 
@@ -175,13 +197,14 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function add(int $key, $element): void
     {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
         if (!$this->validateNewKey($key)) {
             throw new DuplicateKeyException($key);
         }
         $this->iterator->offsetSet($key, $element);
+
+        if ($this->comparator !== null) {
+            $this->iterator->uasort($this->comparator);
+        }
     }
 
     /**
@@ -205,13 +228,16 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function update(int $key, $element): void
     {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
         if (!$this->validateExistingKey($key)) {
             throw new NonExistentKeyException($key);
         }
+
         $this->iterator->offsetSet($key, $element);
+
+        if ($this->comparator !== null) {
+            $this->iterator->uasort($this->comparator);
+        }
+
     }
 
     /**
@@ -226,9 +252,6 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function delete(int $key): void
     {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
         if (!$this->validateExistingKey($key)) {
             throw new NonExistentKeyException($key);
         }
@@ -238,7 +261,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * @return ElementType|null
      */
-    public function getFirst()
+    public function getFirst(): mixed
     {
         return array_values($this->getElements())[0] ?? null;
     }
@@ -246,7 +269,7 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * @return ElementType|null
      */
-    public function getLast()
+    public function getLast(): mixed
     {
         return array_values($this->getElements())[count($this->getElements())
         - 1] ?? null;
@@ -257,7 +280,7 @@ class Collection extends IteratorIterator implements CollectionInterface
      *
      * @return ElementType|null
      */
-    public function getNth(int $index)
+    public function getNth(int $index): mixed
     {
         return array_values($this->getElements())[$index] ?? null;
     }

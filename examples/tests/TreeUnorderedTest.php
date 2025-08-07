@@ -6,7 +6,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\collection\Collection;
 use pvcExamples\struct\unordered\TreenodeFactoryUnordered;
-use pvcExamples\struct\unordered\TreenodeUnordered;
+use pvcExamples\struct\unordered\TreenodeBaseUnordered;
 use pvcExamples\struct\unordered\TreeUnordered;
 
 class TreeUnorderedTest extends TestCase
@@ -22,7 +22,7 @@ class TreeUnorderedTest extends TestCase
     protected TreeUnordered $tree;
 
     /**
-     * @var TreenodeFactoryUnordered<TreenodeUnordered, TreeUnordered, Collection>&MockObject
+     * @var TreenodeFactoryUnordered<TreenodeBaseUnordered, TreeUnordered, Collection>&MockObject
      */
     protected TreenodeFactoryUnordered&MockObject $nodeFactory;
 

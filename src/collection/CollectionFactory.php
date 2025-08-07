@@ -10,15 +10,14 @@ use pvc\interfaces\struct\collection\CollectionInterface;
 
 /**
  * @template ElementType
- * @template CollectionType of CollectionInterface
- * @implements CollectionFactoryInterface<ElementType, CollectionType>
+ * @implements CollectionFactoryInterface<ElementType, Collection>
  */
 class CollectionFactory implements CollectionFactoryInterface
 {
     /**
      * @param  array<non-negative-int, ElementType>  $elements
      *
-     * @return CollectionType<ElementType>
+     * @return Collection<ElementType>
      */
     public function makeCollection(array $elements = []): CollectionInterface
     {

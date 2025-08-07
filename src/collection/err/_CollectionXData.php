@@ -25,6 +25,7 @@ class _CollectionXData extends XDataAbstract
             DuplicateKeyException::class   => 1001,
             InvalidKeyException::class     => 1002,
             NonExistentKeyException::class => 1003,
+            InvalidComparatorException::class => 1004,
         ];
     }
 
@@ -37,8 +38,9 @@ class _CollectionXData extends XDataAbstract
     {
         return [
             DuplicateKeyException::class   => 'duplicate list key ${duplicateKey}',
-            InvalidKeyException::class     => 'Invalid list key ${invalidKey}',
+            InvalidKeyException::class     => 'Invalid list key ${invalidKey} - must be integer >= 0',
             NonExistentKeyException::class => 'non-existent list key ${nonExistentKey}',
+            InvalidComparatorException::class => 'cannot set a value comparator on a collection where the ordered flag is set to true',
         ];
     }
 }

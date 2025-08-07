@@ -14,11 +14,11 @@ namespace pvcTests\struct\integration_tests\fixture;
 class TreenodeConfigurationsFixture
 {
     /**
-     * @function makeArrayOfNodeIdsForTree
+     * @function getNodeData
      * @return array
      *
      * the order of the node data is scrambled in order to properly test the getTreeDepthFirst
-     * and getTreeBreadthFirst methods for ordered trees.  The shape of each array is <nodeId, parentId, index>
+     * and getTreeBreadthFirst methods.  The shape of each array is <nodeId, parentId, index>
      *
      *  Unordered:                              0
      *                                         / \
@@ -69,31 +69,19 @@ class TreenodeConfigurationsFixture
         return [9, 5, 1, 0];
     }
 
-    public function makeArrayOfAncestorsOfNodeWithNodeIdNineMaxLevelsTwo(): array
+    public function makeArrayOfAncestorsOfNodeWithNodeIdNineMaxLevelsTwo(
+    ): array
     {
         return [9, 5];
     }
 
-    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneUnordered(
-    ): array
-    {
-        return [3, 4, 5];
-    }
+    /***********************************************************************
+     *                      Ordered Results
+     ***********************************************************************/
 
-    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneOrdered(
-    ): array
-    {
-        return [5, 3, 4];
-    }
-
-    public function makeUnorderedBreadthFirstArrayOfAllNodeIds(): array
-    {
-        $expectedResult = [];
-        for ($i = 0; $i <= 12; $i++) {
-            $expectedResult[] = $i;
-        }
-        return $expectedResult;
-    }
+    /**
+     * Breadth First Search results
+     */
 
     public function makeOrderedBreadthFirstArrayOfAllNodeIds(): array
     {
@@ -114,22 +102,6 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-
-    public function makeUnorderedBreadthFirstArrayStartingAtNodeid1(): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 1;
-        $expectedResult[] = 3;
-        $expectedResult[] = 4;
-        $expectedResult[] = 5;
-        $expectedResult[] = 8;
-        $expectedResult[] = 9;
-        $expectedResult[] = 10;
-        $expectedResult[] = 11;
-        $expectedResult[] = 12;
-        return $expectedResult;
-    }
-
     public function makeOrderedBreadthFirstArrayStartingAtNodeid1(): array
     {
         $expectedResult = [];
@@ -142,16 +114,6 @@ class TreenodeConfigurationsFixture
         $expectedResult[] = 10;
         $expectedResult[] = 9;
         $expectedResult[] = 8;
-        return $expectedResult;
-    }
-
-    public function makeUnorderedBreadthFirstArrayTwoLevelsStartingAtRoot(
-    ): array
-    {
-        $expectedResult = [];
-        for ($i = 0; $i <= 7; $i++) {
-            $expectedResult[] = $i;
-        }
         return $expectedResult;
     }
 
@@ -171,68 +133,83 @@ class TreenodeConfigurationsFixture
     }
 
     /**
-     * makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes
-     *
-     * @return array
-     * let's say that 0 is an even number for the moment
+     * DepthFirstSearchPreorder results
      */
-    public function makeOrderedBreadthFirstArrayThreeLevelsStartingAtRootForEvenNumberedNodes(
-    ): array
+    public function makeOrderedPreorderDepthFirstArrayOfAllNodeIds(): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
-        $expectedResult[] = 2;
-        $expectedResult[] = 6;
-        $expectedResult[] = 4;
-        return $expectedResult;
-    }
-
-    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
-    ): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 0;
-        $expectedResult[] = 1;
-        $expectedResult[] = 3;
-        $expectedResult[] = 4;
-        $expectedResult[] = 5;
         $expectedResult[] = 2;
         $expectedResult[] = 6;
         $expectedResult[] = 7;
+        $expectedResult[] = 1;
+        $expectedResult[] = 5;
+        $expectedResult[] = 12;
+        $expectedResult[] = 11;
+        $expectedResult[] = 10;
+        $expectedResult[] = 9;
+        $expectedResult[] = 3;
+        $expectedResult[] = 8;
+        $expectedResult[] = 4;
         return $expectedResult;
     }
 
-    public function makePreorderDepthFirstArrayThreeLevelsDeepStartingAtRootForEvenNumberedNodes(
+    public function makeOrderedPreorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
     ): array
     {
         $expectedResult = [];
         $expectedResult[] = 0;
-        $expectedResult[] = 4;
         $expectedResult[] = 2;
         $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        $expectedResult[] = 1;
+        $expectedResult[] = 5;
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
         return $expectedResult;
     }
 
-    public function makePostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
-    ): array
+    /**
+     * Depth first Search Postorder results
+     */
+
+    public function makeOrderedPostOrderDepthFirstArrayOfAllNodeIds(): array
     {
         $expectedResult = [];
-        $expectedResult[] = 3;
-        $expectedResult[] = 4;
-        $expectedResult[] = 5;
-        $expectedResult[] = 1;
         $expectedResult[] = 6;
         $expectedResult[] = 7;
         $expectedResult[] = 2;
+        $expectedResult[] = 12;
+        $expectedResult[] = 11;
+        $expectedResult[] = 10;
+        $expectedResult[] = 9;
+        $expectedResult[] = 5;
+        $expectedResult[] = 8;
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
+        $expectedResult[] = 1;
         $expectedResult[] = 0;
         return $expectedResult;
     }
 
-    public function makeOrderedDepthFirstArrayOfBranchAtNodeid2(): array
+    public function makeOrderedPostorderDepthFirstArrayThreeLevelsDeepStartingAtRoot(
+    ): array
     {
-        // in the current configuration, this branch is the same whether ordered or unordered
-        return $this->makeUnorderedDepthFirstArrayOfBranchAtNodeid2();
+        $expectedResult = [];
+        $expectedResult[] = 6;
+        $expectedResult[] = 7;
+        $expectedResult[] = 2;
+        $expectedResult[] = 5;
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
+        $expectedResult[] = 1;
+        $expectedResult[] = 0;
+        return $expectedResult;
     }
+
+    /************************************************************************
+     *                  Unordered Results
+     ************************************************************************/
 
     public function makeUnorderedDepthFirstArrayOfBranchAtNodeid2(): array
     {
@@ -240,63 +217,6 @@ class TreenodeConfigurationsFixture
         $expectedResult[] = 2;
         $expectedResult[] = 6;
         $expectedResult[] = 7;
-        return $expectedResult;
-    }
-
-    public function makeUnorderedPreorderDepthFirstArrayOfAllNodeIds(): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 0;
-        $expectedResult[] = 1;
-        $expectedResult[] = 3;
-        $expectedResult[] = 8;
-        $expectedResult[] = 4;
-        $expectedResult[] = 5;
-        $expectedResult[] = 9;
-        $expectedResult[] = 10;
-        $expectedResult[] = 11;
-        $expectedResult[] = 12;
-        $expectedResult[] = 2;
-        $expectedResult[] = 6;
-        $expectedResult[] = 7;
-        return $expectedResult;
-    }
-
-    public function makeUnorderedPostOrderDepthFirstArrayOfAllNodeIds(): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 8;
-        $expectedResult[] = 3;
-        $expectedResult[] = 4;
-        $expectedResult[] = 9;
-        $expectedResult[] = 10;
-        $expectedResult[] = 11;
-        $expectedResult[] = 12;
-        $expectedResult[] = 5;
-        $expectedResult[] = 1;
-        $expectedResult[] = 6;
-        $expectedResult[] = 7;
-        $expectedResult[] = 2;
-        $expectedResult[] = 0;
-        return $expectedResult;
-    }
-
-    public function makeOrderedDepthFirstArrayOfAllNodeIds(): array
-    {
-        $expectedResult = [];
-        $expectedResult[] = 0;
-        $expectedResult[] = 2;
-        $expectedResult[] = 6;
-        $expectedResult[] = 7;
-        $expectedResult[] = 1;
-        $expectedResult[] = 5;
-        $expectedResult[] = 12;
-        $expectedResult[] = 11;
-        $expectedResult[] = 10;
-        $expectedResult[] = 9;
-        $expectedResult[] = 3;
-        $expectedResult[] = 8;
-        $expectedResult[] = 4;
         return $expectedResult;
     }
 
@@ -319,52 +239,54 @@ class TreenodeConfigurationsFixture
         return $expectedResult;
     }
 
-    public function makeTreeWithNonExistentParentData(): array
+
+    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneUnordered(
+    ): array
     {
-        $a = [];
-        $a[] = [0, null, 0];
-
-        $a[] = [1, 0, 0];
-        $a[] = [2, 0, 1];
-
-        $a[] = [3, 1, 0];
-        $a[] = [4, 1, 1];
-        $a[] = [5, 1, 2];
-
-        // invalid parent node references
-        $a[] = [6, 11, 0];
-        $a[] = [7, 12, 0];
-
-        return $this->makeDtoArray($a);
+        return [3, 4, 5];
     }
 
-    public function makeTreeWithMultipleRoots(): array
+
+    public function makeArrayOfNodeIdsChildrenOfNodeWithIdEqualToOneOrdered(
+    ): array
     {
-        $a = [];
-        $a[] = [0, null, 0];
-
-        $a[] = [1, 0, 0];
-        $a[] = [2, 0, 1];
-
-        $a[] = [3, 1, 0];
-        $a[] = [4, 1, 1];
-        $a[] = [5, 1, 2];
-
-        // multiple roots defined
-        $a[] = [6, null, 0];
-        $a[] = [7, null, 0];
-
-        return $this->makeDtoArray($a);
+        return [5, 3, 4];
     }
 
-    public function makeTreeWithCircularParents(): array
-    {
-        $a = [];
-        $a[] = [0, null, 0];
-        $a[] = [1, 3, 0];
-        $a[] = [2, 1, 0];
-        $a[] = [3, 2, 0];
 
-        return $this->makeDtoArray($a);
+    public function makeUnorderedBreadthFirstArrayOfAllNodeIds(): array
+    {
+        $expectedResult = [];
+        for ($i = 0; $i <= 12; $i++) {
+            $expectedResult[] = $i;
+        }
+        return $expectedResult;
+    }
+
+
+    public function makeUnorderedBreadthFirstArrayStartingAtNodeid1(): array
+    {
+        $expectedResult = [];
+        $expectedResult[] = 1;
+        $expectedResult[] = 3;
+        $expectedResult[] = 4;
+        $expectedResult[] = 5;
+        $expectedResult[] = 8;
+        $expectedResult[] = 9;
+        $expectedResult[] = 10;
+        $expectedResult[] = 11;
+        $expectedResult[] = 12;
+        return $expectedResult;
+    }
+
+
+    public function makeUnorderedBreadthFirstArrayTwoLevelsStartingAtRoot(
+    ): array
+    {
+        $expectedResult = [];
+        for ($i = 0; $i <= 7; $i++) {
+            $expectedResult[] = $i;
+        }
+        return $expectedResult;
     }
 }

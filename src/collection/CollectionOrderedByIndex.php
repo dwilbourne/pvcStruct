@@ -8,60 +8,64 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
-use pvc\interfaces\struct\collection\CollectionOrderedInterface;
+use pvc\interfaces\struct\collection\CollectionOrderedByIndexInterface;
 use pvc\interfaces\struct\collection\IndexedElementInterface;
+use pvc\struct\collection\err\InvalidComparatorException;
 use pvc\struct\collection\err\InvalidKeyException;
-use pvc\struct\collection\err\NonExistentKeyException;
 
 /**
- * Class CollectionIndexed
+ * Class CollectionOrderedByIndex
  *
- * elements in an ordered collection must have a getter called getIndex.  That value is used to order the elements
- * prior to returning them via get elements.  You can get the index of an element via its key.  You can also set the
- * index of an element via its key and all the other elements in the collection will have their indices updated
- * accordingly.
  *
  * @template ElementType of IndexedElementInterface
  * @extends Collection<ElementType>
- * @implements CollectionOrderedInterface<ElementType>
+ * @implements CollectionOrderedByIndexInterface<ElementType>
+ *
+ * this collection requires that its elements be objects and have getIndex
+ * and setIndex methods to allow keeping the elements in order according
+ * to the index property of each element (and to persist that order).
+ *
+ * The comparator in this class is immutable.
+ *
  */
-class CollectionOrdered extends Collection implements CollectionOrderedInterface
+class CollectionOrderedByIndex extends Collection implements CollectionOrderedByIndexInterface
 {
     private const int SHUFFLE_UP = 1;
     private const int SHUFFLE_DOWN = -1;
-
-    /**
-     * @var callable(ElementType, ElementType):int
-     * used by getElements to return the elements in order of index
-     */
-    protected $comparator;
 
     /**
      * @param  array<non-negative-int, ElementType>  $array
      */
     public function __construct(array $array = [])
     {
-        $comparator = function ($a, $b) {
-            /**
-             * @var ElementType $a
-             * @var ElementType $b
-             */
+        parent::__construct($array);
+
+        /**
+         * setting the comparator will sort the internal array
+         */
+        $comparator = function (
+            IndexedElementInterface $a,
+            IndexedElementInterface $b
+        ): int {
             return $a->getIndex() <=> $b->getIndex();
         };
-        parent::__construct($array, $comparator);
+        parent::setComparator($comparator);
 
         /**
-         * do not assume that the indices of the elements being imported are continuously ascending starting at 0.
-         */
-        $this->iterator->uasort($this->comparator);
-
-        /**
-         * renumber the indices
+         * Do not assume $array is properly indexed - reindex it
          */
         $i = 0;
-        foreach ($this->iterator as $element) {
+        foreach ($this as $element) {
             $element->setIndex($i++);
         }
+    }
+
+    public function setComparator($comparator): void
+    {
+        /**
+         * this method should not be used in this class
+         */
+        throw new InvalidComparatorException();
     }
 
     /**
@@ -81,25 +85,26 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     }
 
     /**
-     * getIndex returns the index which corresponds to $key
+     * getIndex returns the index which corresponds to $key.  This should
+     * be marginally faster than the algorithm in the parent class.
+     *
      *
      * @param  non-negative-int  $key
      *
-     * @return non-negative-int
+     * @return non-negative-int|null
      */
-    public function getIndex(int $key): int
+    public function getIndex(int $key): ?int
     {
-        if (!$this->validateKey($key)) {
-            throw new InvalidKeyException($key);
-        }
         if (!$this->validateExistingKey($key)) {
-            throw new NonExistentKeyException($key);
+            throw new InvalidKeyException((string)$key);
         }
         return $this->getElement($key)->getIndex();
     }
 
     /**
      * setIndex allows you to move an existing element from one ordinal position in the collection to another.
+     *
+     * this method only does something if the $ordered flag is true
      *
      * If $newIndex is greater than the largest index in the collection, then we adjust it to be the last index in
      * the collection.  If $newIndex < 0, set it to 0.
@@ -108,9 +113,9 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
      * element and adds it back with the new index.
      *
      * @param  non-negative-int  $key
-     * @param  non-negative-int  $newIndex
+     * @param  non-negative-int  $index
      */
-    public function setIndex(int $key, int $newIndex): void
+    public function setIndex(int $key, int $index): void
     {
         $element = $this->getElement($key);
 
@@ -124,10 +129,10 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
         /**
          * 'trim' the new index first
          */
-        $newIndex = $this->trimIndex($maxIndex, $newIndex);
+        $index = $this->trimIndex($maxIndex, $index);
 
         $this->delete($key);
-        $element->setIndex($newIndex);
+        $element->setIndex($index);
 
         /**
          * the add method sorts the elements array by index so we do not need to call it separately
@@ -146,6 +151,7 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
     {
         $existingIndex = $this->getElement($key)->getIndex();
         parent::delete($key);
+
         $this->shuffleIndices($existingIndex, self::SHUFFLE_DOWN);
     }
 
@@ -186,8 +192,6 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
      *
      * @throws InvalidKeyException
      *
-     * in order to keep the elements array in the proper order, we need to sort it by index so that iteration
-     * happens in the proper order
      */
     public function add(int $key, $element): void
     {
@@ -203,11 +207,11 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
          */
         $this->shuffleIndices($element->getIndex(), self::SHUFFLE_UP);
 
+
         /**
-         * add and then sort the collection
+         * add to the collection
          */
         parent::add($key, $element);
-        $this->iterator->uasort([$this, 'compareIndices']);
     }
 
     /**
@@ -217,26 +221,12 @@ class CollectionOrdered extends Collection implements CollectionOrderedInterface
      * @return void
      * @throws InvalidKeyException
      *
-     * This method will reorder the collection if the index of $element has changed from the prior value of
-     * the index of the element with the same key
+     * The code is a little DRYer if we use delete and add rather than
+     * craft a separate set of code for update
      */
     public function update(int $key, $element): void
     {
-        $oldIndex = $this->getElement($key)->getIndex();
-        $newIndex = $element->getIndex();
-        $element->setIndex($oldIndex);
-        parent::update($key, $element);
-        $this->setIndex($key, $newIndex);
-    }
-
-    /**
-     * @param  ElementType  $a
-     * @param  ElementType  $b
-     *
-     * @return int
-     */
-    protected function compareIndices(mixed $a, mixed $b): int
-    {
-        return $a->getIndex() <=> $b->getIndex();
+        $this->delete($key);
+        $this->add($key, $element);
     }
 }

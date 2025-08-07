@@ -20,6 +20,8 @@ use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
  */
 class SearchBreadthFirstTest extends TestCase
 {
+    protected int $treeId = 1;
+
     /**
      * @var TreeInterface
      */
@@ -35,13 +37,16 @@ class SearchBreadthFirstTest extends TestCase
      */
     protected TreenodeConfigurationsFixture $fixture;
 
+    protected TestUtils $testUtils;
+
     public function setUp(): void
     {
-        $ordered = true;
         $this->fixture = new TreenodeConfigurationsFixture();
-        $testUtils = new TestUtils($this->fixture);
+        $this->testUtils = new TestUtils($this->fixture);
         $this->fixture = new TreenodeConfigurationsFixture();
-        $this->tree = $testUtils->testTreeSetup($ordered);
+        $this->tree = $this->testUtils->testTreeSetup($this->treeId);
+        $inputArray = $this->testUtils->makeDtoArray();
+        $this->tree->hydrate($inputArray);
         $this->search = new SearchBreadthFirst();
     }
 
@@ -96,5 +101,21 @@ class SearchBreadthFirstTest extends TestCase
          */
         self::assertEquals($expectedResult, $actualResult);
         self::assertEquals($maxLevels, $this->search->getMaxLevels());
+    }
+
+    /**
+     * @return void
+     * @covers \pvc\struct\treesearch\SearchBreadthFirst
+     */
+    public function testOtherStartNode(): void
+    {
+        $this->search->setStartNode($this->tree->getNode(1));
+        $expectedResult
+            = $this->fixture->makeOrderedBreadthFirstArrayStartingAtNodeid1(
+        );
+        $actualResult = TestUtils::getNodeIdsFromNodeArray(
+            $this->search->getNodes()
+        );
+        self::assertEquals($expectedResult, $actualResult);
     }
 }

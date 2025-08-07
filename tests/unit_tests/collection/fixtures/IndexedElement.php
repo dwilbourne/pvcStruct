@@ -4,7 +4,7 @@ namespace pvcTests\struct\unit_tests\collection\fixtures;
 
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 
-class CollectionIndexedElement extends CollectionElement
+class IndexedElement extends Element
     implements IndexedElementInterface
 {
     /**
