@@ -257,7 +257,7 @@ class TreenodeTest extends TestCase
         $this->tree->method('getNode')->with($this->parentId)->willReturn($this->parent);
         $this->tree->method('getRoot')->willReturn($mockRoot);
 
-        $this->childrenOfParent->expects($this->once())->method('add')->with($this->nodeId, $this->node);
+        $this->childrenOfParent->expects($this->once())->method('add')->with($this->node, $this->nodeId);
         $this->node->setParent($this->parent);
         self::assertSame($this->parent, $this->node->getParent());
     }
@@ -370,7 +370,7 @@ class TreenodeTest extends TestCase
         $this->tree->method('getRoot')->willReturn($root);
 
         $this->childrenOfParentCollectionFactory->expects($this->once())->method('makeChildCollection')->willReturn($this->childrenOfParent);
-        $this->childrenOfParent->expects($this->once())->method('add')->with($this->parentId, $root);
+        $this->childrenOfParent->expects($this->once())->method('add')->with($root, $this->parentId);
 
         $root->getSiblings();
     }
@@ -390,7 +390,7 @@ class TreenodeTest extends TestCase
         $this->tree->method('getNode')->with($this->parentId)->willReturn($this->parent);
         $this->tree->method('getRoot')->willReturn($mockRoot);
 
-        $this->childrenOfParent->expects($this->once())->method('add')->with($this->nodeId, $this->node);
+        $this->childrenOfParent->expects($this->once())->method('add')->with($this->node, $this->nodeId);
         $this->node->setParent($this->parent);
 
         self::assertSame($this->childrenOfParent, $this->node->getSiblings());

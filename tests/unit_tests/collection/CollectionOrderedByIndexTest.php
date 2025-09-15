@@ -120,7 +120,7 @@ class CollectionOrderedByIndexTest extends TestCase
          */
         $element->setIndex(1);
         $newKey = 5;
-        $this->collection->add($newKey, $element);
+        $this->collection->add($element, $newKey);
 
         /**
          * the add method reorders the internal array so it is ascending by index
@@ -186,7 +186,7 @@ class CollectionOrderedByIndexTest extends TestCase
 
         $this->collection = new CollectionOrderedByIndex();
         self::assertTrue($this->collection->isEmpty());
-        $this->collection->add($key, $element);
+        $this->collection->add($element, $key);
         self::assertEquals(
             $expectedNewKeyIndex,
             $this->collection->getElement($key)->getIndex()

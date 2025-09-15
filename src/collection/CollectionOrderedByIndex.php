@@ -137,7 +137,7 @@ class CollectionOrderedByIndex extends Collection implements CollectionOrderedBy
         /**
          * the add method sorts the elements array by index so we do not need to call it separately
          */
-        $this->add($key, $element);
+        $this->add($element, $key);
     }
 
     /**
@@ -193,7 +193,7 @@ class CollectionOrderedByIndex extends Collection implements CollectionOrderedBy
      * @throws InvalidKeyException
      *
      */
-    public function add(int $key, $element): void
+    public function add($element, ?int $key = null): void
     {
         /**
          * 'trim' the index of the element first
@@ -211,7 +211,7 @@ class CollectionOrderedByIndex extends Collection implements CollectionOrderedBy
         /**
          * add to the collection
          */
-        parent::add($key, $element);
+        parent::add($element, $key);
     }
 
     /**
@@ -227,6 +227,6 @@ class CollectionOrderedByIndex extends Collection implements CollectionOrderedBy
     public function update(int $key, $element): void
     {
         $this->delete($key);
-        $this->add($key, $element);
+        $this->add($element, $key);
     }
 }

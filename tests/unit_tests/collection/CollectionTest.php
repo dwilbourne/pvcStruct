@@ -217,7 +217,7 @@ class CollectionTest extends TestCase
 
         $badKey = -1;
         $this->expectException(InvalidKeyException::class);
-        $this->collection->add($badKey, 'some payload');
+        $this->collection->add('some payload', $badKey);
     }
 
     /**
@@ -231,7 +231,7 @@ class CollectionTest extends TestCase
         $this->addElements(3);
 
         $this->expectException(DuplicateKeyException::class);
-        $this->collection->add(0, 'cannot add because key already exists');
+        $this->collection->add('cannot add because key already exists', 0);
     }
 
     /**
@@ -246,7 +246,7 @@ class CollectionTest extends TestCase
         $this->elements
             = $this->elementFactory->makeElementArray(3);
         foreach ($this->elements as $key => $value) {
-            $this->collection->add($key, $value);
+            $this->collection->add($value, $key);
             self::assertEquals($value, $this->collection->getElement($key));
         }
         /**
@@ -254,6 +254,22 @@ class CollectionTest extends TestCase
          */
         self::assertEquals(2, $this->collection->getIndex(2));
         self::assertNull($this->collection->getIndex(5));
+    }
+
+    /**
+     * testAddGeneratesNewKeyIfNecessary
+     * @return void
+     * @covers \pvc\struct\collection\Collection::add
+     * @covers \pvc\struct\collection\Collection::generateNewKey
+     */
+    public function testAddGeneratesNewKeyIfNecessary(): void
+    {
+        $this->collection = new Collection();
+        $value = 'foo';
+        $this->collection->add($value);
+        self::assertEquals(1, count($this->collection));
+        self::assertEquals($value, $this->collection->getElement(0));
+
     }
 
     /**
@@ -417,7 +433,7 @@ class CollectionTest extends TestCase
          * new elements are added and the collection remains sorted correctly
          */
         $elementC = $this->elementFactory->makeElement(1);
-        $collection->add(2, $elementC);
+        $collection->add($elementC, 2);
         $expectedResult = [2 => $elementC, 1 => $elementB, 0 => $elementA];
         self::assertEquals($expectedResult, $collection->getElements());
 

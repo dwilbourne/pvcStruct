@@ -184,10 +184,23 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
+     * generateNewKey
+     * @return int
+     */
+    public function generateNewKey(): int
+    {
+        $keys = array_keys($this->getElements());
+        return empty($keys) ? 0 : 1 + max($keys);
+    }
+
+    /**
      * add
      *
      * Unlike when you are dealing with a raw array, using an existing key will throw an exception instead
      * of overwriting an existing entry in the array.  Use update to be explicit about updating an entry.
+     *
+     * If the $key argument is omitted, it works like a standard php array that has numeric keys:  it takes
+     * the largest of the existing keys and adds one to it in order to produce a new key.
      *
      * @param  non-negative-int  $key
      * @param  ElementType  $element
@@ -195,11 +208,14 @@ class Collection extends IteratorIterator implements CollectionInterface
      * @throws DuplicateKeyException
      * @throws InvalidKeyException
      */
-    public function add(int $key, $element): void
+    public function add($element, ?int $key = null): void
     {
-        if (!$this->validateNewKey($key)) {
+        if ($key === null) {
+            $key = $this->generateNewKey();
+        } elseif (!$this->validateNewKey($key)) {
             throw new DuplicateKeyException($key);
         }
+
         $this->iterator->offsetSet($key, $element);
 
         if ($this->comparator !== null) {

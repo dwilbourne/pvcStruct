@@ -149,7 +149,7 @@ class Treenode implements TreenodeInterface
              * if parent is not null, add this node to the parent's child collection
              */
             $childCollection = $parent->getChildren();
-            $childCollection->add($this->getNodeId(), $this);
+            $childCollection->add($this, $this->getNodeId());
         }
 
         /**
@@ -317,7 +317,7 @@ class Treenode implements TreenodeInterface
         if ($this->isRoot()) {
             /** @var TreenodeChildCollection<TreenodeType> $collection */
             $collection = $this->collectionFactory->makeChildCollection();
-            $collection->add($this->getNodeId(), $this);
+            $collection->add($this, $this->getNodeId());
         } else {
             $parent = $this->getParent();
             assert(!is_null($parent));

@@ -166,7 +166,7 @@ class Tree implements TreeInterface
         /**
          * add the node to the node collection
          */
-        $this->collection->add($node->getNodeId(), $node);
+        $this->collection->add($node, $node->getNodeId());
     }
 
     /**

@@ -176,7 +176,7 @@ class TreeTest extends TestCase
         $node->expects($this->once())->method('setParent')->with(null);
         $node->method('getParent')->willReturn(null);
         $this->collection->expects($this->exactly(2))->method('getElement')->with($nodeId)->willReturnOnConsecutiveCalls(null, $node);
-        $this->collection->expects($this->once())->method('add')->with($nodeId, $node);
+        $this->collection->expects($this->once())->method('add')->with($node, $nodeId);
         $this->tree->addNode($node, null);
         self::assertSame($node, $this->tree->getRoot());
 
@@ -377,7 +377,7 @@ class TreeTest extends TestCase
         $node->method('getParent')->willReturn(null);
         $this->treenodeFactory->expects(self::once())->method('makeNode')
             ->willReturn($node);
-        $this->collection->expects(self::once())->method('add')->with($nodeId, $node);
+        $this->collection->expects(self::once())->method('add')->with($node, $nodeId);
 
         $node->expects($this->once())->method('setNodeId')->with($nodeId);
         $node->expects($this->once())->method('setParent')->with($parentId);

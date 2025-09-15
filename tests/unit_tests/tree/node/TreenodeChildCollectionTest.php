@@ -25,9 +25,9 @@ class TreenodeChildCollectionTest extends TestCase
         $node1 = $this->createMock(TreenodeInterface::class);
         $node2 = $this->createMock(TreenodeInterface::class);
         $node3 = $this->createMock(TreenodeInterface::class);
-        $this->treenodeChildCollection->add(1, $node1);
-        $this->treenodeChildCollection->add(2, $node2);
-        $this->treenodeChildCollection->add(3, $node3);
+        $this->treenodeChildCollection->add($node1, 1);
+        $this->treenodeChildCollection->add($node2, 2);
+        $this->treenodeChildCollection->add($node3, 3);
 
         $i = 0;
         foreach ($this->treenodeChildCollection as $node) {
