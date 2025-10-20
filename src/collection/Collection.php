@@ -8,59 +8,88 @@ declare(strict_types=1);
 
 namespace pvc\struct\collection;
 
+use ArrayIterator;
 use IteratorIterator;
 use pvc\interfaces\struct\collection\CollectionInterface;
 use pvc\interfaces\validator\ValTesterInterface;
 use pvc\struct\collection\err\DuplicateKeyException;
 use pvc\struct\collection\err\InvalidKeyException;
+use pvc\struct\collection\err\InvalidValueException;
 use pvc\struct\collection\err\NonExistentKeyException;
 
 /**
  * Class Collection
+ * @template KeyType of array-key
  * @template ElementType
  *
- * @extends IteratorIterator<non-negative-int, ElementType, ArrayIteratorNonNegIntKeys>
- * @implements CollectionInterface<ElementType>
+ * @extends IteratorIterator<mixed, ElementType, ArrayIterator<KeyType, ElementType>>
+ * @implements CollectionInterface<KeyType, ElementType>
  *
  * elements in a collection cannot be null
  */
 class Collection extends IteratorIterator implements CollectionInterface
 {
     /**
-     * @var ArrayIteratorNonNegIntKeys<ElementType>
+     * @var ArrayIterator<KeyType, ElementType>
+     * inner iterator
      */
-    protected ArrayIteratorNonNegIntKeys $iterator;
+    protected ArrayIterator $iterator;
 
     /**
-     * @var ?callable(ElementType, ElementType): int $comparator;
+     * @var ?callable(ElementType, ElementType): int $comparator ;
      */
     protected $comparator;
 
-
     /**
-     * @param  array<non-negative-int, ElementType>  $elements
+     * @var ValTesterInterface<KeyType>|null
+     * makes sure a key is 'valid'.  Static analysis provides safety if you use it,
+     * but not everyone does.  And there could be other ways in which you might
+     * want to constrain the kinds of keys in the collection.
      */
-    public function __construct(
-        array $elements = [],
-    ) {
-        $this->setInnerIterator($elements);
-        parent::__construct($this->iterator);
+    public ValTesterInterface|null $keyTester {
+        get => $this->keyTester ?? null;
+        set {
+            $this->keyTester = $value;
+        }
     }
 
     /**
-     * @param  array<non-negative-int, ElementType>  $elements
+     * @var ValTesterInterface<ElementType>|null
+     * same for values
+     */
+    public ValTesterInterface|null $valueTester {
+        get {
+            return $this->valueTester ?? null;
+        }
+        set {
+            $this->valueTester = $value;
+        }
+    }
+
+    /**
+     * @param ?ArrayIterator<KeyType, ElementType>  $iterator
+     */
+    public function __construct(?ArrayIterator $iterator = null)
+    {
+        if (is_null($iterator)) {
+            $iterator = new ArrayIterator();
+        }
+        $this->iterator = $iterator;
+        parent::__construct($iterator);
+    }
+
+    /**
+     * initialize
      *
      * @return void
-     * this method is also used to initialize the collection by
-     * calling it with no parameters
      */
-    protected function setInnerIterator(array $elements = []): void
+    public function initialize(): void
     {
-        $this->iterator = new ArrayIteratorNonNegIntKeys($elements);
+        $this->iterator = new ArrayIterator();
     }
 
     /**
-     * @param ?callable(ElementType, ElementType): int $comparator
+     * @param ?callable(ElementType, ElementType): int  $comparator
      *
      * @return void
      */
@@ -73,23 +102,21 @@ class Collection extends IteratorIterator implements CollectionInterface
     }
 
     /**
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      *
-     * @return non-negative-int|null
+     * @return non-negative-int
      */
-    public function getIndex(int $key): ?int
+    public function getIndex($key): int
     {
-            $i = 0;
-            foreach ($this->iterator as $n => $element) {
-                if ($n === $key) return $i;
-                $i++;
+        $this->validateExistingKey($key);
+        $result = $i = 0;
+        foreach ($this->iterator as $n => $element) {
+            if ($n === $key) {
+                $result = $i;
             }
-            return null;
-    }
-
-    public function initialize(): void
-    {
-        $this->setInnerIterator();
+            $i++;
+        }
+        return $result;
     }
 
     /**
@@ -115,15 +142,14 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * getElement
      *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      *
      * @return ElementType
      */
-    public function getElement(int $key): mixed
+    public function getElement($key): mixed
     {
-        if (!$this->validateExistingKey($key)) {
-            throw new NonExistentKeyException($key);
-        }
+        $this->validateExistingKey($key);
+
         /**
          * element cannot be null
          */
@@ -136,14 +162,19 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * validateExistingKey ensures that the key is both valid and exists in the collection
      *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      *
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
-    protected function validateExistingKey(int $key): bool
+    protected function validateExistingKey($key): void
     {
-        return $this->iterator->offsetExists($key);
+        if ($this->keyTester && !$this->keyTester->testValue($key)) {
+            throw new InvalidKeyException((string)$key);
+        }
+        if (!$this->iterator->offsetExists($key)) {
+            throw new NonExistentKeyException((string)$key);
+        }
     }
 
     /**
@@ -151,10 +182,10 @@ class Collection extends IteratorIterator implements CollectionInterface
      *
      * @param  ValTesterInterface<ElementType>  $valTester
      *
-     * @return non-negative-int|null
+     * @return KeyType|null
      */
-    public function findElementKey(ValTesterInterface $valTester): ?int
-    {
+    public function findElementKey(ValTesterInterface $valTester
+    ): int|string|null {
         return array_find_key($this->getElements(), [$valTester, 'testValue']);
     }
 
@@ -164,7 +195,7 @@ class Collection extends IteratorIterator implements CollectionInterface
 
     /**
      * @function getElements
-     * @return array<non-negative-int, ElementType>
+     * @return array<KeyType, ElementType>
      */
     public function getElements(): array
     {
@@ -175,22 +206,13 @@ class Collection extends IteratorIterator implements CollectionInterface
      *
      * @param  ValTesterInterface<ElementType>  $valTester
      *
-     * @return array<non-negative-int>
+     * @return array<KeyType>
      */
     public function findElementKeys(ValTesterInterface $valTester): array
     {
-        $elements = array_filter($this->getElements(), [$valTester, 'testValue']);
+        $elements = array_filter($this->getElements(), [$valTester, 'testValue']
+        );
         return array_keys($elements);
-    }
-
-    /**
-     * generateNewKey
-     * @return int
-     */
-    public function generateNewKey(): int
-    {
-        $keys = array_keys($this->getElements());
-        return empty($keys) ? 0 : 1 + max($keys);
     }
 
     /**
@@ -199,22 +221,15 @@ class Collection extends IteratorIterator implements CollectionInterface
      * Unlike when you are dealing with a raw array, using an existing key will throw an exception instead
      * of overwriting an existing entry in the array.  Use update to be explicit about updating an entry.
      *
-     * If the $key argument is omitted, it works like a standard php array that has numeric keys:  it takes
-     * the largest of the existing keys and adds one to it in order to produce a new key.
-     *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      * @param  ElementType  $element
      *
-     * @throws DuplicateKeyException
-     * @throws InvalidKeyException
+     * @throws DuplicateKeyException|InvalidKeyException|InvalidValueException
      */
-    public function add($element, ?int $key = null): void
+    public function add($element, $key): void
     {
-        if ($key === null) {
-            $key = $this->generateNewKey();
-        } elseif (!$this->validateNewKey($key)) {
-            throw new DuplicateKeyException($key);
-        }
+        $this->validateNewKey($key);
+        $this->validateValue($element);
 
         $this->iterator->offsetSet($key, $element);
 
@@ -226,51 +241,66 @@ class Collection extends IteratorIterator implements CollectionInterface
     /**
      * validateNewKey ensures that the key does not exist in the collection
      *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      */
-    protected function validateNewKey(int $key): bool
+    protected function validateNewKey($key): void
     {
-        return !$this->iterator->offsetExists($key);
+        if ($this->keyTester && !$this->keyTester->testValue($key)) {
+            throw new InvalidKeyException((string)$key);
+        }
+        if ($this->iterator->offsetExists($key)) {
+            throw new DuplicateKeyException($key);
+        }
+    }
+
+    /**
+     * validateValue
+     *
+     * @param  mixed  $value
+     *
+     * @return void
+     */
+    protected function validateValue($value): void
+    {
+        if ($this->valueTester && !$this->valueTester->testValue($value)) {
+            throw new InvalidValueException();
+        }
     }
 
     /**
      * update assigns a new element to the entry with index $key
      *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      * @param  ElementType  $element
      *
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
-    public function update(int $key, $element): void
+    public function update($key, $element): void
     {
-        if (!$this->validateExistingKey($key)) {
-            throw new NonExistentKeyException($key);
-        }
+        $this->validateExistingKey($key);
+        $this->validateValue($element);
 
         $this->iterator->offsetSet($key, $element);
 
         if ($this->comparator !== null) {
             $this->iterator->uasort($this->comparator);
         }
-
     }
 
     /**
      * delete removes an element from the collection.  Unlike unset, this operation throws an exception if the
      * key does not exist.
      *
-     * @param  non-negative-int  $key
+     * @param  KeyType  $key
      *
      * @return void
      * @throws InvalidKeyException
      * @throws NonExistentKeyException
      */
-    public function delete(int $key): void
+    public function delete($key): void
     {
-        if (!$this->validateExistingKey($key)) {
-            throw new NonExistentKeyException($key);
-        }
+        $this->validateExistingKey($key);
         $this->iterator->offsetUnset($key);
     }
 

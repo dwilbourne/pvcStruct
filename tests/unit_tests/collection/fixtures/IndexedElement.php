@@ -4,13 +4,12 @@ namespace pvcTests\struct\unit_tests\collection\fixtures;
 
 use pvc\interfaces\struct\collection\IndexedElementInterface;
 
-class IndexedElement extends Element
-    implements IndexedElementInterface
+class IndexedElement extends Element implements IndexedElementInterface
 {
     /**
      * @var non-negative-int
      */
-    protected int $index = 0;
+    protected int $index;
 
     /**
      * @return non-negative-int

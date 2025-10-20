@@ -3,9 +3,9 @@
 namespace pvcTests\struct\integration_tests\tree\node;
 
 use PHPUnit\Framework\TestCase;
-use pvc\struct\tree\tree\Tree;
-use pvcTests\struct\integration_tests\fixture\TestUtils;
-use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
+use pvc\struct\tree\Tree;
+use pvcTests\struct\integration_tests\fixture\tree\data\TestUtils;
+use pvcTests\struct\integration_tests\fixture\tree\data\TreenodeConfigurationsFixture;
 
 class TreenodeTest extends TestCase
 {
@@ -27,9 +27,9 @@ class TreenodeTest extends TestCase
     /**
      * testHydration
      *
-     * @covers \pvc\struct\tree\tree\Tree::initialize
-     * @covers \pvc\struct\tree\tree\Tree::hydrate
-     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     * @covers \pvc\struct\tree\Tree::initialize
+     * @covers \pvc\struct\tree\Tree::hydrate
+     * @covers \pvc\struct\tree\Tree::insertNodeRecurse
      */
     public function testHydrationWithDtos(): void
     {
@@ -46,7 +46,7 @@ class TreenodeTest extends TestCase
      * @return void
      * see the diagram of the tree in TreenodeConfigurationFixture for an
      * easy visual of the node relationships
-     * @covers \pvc\struct\tree\node\Treenode::isAncestorOf
+     * @covers \pvc\struct\tree\Treenode::isAncestorOf
      */
     public function testIsAncestorOf(): void
     {
@@ -60,7 +60,7 @@ class TreenodeTest extends TestCase
 
     /**
      * @return void
-     * @covers \pvc\struct\tree\node\Treenode::isDescendantOf
+     * @covers \pvc\struct\tree\Treenode::isDescendantOf
      */
     public function testIsDescendantOf(): void
     {

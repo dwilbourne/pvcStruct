@@ -4,7 +4,7 @@ namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\CollectionOrderedByIndex;
+use pvc\struct\collection\IndexedCollection;
 use pvc\struct\tree\err\AlreadySetNodeidException;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvc\struct\tree\err\CircularGraphException;
@@ -14,7 +14,7 @@ use pvc\struct\tree\err\InvalidValueException;
 use pvc\struct\tree\err\NodeNotEmptyHydrationException;
 use pvc\struct\tree\err\RootCannotBeMovedException;
 use pvc\struct\tree\err\SetTreeException;
-use pvc\struct\tree\node\Treenode;
+use pvc\struct\tree\Treenode;
 use pvcExamples\struct\ordered\TreenodeOrdered;
 use pvcExamples\struct\ordered\TreeOrdered;
 use pvcTests\struct\unit_tests\tree\node\fixture\TreenodeTestingFixture;
@@ -27,9 +27,9 @@ class TreenodeOrderedTest extends TestCase
     protected TreenodeTestingFixture $fixture;
 
     /**
-     * @var CollectionOrderedByIndex&MockObject
+     * @var IndexedCollection&MockObject
      */
-    protected CollectionOrderedByIndex&MockObject $collection;
+    protected IndexedCollection&MockObject $collection;
 
     /**
      * @var TreeOrdered&MockObject
@@ -45,7 +45,7 @@ class TreenodeOrderedTest extends TestCase
     {
         $this->fixture = new TreenodeTestingFixture();
         $this->fixture->setUp();
-        $this->collection = $this->createMock(CollectionOrderedByIndex::class);
+        $this->collection = $this->createMock(IndexedCollection::class);
         $this->tree = $this->createMock(TreeOrdered::class);
         $this->tree->method('getTreeId')->willReturn($this->fixture->treeId);
     }

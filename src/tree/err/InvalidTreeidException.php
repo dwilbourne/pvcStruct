@@ -16,8 +16,4 @@ use Throwable;
  */
 class InvalidTreeidException extends LogicException
 {
-    public function __construct(int $treeid, ?Throwable $prev = null)
-    {
-        parent::__construct($treeid, $prev);
-    }
 }

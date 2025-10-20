@@ -15,9 +15,10 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchAbstract
+ * @template NodeId
  * @template NodeType of NodeSearchableInterface
  *
- * @implements SearchInterface<NodeType>
+ * @implements SearchInterface<NodeId, NodeType>
  */
 abstract class SearchAbstract implements SearchInterface
 {
@@ -48,11 +49,14 @@ abstract class SearchAbstract implements SearchInterface
     /**
      * key
      *
-     * @return non-negative-int|null
+     * @return mixed
+     *
+     * phpstan complains that the return type is not covariant with Iterator::key().
      */
-    public function key(): int|null
+    public function key(): mixed
     {
-        return $this->current()?->getNodeId();
+        $key = $this->current()?->getNodeId();
+        return $key;
     }
 
     /**
@@ -133,11 +137,8 @@ abstract class SearchAbstract implements SearchInterface
      */
     public function getNodes(): array
     {
-        $result = [];
-        foreach ($this as $node) {
-            $result[$node->getNodeId()] = $node;
-        }
-        return $result;
+        $preserve_keys = false;
+        return iterator_to_array($this, $preserve_keys);
     }
 
     /**

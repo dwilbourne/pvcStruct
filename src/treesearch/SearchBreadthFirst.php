@@ -14,8 +14,9 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 /**
  * Class SearchStrategyBreadthFirst
  *
+ * @template NodeId
  * @template NodeType of NodeSearchableInterface
- * @extends SearchAbstract<NodeType>
+ * @extends SearchAbstract<NodeId, NodeType>
  */
 class SearchBreadthFirst extends SearchAbstract
 {

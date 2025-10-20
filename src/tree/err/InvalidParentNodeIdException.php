@@ -15,7 +15,7 @@ use Throwable;
  */
 class InvalidParentNodeIdException extends LogicException
 {
-    public function __construct(int $parentid, ?Throwable $prev = null)
+    public function __construct(string $parentid, ?Throwable $prev = null)
     {
         parent::__construct($parentid, $prev);
     }

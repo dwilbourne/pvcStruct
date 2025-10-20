@@ -12,8 +12,8 @@ use PHPUnit\Framework\TestCase;
 use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\SearchBreadthFirst;
-use pvcTests\struct\integration_tests\fixture\TestUtils;
-use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
+use pvcTests\struct\integration_tests\fixture\tree\data\TestUtils;
+use pvcTests\struct\integration_tests\fixture\tree\data\TreenodeConfigurationsFixture;
 
 /**
  * Class SearchBreadthFirstTest

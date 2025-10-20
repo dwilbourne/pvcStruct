@@ -10,9 +10,9 @@ namespace pvcTests\struct\integration_tests\tree\tree;
 use PHPUnit\Framework\TestCase;
 use pvc\struct\tree\err\DeleteInteriorNodeException;
 use pvc\struct\tree\err\NodeNotInTreeException;
-use pvc\struct\tree\tree\Tree;
-use pvcTests\struct\integration_tests\fixture\TestUtils;
-use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
+use pvc\struct\tree\Tree;
+use pvcTests\struct\integration_tests\fixture\tree\data\TestUtils;
+use pvcTests\struct\integration_tests\fixture\tree\data\TreenodeConfigurationsFixture;
 
 class TreeTest extends TestCase
 {
@@ -34,9 +34,9 @@ class TreeTest extends TestCase
     /**
      * testHydration
      *
-     * @covers \pvc\struct\tree\tree\Tree::initialize
-     * @covers \pvc\struct\tree\tree\Tree::hydrate
-     * @covers \pvc\struct\tree\tree\Tree::insertNodeRecurse
+     * @covers \pvc\struct\tree\Tree::initialize
+     * @covers \pvc\struct\tree\Tree::hydrate
+     * @covers \pvc\struct\tree\Tree::insertNodeRecurse
      */
     public function testHydration(): void
     {
@@ -52,7 +52,7 @@ class TreeTest extends TestCase
      * @return void
      * @throws \ReflectionException
      * @throws \pvc\struct\tree\err\TreeNotInitializedException
-     * @covers \pvc\struct\tree\tree\Tree::dehydrate
+     * @covers \pvc\struct\tree\Tree::dehydrate
      */
     public function testDehydration(): void
     {
@@ -67,8 +67,8 @@ class TreeTest extends TestCase
      *
      * @throws DeleteInteriorNodeException
      * @throws NodeNotInTreeException
-     * @covers \pvc\struct\tree\tree\Tree::deleteNode
-     * @covers \pvc\struct\tree\tree\Tree::deleteNodeRecurse
+     * @covers \pvc\struct\tree\Tree::deleteNode
+     * @covers \pvc\struct\tree\Tree::deleteNodeRecurse
      */
     public function testDeleteNodeRecurse(): void
     {

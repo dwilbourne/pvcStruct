@@ -14,9 +14,10 @@ use pvc\struct\treesearch\err\StartNodeUnsetException;
 
 /**
  * Class SearchDepthFirst
+ * @template NodeId
  * @template NodeType of NodeVisitableInterface
  *
- * @extends SearchAbstract<NodeType>
+ * @extends SearchAbstract<NodeId, NodeType>
  */
 abstract class SearchDepthFirst extends SearchAbstract
 {
@@ -150,7 +151,7 @@ abstract class SearchDepthFirst extends SearchAbstract
      */
     protected function getNextVisitableChild(): ?NodeVisitableInterface
     {
-        /** @var array<NodeVisitableInterface> $children */
+        /** @var array<NodeVisitableInterface<NodeId>> $children */
         $children = $this->current()?->getChildrenArray() ?: [];
 
         $callback = function (NodeVisitableInterface $child) {

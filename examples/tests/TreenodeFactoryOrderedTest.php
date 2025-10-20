@@ -4,8 +4,8 @@ namespace pvcExamples\struct\tests;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use pvc\struct\collection\CollectionOrderedByIndex;
-use pvc\struct\collection\CollectionOrderedByIndexFactory;
+use pvc\struct\collection\IndexedCollection;
+use pvc\struct\collection\IndexedCollectionFactory;
 use pvc\struct\tree\err\ChildCollectionException;
 use pvcExamples\struct\ordered\TreenodeFactoryOrdered;
 use pvcExamples\struct\ordered\TreenodeOrdered;
@@ -13,9 +13,9 @@ use pvcExamples\struct\ordered\TreenodeOrdered;
 class TreenodeFactoryOrderedTest extends TestCase
 {
     /**
-     * @var CollectionOrderedByIndexFactory<TreenodeOrdered, CollectionOrderedByIndex>&MockObject
+     * @var IndexedCollectionFactory<TreenodeOrdered, IndexedCollection>&MockObject
      */
-    protected CollectionOrderedByIndexFactory&MockObject $collectionFactory;
+    protected IndexedCollectionFactory&MockObject $collectionFactory;
 
     /**
      * @var TreenodeFactoryOrdered
@@ -25,7 +25,7 @@ class TreenodeFactoryOrderedTest extends TestCase
     public function setUp(): void
     {
         $this->collectionFactory = $this->createMock(
-            CollectionOrderedByIndexFactory::class
+            IndexedCollectionFactory::class
         );
         $this->factory = new TreenodeFactoryOrdered($this->collectionFactory);
     }
@@ -47,7 +47,7 @@ class TreenodeFactoryOrderedTest extends TestCase
      */
     public function testMakeNode(): void
     {
-        $mockCollection = $this->createMock(CollectionOrderedByIndex::class);
+        $mockCollection = $this->createMock(IndexedCollection::class);
         $this->collectionFactory->expects(self::once())->method(
             'makeCollection'
         )->willReturn($mockCollection);

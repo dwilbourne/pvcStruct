@@ -12,9 +12,10 @@ use pvc\interfaces\struct\treesearch\VisitStatus;
 
 /**
  * Class SearchStrategyDepthFirstPostorder
+ * @template NodeId
  * @template NodeType of NodeVisitableInterface
  *
- * @extends SearchDepthFirst<NodeType>
+ * @extends SearchDepthFirst<NodeId, NodeType>
  */
 class SearchDepthFirstPostorder extends SearchDepthFirst
 {

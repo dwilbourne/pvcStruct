@@ -12,8 +12,8 @@ use pvc\interfaces\struct\tree\tree\TreeInterface;
 use pvc\interfaces\struct\treesearch\VisitStatus;
 use pvc\struct\treesearch\err\SetMaxSearchLevelsException;
 use pvc\struct\treesearch\SearchDepthFirstPreorder;
-use pvcTests\struct\integration_tests\fixture\TestUtils;
-use pvcTests\struct\integration_tests\fixture\TreenodeConfigurationsFixture;
+use pvcTests\struct\integration_tests\fixture\tree\data\TestUtils;
+use pvcTests\struct\integration_tests\fixture\tree\data\TreenodeConfigurationsFixture;
 
 class SearchDepthFirstPreorderTest extends TestCase
 {
