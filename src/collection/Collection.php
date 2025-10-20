@@ -226,7 +226,7 @@ class Collection extends IteratorIterator implements CollectionInterface
      *
      * @throws DuplicateKeyException|InvalidKeyException|InvalidValueException
      */
-    public function add($element, $key): void
+    public function add($key, $element): void
     {
         $this->validateNewKey($key);
         $this->validateValue($element);

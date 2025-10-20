@@ -252,7 +252,7 @@ class CollectionTest extends TestCase
         $this->collection->keyTester = $keyTester;
 
         $this->expectException(InvalidKeyException::class);
-        $this->collection->add($element, $invalidKey);
+        $this->collection->add($invalidKey, $element);
     }
 
     /**
@@ -269,9 +269,9 @@ class CollectionTest extends TestCase
         $keyTester->method('testValue')->with($key)->willReturn(true);
         $this->collection->keyTester = $keyTester;
 
-        $this->collection->add($element, $key);
+        $this->collection->add($key, $element);
         $this->expectException(DuplicateKeyException::class);
-        $this->collection->add($element, $key);
+        $this->collection->add($key, $element);
     }
 
     /**
@@ -288,7 +288,7 @@ class CollectionTest extends TestCase
         $valueTester->method('testValue')->with($element)->willReturn(false);
         $this->collection->valueTester = $valueTester;
         $this->expectException(InvalidValueException::class);
-        $this->collection->add($element, $key);
+        $this->collection->add($key, $element);
     }
 
     /**
@@ -327,7 +327,7 @@ class CollectionTest extends TestCase
     {
         $invalidKey = 5;
         $element = new Element();
-        $this->collection->add($element, $invalidKey);
+        $this->collection->add($invalidKey, $element);
 
         $keyTester = $this->createMock(ValTesterInterface::class);
         $keyTester->method('testValue')->with($invalidKey)->willReturn(false);
@@ -364,7 +364,7 @@ class CollectionTest extends TestCase
     {
         $key = 5;
         $element = new Element();
-        $this->collection->add($element, $key);
+        $this->collection->add($key, $element);
 
         $updatedElement = new Element();
         $valueTester = $this->createMock(ValTesterInterface::class);
@@ -505,7 +505,7 @@ class CollectionTest extends TestCase
          */
         $elementC = new Element();
         $elementC->setValue('a');
-        $this->collection->add($elementC, 2);
+        $this->collection->add(2, $elementC);
         $expectedResult = [2 => $elementC, 1 => $elementB, 0 => $elementA];
         self::assertEquals($expectedResult, $this->collection->getElements());
 
