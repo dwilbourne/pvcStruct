@@ -199,6 +199,9 @@ class Collection extends IteratorIterator implements CollectionInterface
      */
     public function getElements(): array
     {
+        /**
+         * keys are preserved by default
+         */
         return iterator_to_array($this->iterator);
     }
 
@@ -213,6 +216,20 @@ class Collection extends IteratorIterator implements CollectionInterface
         $elements = array_filter($this->getElements(), [$valTester, 'testValue']
         );
         return array_keys($elements);
+    }
+
+    /**
+     * hasKey
+     * @param KeyType $key
+     *
+     * @return bool
+     */
+    public function hasKey($key): bool
+    {
+        if (!$this->keyTester->testValue($key)) {
+            throw new InvalidKeyException((string)$key);
+        }
+        return $this->iterator->offsetExists($key);
     }
 
     /**
